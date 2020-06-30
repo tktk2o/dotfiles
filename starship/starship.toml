@@ -1,0 +1,18 @@
+# Don't print a new line at the start of the prompt
+add_newline = false
+
+[directory]
+style = "fg:#8be9fd"
+
+[git_branch]
+style = "#ff79c6"	
+
+[git_commit]
+disabled = false
+style = "#bd93f9"
+
+[git_status]
+style = "#ff5555"
+
+# [line_break]
+# disabled = true
