@@ -1,0 +1,20 @@
+{
+    "workbench.colorTheme": "Dracula",
+    "files.watcherExclude": {
+        "**/.bloop": true,
+        "**/.metals": true,
+        "**/.ammonite": true
+    },
+    "editor.fontFamily": "Source Code Pro",
+    "metals.javaHome": "/Users/s11627/.jabba/jdk/adopt@1.11.0-7/Contents/Home",
+    "terminal.integrated.shell.osx": "/bin/zsh",
+    "editor.formatOnType": true,
+    "[scala]": {
+    
+        "editor.suggestSelection": "first",
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "editor.defaultFormatter": "scalameta.metals"
+    },
+    "editor.formatOnSave": true
+}
