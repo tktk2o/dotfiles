@@ -1,9 +1,9 @@
 {
     "workbench.colorTheme": "Dracula",
     "files.watcherExclude": {
-        "**/.bloop": true,
-        "**/.metals": true,
-        "**/.ammonite": true
+      "**/.bloop": true,
+      "**/.metals": true,
+      "**/.ammonite": true
     },
     "editor.fontFamily": "Source Code Pro",
     "metals.javaHome": "/Users/s11627/.jabba/jdk/adopt@1.11.0-7/Contents/Home",
@@ -16,5 +16,15 @@
         "editor.formatOnType": true,
         "editor.defaultFormatter": "scalameta.metals"
     },
-    "editor.formatOnSave": true
+    "window.zoomLevel": 0,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false,
+    "mssql.connections": [
+      {
+        "server": "{{put-server-name-here}}",
+        "database": "{{put-database-name-here}}",
+        "user": "{{put-username-here}}",
+        "password": "{{put-password-here}}"
+      }
+    ]
 }

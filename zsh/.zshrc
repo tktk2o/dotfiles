@@ -22,6 +22,9 @@ alias ga='git add ./'
 alias gb='git branch'
 alias gs='git status'
 alias gc='git commit'
+alias gr='git reset --hard HEAD'
+alias gpum='git pull upstream main'
+alias gpom='git push origin main'
 
 alias v='nvim'
 
@@ -34,3 +37,5 @@ export PATH="$HOME/.serverless/bin:$PATH"
 # tabtab source for packages
 # uninstall by removing these lines
 [[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true
+export PATH="/usr/local/opt/python@3.8/bin:$PATH"
+
