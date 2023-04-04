@@ -1,3 +1,5 @@
+# Fig pre block. Keep at the top of this file.
+[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
 export LANG=ja_JP.UTF-8
 
 # git
@@ -39,3 +41,27 @@ export PATH="$HOME/.serverless/bin:$PATH"
 [[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true
 export PATH="/usr/local/opt/python@3.8/bin:$PATH"
 
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+
+. /usr/local/opt/asdf/libexec/asdf.sh
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/t/google-cloud-sdk/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/t/google-cloud-sdk/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/t/google-cloud-sdk/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/t/google-cloud-sdk/google-cloud-sdk/completion.zsh.inc'; fi
+
+export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_SDK_ROOT/emulator
+export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+export ANDROID_HOME=$HOME/Library/Android/sdk
+
+# exa
+if [[ $(command -v exa) ]]; then
+  alias ls='exa --icons --git'
+  alias lt='exa -T -L 3 -a -I "node_modules|.git|.cache" --icons'
+  alias ltl='exa -T -L 3 -a -I "node_modules|.git|.cache" -l --icons'
+fi
+
+# Fig post block. Keep at the bottom of this file.
+[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
