@@ -1,0 +1,228 @@
+// Place your key bindings in this file to override the defaults
+[
+  {
+    "key": "ctrl+n",
+    "command": "explorer.newFile",
+    "when": "explorerViewletFocus"
+  },
+  {
+    "key": "ctrl+shift+n",
+    "command": "explorer.newFolder",
+    "when": "explorerViewletFocus"
+  },
+
+  // ------------------------------ Terminal ------------------------------
+  {
+    "key": "ctrl+`",
+    "command": "workbench.action.terminal.focus"
+  },
+  {
+    "key": "ctrl+`",
+    "command": "workbench.action.focusActiveEditorGroup",
+    "when": "terminalFocus"
+  },
+
+  // ------------------------------------------------------------------
+  // ------------------------------ Tmux ------------------------------
+  // ------------------------------------------------------------------
+  // ------------------------------ Tmux Editor ------------------------------
+  {
+    "key": "ctrl+j h",
+    "command": "workbench.action.focusLeftGroup",
+    "when": "editorFocus"
+  },
+  {
+    "key": "cmd+k cmd+left",
+    "command": "-workbench.action.focusLeftGroup"
+  }, // Group Left Move
+  {
+    "key": "ctrl+j l",
+    "command": "workbench.action.focusRightGroup",
+    "when": "editorFocus"
+  },
+  {
+    "key": "cmd+k cmd+right",
+    "command": "-workbench.action.focusRightGroup"
+  }, // Group Right Move
+  {
+    "key": "ctrl+j j",
+    "command": "workbench.action.focusBelowGroup",
+    "when": "editorFocus"
+  },
+  {
+    "key": "cmd+k cmd+down",
+    "command": "-workbench.action.focusBelowGroup"
+  }, // Group Below Move
+  {
+    "key": "ctrl+j k",
+    "command": "workbench.action.focusAboveGroup",
+    "when": "editorFocus"
+  },
+  {
+    "key": "cmd+k cmd+up",
+    "command": "-workbench.action.focusAboveGroup"
+  }, // Group Above Move
+  {
+    "key": "ctrl+j shift+\\",
+    "command": "workbench.action.splitEditor",
+    "when": "editorFocus"
+  },
+  {
+    "key": "cmd+\\",
+    "command": "-workbench.action.splitEditor"
+  }, // Split Vertical
+  {
+    "key": "ctrl+j -",
+    "command": "workbench.action.splitEditorOrthogonal",
+    "when": "editorFocus"
+  },
+  {
+    "key": "cmd+k cmd+\\",
+    "command": "-workbench.action.splitEditorOrthogonal"
+  }, // Split Horizon
+  {
+    "key": "ctrl+j shift+l",
+    "command": "workbench.action.increaseViewWidth",
+    "when": "editorFocus"
+  },
+  {
+    "key": "ctrl+j shift+m",
+    "command": "workbench.action.decreaseViewWidth",
+    "when": "editorFocus"
+  }, // group width increase or decrease
+  {
+    "key": "ctrl+j shift+j",
+    "command": "workbench.action.increaseViewHeight",
+    "when": "editorFocus"
+  },
+  {
+    "key": "ctrl+j shift+k",
+    "command": "workbench.action.decreaseViewHeight",
+    "when": "editorFocus"
+  }, // group height increase or decrease
+  {
+    "key": "ctrl+j x",
+    "command": "workbench.action.closeActiveEditor",
+    "when": "editorFocus"
+  },
+  {
+    "key": "ctrl+j shift+x",
+    "command": "workbench.action.closeEditorsAndGroup",
+    "when": "editorFocus"
+  }, // delete Editor
+  {
+    "key": "ctrl+j shift+[",
+    "command": "workbench.action.moveEditorToPreviousGroup",
+    "when": "editorFocus"
+  },
+  {
+    "key": "ctrl+j shift+]",
+    "command": "workbench.action.moveEditorToNextGroup",
+    "when": "editorFocus"
+  }, // current editor to (next|previous) group
+  {
+    "key": "ctrl+j n",
+    "command": "workbench.action.focusNextGroup",
+    "when": "editorFocus"
+  },
+  {
+    "key": "ctrl+j p",
+    "command": "workbench.action.focusPreviousGroup",
+    "when": "editorFocus"
+  }, // current editor to (next|previous) group
+  {
+    "key": "ctrl+j [",
+    "command": "workbench.action.terminal.searchWorkspace",
+    "when": "terminalFocus && terminalProcessSupported && terminalTextSelected"
+  },
+  {
+    "key": "ctrl+j [",
+    "command": "workbench.action.findInFiles"
+  },
+  {
+    "key": "ctrl+j [",
+    "command": "workbench.view.search",
+    "when": "workbench.view.search.active && neverMatch =~ /doesNotMatch/"
+  }, // global serach
+  {
+    "key": "ctrl+j z",
+    "command": "workbench.action.maximizeEditor",
+    "when": "editorFocus"
+  }, // maximizeEditor
+  // ------------------------------ Tmux Terminal ------------------------------
+  {
+    "key": "ctrl+j shift+\\",
+    "command": "workbench.action.terminal.split",
+    "when": "terminalFocus"
+  }, // split terminal in same Pane
+  {
+    "key": "ctrl+j -",
+    "command": "workbench.action.terminal.new",
+    "when": "terminalFocus"
+  }, // split terminal as New
+  {
+    "key": "ctrl+j n",
+    "command": "workbench.action.terminal.focusNextPane",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+j p",
+    "command": "workbench.action.terminal.focusPreviousPane",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+j l",
+    "command": "workbench.action.terminal.focusNextPane",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+j h",
+    "command": "workbench.action.terminal.focusPreviousPane",
+    "when": "terminalFocus"
+  }, // focus terminal in same pane
+  {
+    "key": "ctrl+j shift+n",
+    "command": "workbench.action.terminal.focusNext",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+j shift+p",
+    "command": "workbench.action.terminal.focusPrevious",
+    "when": "terminalFocus"
+  }, // focus terminal to next different pane
+  {
+    "key": "ctrl+j x",
+    "command": "workbench.action.terminal.kill",
+    "when": "terminalFocus"
+  }, // delete terminal
+  {
+    "key": "ctrl+j shift+k",
+    "command": "workbench.action.terminal.resizePaneUp",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+j shift+j",
+    "command": "workbench.action.terminal.resizePaneDown",
+    "when": "terminalFocus"
+  }, // change terminalSize
+  {
+    "key": "ctrl+j j",
+    "command": "workbench.action.nextSideBarView",
+    "when": "sideBarFocus"
+  },
+  {
+    "key": "ctrl+j n",
+    "command": "workbench.action.nextSideBarView",
+    "when": "sideBarFocus"
+  },
+  {
+    "key": "ctrl+j k",
+    "command": "workbench.action.previousSideBarView",
+    "when": "sideBarFocus"
+  },
+  {
+    "key": "ctrl+j p",
+    "command": "workbench.action.previousSideBarView",
+    "when": "sideBarFocus"
+  }
+]
