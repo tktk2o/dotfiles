@@ -16,3 +16,9 @@ style = "#ff5555"
 
 # [line_break]
 # disabled = true
+
+[env_var]
+variable = "ENV"
+default = "NO ENV"
+style = "#ff5555" 
+format = " 📟[$env_value]($style) "

@@ -1,15 +1,7 @@
 # Fig pre block. Keep at the top of this file.
 [[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
-export LANG=ja_JP.UTF-8
-
 # git
 fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
-
-autoload -Uz compinit && compinit
-
-setopt auto_cd
-
-setopt complete_in_word
 
 export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache
@@ -30,31 +22,17 @@ alias gpom='git push origin main'
 
 alias v='nvim'
 
-# init
-eval "$(starship init zsh)"
+# alias for development
+alias dev='export ENV=dev'
+alias prod='export ENV=prod'
+alias stg='export ENV=stg'
+alias demo='export ENV=demo'
 
-# Added by serverless binary installer
-export PATH="$HOME/.serverless/bin:$PATH"
-
-# tabtab source for packages
-# uninstall by removing these lines
-[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true
-export PATH="/usr/local/opt/python@3.8/bin:$PATH"
-
-export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-
-. /usr/local/opt/asdf/libexec/asdf.sh
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/t/google-cloud-sdk/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/t/google-cloud-sdk/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/t/google-cloud-sdk/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/t/google-cloud-sdk/google-cloud-sdk/completion.zsh.inc'; fi
-
-export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
-export PATH=$PATH:$ANDROID_SDK_ROOT/emulator
-export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
-export ANDROID_HOME=$HOME/Library/Android/sdk
+# ghq + fzf
+$ fgh() {
+  declare -r REPO_NAME="$(ghq list >/dev/null | fzf-tmux --reverse +m)"
+  [[ -n "${REPO_NAME}" ]] && cd "$(ghq root)/${REPO_NAME}"
+}
 
 # exa
 if [[ $(command -v exa) ]]; then
@@ -63,5 +41,23 @@ if [[ $(command -v exa) ]]; then
   alias ltl='exa -T -L 3 -a -I "node_modules|.git|.cache" -l --icons'
 fi
 
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/takuto_kato/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+# pnpm
+export PNPM_HOME="/Users/takuto_kato/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
+
+# sheldon
+eval "$(sheldon source)"
+
