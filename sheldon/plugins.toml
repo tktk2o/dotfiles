@@ -12,14 +12,13 @@
 
 shell = "zsh"
 
-[plugins.zsh-autosuggestions]
-github = "zsh-users/zsh-autosuggestions"
-
-[plugins.zsh-syntax-highlighting]
-github = "zsh-users/zsh-syntax-highlighting"
-
 [plugins.starship]
 inline = 'eval "$(starship init zsh)"'
+
+[plugins]
+zsh-autosuggestions = { github = "zsh-users/zsh-autosuggestions" }
+zsh-syntax-highlighting = { github = "zsh-users/zsh-syntax-highlighting" }
+zsh-completions = { github = "zsh-users/zsh-completions" }
 
 # For example:
 #
