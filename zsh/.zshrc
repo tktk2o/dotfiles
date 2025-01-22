@@ -31,7 +31,8 @@ $ fgh() {
   [[ -n "${REPO_NAME}" ]] && cd "$(ghq root)/${REPO_NAME}"
 }
 
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
+# mise
+eval "$(mise activate zsh)"
 
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
 export PATH="/Users/takuto_kato/.rd/bin:$PATH"
