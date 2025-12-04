@@ -10,13 +10,7 @@ macOS用の設定ファイル管理リポジトリ
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-インストール後、PATHを設定（`.zprofile`に永続化 + 現在のシェルに即時反映）:
-
-```bash
-echo >> ~/.zprofile
-echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-eval "$(/opt/homebrew/bin/brew shellenv)"
-```
+インストール後、表示される指示に従ってPATHを設定してください。
 
 ### 2. gitをインストール
 
