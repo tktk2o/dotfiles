@@ -10,7 +10,7 @@ macOS用の設定ファイル管理リポジトリ
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-インストール後、表示される指示に従ってPATHを設定:
+インストール後、PATHを設定（`.zprofile`に永続化 + 現在のシェルに即時反映）:
 
 ```bash
 echo >> ~/.zprofile
