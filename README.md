@@ -18,16 +18,20 @@ echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
 ```
 
-### 2. dotfilesをクローン
+### 2. gitとghqをインストール
 
 ```bash
-mkdir -p ~/src/github.com/tktk2o
-cd ~/src/github.com/tktk2o
-git clone https://github.com/tktk2o/dotfiles.git
-cd dotfiles
+brew install git ghq
 ```
 
-### 3. セットアップスクリプトを実行
+### 3. dotfilesをクローン
+
+```bash
+ghq get https://github.com/tktk2o/dotfiles.git
+cd ~/src/github.com/tktk2o/dotfiles
+```
+
+### 4. セットアップスクリプトを実行
 
 ```bash
 ./setup.sh
@@ -50,13 +54,13 @@ cd dotfiles
 | `~/Library/.../Code/User/settings.json` | `vscode/settings.json` |
 | `~/Library/.../Code/User/keybindings.json` | `vscode/keybindings.json` |
 
-### 4. Brewパッケージをインストール
+### 5. 残りのBrewパッケージをインストール
 
 ```bash
 brew bundle --file=~/.Brewfile
 ```
 
-### 5. ターミナルを再起動
+### 6. ターミナルを再起動
 
 設定を反映するためにターミナルを再起動してください。
 
