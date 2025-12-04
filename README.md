@@ -46,6 +46,7 @@ cd dotfiles
 | `~/.config/starship.toml` | `starship/starship.toml` |
 | `~/.config/sheldon/plugins.toml` | `sheldon/plugins.toml` |
 | `~/.config/karabiner/karabiner.json` | `karabiner/karabiner.json` |
+| `~/.config/gh/config.yml` | `gh/config.yml` |
 | `~/Library/.../Code/User/settings.json` | `vscode/settings.json` |
 | `~/Library/.../Code/User/keybindings.json` | `vscode/keybindings.json` |
 
@@ -65,6 +66,7 @@ brew bundle --file=~/.Brewfile
 dotfiles/
 ├── alacritty/       # ターミナルエミュレータ設定
 ├── brew/            # Homebrew Brewfile
+├── gh/              # GitHub CLI設定
 ├── git/             # Git設定
 ├── karabiner/       # キーボードカスタマイズ
 ├── sheldon/         # zshプラグインマネージャ

@@ -43,6 +43,7 @@ create_symlink "$DOTFILES_DIR/alacritty/alacritty.toml" "$HOME/.config/alacritty
 create_symlink "$DOTFILES_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
 create_symlink "$DOTFILES_DIR/sheldon/plugins.toml" "$HOME/.config/sheldon/plugins.toml"
 create_symlink "$DOTFILES_DIR/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
+create_symlink "$DOTFILES_DIR/gh/config.yml" "$HOME/.config/gh/config.yml"
 
 # VSCode (macOS)
 if [ "$(uname)" = "Darwin" ]; then
