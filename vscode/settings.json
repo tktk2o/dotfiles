@@ -30,11 +30,9 @@
   "rust-analyzer.checkOnSave.noDefaultFeatures": true,
   "rust-analyzer.checkOnSave.noFeatures": true,
   "rust-analyzer.checkOnSave.workspace": true,
-  "rust-analyzer.cargo-watch.arguments": [
-    "--all-features"
-  ],
+  "rust-analyzer.cargo-watch.arguments": ["--all-features"],
   "[markdown]": {
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": false
   },
   "github.copilot.enable": {
     "*": true,
@@ -63,9 +61,7 @@
   },
   "window.zoomLevel": 2,
   "terminal.integrated.defaultProfile.osx": "zsh",
-  "cSpell.userWords": [
-    "usecase"
-  ],
+  "cSpell.userWords": ["usecase"],
   "accessibility.signals.lineHasError": {
     "sound": "off"
   },
@@ -105,4 +101,8 @@
   "accessibility.signals.diffLineDeleted": {
     "sound": "off"
   },
+  "makefile.configureOnOpen": true,
+  "python.analysis.extraPaths": [],
+  "editor.tabSize": 2,
+  "github.copilot.nextEditSuggestions.enabled": true
 }

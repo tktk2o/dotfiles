@@ -1,0 +1,9 @@
+[user]
+	name = tktk2o
+	email = tktk2o.dev@gmail.com
+[init]
+	defaultBranch = main
+[ghq]
+	root = ~/src
+[pull]
+	rebase = true
