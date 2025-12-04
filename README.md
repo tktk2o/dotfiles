@@ -18,17 +18,19 @@ echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
 ```
 
-### 2. gitとghqをインストール
+### 2. gitをインストール
 
 ```bash
-brew install git ghq
+brew install git
 ```
 
 ### 3. dotfilesをクローン
 
 ```bash
-ghq get https://github.com/tktk2o/dotfiles.git
-cd ~/src/github.com/tktk2o/dotfiles
+mkdir -p ~/src/github.com/tktk2o
+cd ~/src/github.com/tktk2o
+git clone https://github.com/tktk2o/dotfiles.git
+cd dotfiles
 ```
 
 ### 4. セットアップスクリプトを実行
