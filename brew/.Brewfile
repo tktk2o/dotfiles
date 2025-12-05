@@ -22,7 +22,6 @@ brew "tig"
 brew "tmux"
 
 # Casks
-cask "alacritty"
 cask "aws-vault"
 cask "claude-code"
 cask "font-hack-nerd-font"
