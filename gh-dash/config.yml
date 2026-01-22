@@ -1,0 +1,49 @@
+repoPaths:
+  :owner/:repo: ~/src/github.com/:owner/:repo
+
+prSections:
+  - title: My Pull Requests
+    filters: is:open author:@me
+    limit: 15
+  - title: Review Requests
+    filters: is:open review-requested:@me
+    limit: 15
+
+defaults:
+  preview:
+    open: true
+    width: 60
+  view: prs
+
+keybindings:
+  prs:
+    - key: d
+      command: |-
+        tmux new-window -c {{.RepoPath}} '
+          tmux rename-window {{.RepoName}}#{{.PrNumber}} &&
+          gh pr checkout {{.PrNumber}} &&
+          nvim -c ":DiffviewOpen origin/$(gh pr status --json baseRefName -q '.currentBranch.baseRefName')...{{.HeadRefName}}"
+        '
+    - key: C
+      command: |-
+        tmux new-window -c {{.RepoPath}} '
+          tmux rename-window {{.RepoName}}#{{.PrNumber}} &&
+          gh pr checkout {{.PrNumber}} &&
+          nvim -c ":Octo pr edit {{.PrNumber}}"
+        '
+    - key: o
+      command: gh pr view --web {{.PrNumber}} -R {{.RepoName}}
+    - key: m
+      command: gh pr merge {{.PrNumber}} --squash -R {{.RepoName}}
+    - key: a
+      command: gh pr review {{.PrNumber}} --approve -R {{.RepoName}}
+
+theme:
+  colors:
+    text:
+      primary: "#f8f8f2"
+      secondary: "#6272a4"
+    background:
+      selected: "#44475a"
+    border:
+      primary: "#bd93f9"

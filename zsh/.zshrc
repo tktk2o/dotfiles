@@ -42,5 +42,5 @@ export PATH="/Users/takuto_kato/.rd/bin:$PATH"
 eval "$(sheldon source)"
 export PATH="/opt/homebrew/opt/mysql@8.4/bin:$PATH"
 
-. "$HOME/.local/bin/env"
-export PATH="$HOME/.local/bin:$PATH"
+# . "$HOME/.local/bin/env"
+# export PATH="$HOME/.local/bin:$PATH"

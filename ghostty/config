@@ -1,0 +1,18 @@
+# Ghostty Configuration
+
+# Font settings
+font-family = Monaspace Krypton
+font-size = 18
+
+# Window settings
+fullscreen = true
+window-inherit-working-directory = true
+
+# Scrollback
+scrollback-limit = 100000
+
+# Clipboard
+copy-on-select = clipboard
+
+# Theme
+theme = Dracula

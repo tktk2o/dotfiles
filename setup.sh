@@ -39,11 +39,13 @@ create_symlink "$DOTFILES_DIR/.ideavimrc" "$HOME/.ideavimrc"
 create_symlink "$DOTFILES_DIR/brew/.Brewfile" "$HOME/.Brewfile"
 
 # ~/.config directory
-create_symlink "$DOTFILES_DIR/alacritty/alacritty.toml" "$HOME/.config/alacritty/alacritty.toml"
+create_symlink "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
+create_symlink "$DOTFILES_DIR/ghostty/config" "$HOME/.config/ghostty/config"
 create_symlink "$DOTFILES_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
 create_symlink "$DOTFILES_DIR/sheldon/plugins.toml" "$HOME/.config/sheldon/plugins.toml"
 create_symlink "$DOTFILES_DIR/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
 create_symlink "$DOTFILES_DIR/gh/config.yml" "$HOME/.config/gh/config.yml"
+create_symlink "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.yml"
 
 # VSCode (macOS)
 if [ "$(uname)" = "Darwin" ]; then
@@ -52,10 +54,23 @@ if [ "$(uname)" = "Darwin" ]; then
     create_symlink "$DOTFILES_DIR/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
 fi
 
+# GitHub CLI extensions
+if command -v gh &> /dev/null; then
+    if ! gh extension list | grep -q "dlvhdr/gh-dash"; then
+        echo "Installing gh-dash extension..."
+        gh extension install dlvhdr/gh-dash
+    else
+        echo "gh-dash already installed"
+    fi
+else
+    echo "Note: gh not found. Install gh first, then run: gh extension install dlvhdr/gh-dash"
+fi
+
 echo ""
 echo "Done! Symlinks created successfully."
 echo ""
 echo "Next steps:"
 echo "  1. Install Homebrew: /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
 echo "  2. Install packages: brew bundle --file=~/.Brewfile"
-echo "  3. Restart your terminal"
+echo "  3. Install gh extensions: gh extension install dlvhdr/gh-dash"
+echo "  4. Restart your terminal"
