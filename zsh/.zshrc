@@ -1,4 +1,4 @@
-# git
+# git completion
 fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
 
 export XDG_CONFIG_HOME=$HOME/.config
@@ -7,16 +7,6 @@ export XDG_CACHE_HOME=$HOME/.cache
 # alias
 alias ls='ls -G'
 alias la='ls -A'
-
-alias g='git'
-alias gco='git checkout'
-alias ga='git add ./'
-alias gb='git branch'
-alias gs='git status'
-alias gc='git commit'
-alias gr='git reset --hard HEAD'
-alias gpum='git pull upstream main'
-alias gpom='git push origin main'
 
 # alias for development
 alias dev='export ENV=dev'

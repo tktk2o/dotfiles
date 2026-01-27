@@ -15,13 +15,13 @@ shell = "zsh"
 [plugins.starship]
 inline = 'eval "$(starship init zsh)"'
 
+# Local plugins
+[plugins.git-aliases]
+local = "~/.config/zsh/plugins"
+use = ["git.zsh"]
+
 [plugins]
 zsh-autosuggestions = { github = "zsh-users/zsh-autosuggestions" }
 zsh-syntax-highlighting = { github = "zsh-users/zsh-syntax-highlighting" }
 zsh-completions = { github = "zsh-users/zsh-completions" }
-
-# For example:
-#
-# [plugins.base16]
-# github = "chriskempson/base16-shell"
 

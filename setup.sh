@@ -39,6 +39,7 @@ create_symlink "$DOTFILES_DIR/.ideavimrc" "$HOME/.ideavimrc"
 create_symlink "$DOTFILES_DIR/brew/.Brewfile" "$HOME/.Brewfile"
 
 # ~/.config directory
+create_symlink "$DOTFILES_DIR/zsh/plugins" "$HOME/.config/zsh/plugins"
 create_symlink "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
 create_symlink "$DOTFILES_DIR/ghostty/config" "$HOME/.config/ghostty/config"
 create_symlink "$DOTFILES_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
