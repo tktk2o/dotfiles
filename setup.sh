@@ -47,6 +47,11 @@ create_symlink "$DOTFILES_DIR/karabiner/karabiner.json" "$HOME/.config/karabiner
 create_symlink "$DOTFILES_DIR/gh/config.yml" "$HOME/.config/gh/config.yml"
 create_symlink "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.yml"
 
+# Claude Code
+create_symlink "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
+create_symlink "$DOTFILES_DIR/claude/hooks" "$HOME/.claude/hooks"
+create_symlink "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
+
 # VSCode (macOS)
 if [ "$(uname)" = "Darwin" ]; then
     VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
