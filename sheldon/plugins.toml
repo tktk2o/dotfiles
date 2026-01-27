@@ -12,16 +12,43 @@
 
 shell = "zsh"
 
+# Custom templates for loading order control
+[templates]
+defer = "{{ hooks?.pre | nl }}{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}{{ hooks?.post | nl }}"
+
+# Prompt (load first)
 [plugins.starship]
 inline = 'eval "$(starship init zsh)"'
+
+# Completion system initialization (must be before fzf-tab)
+[plugins.compinit]
+inline = 'autoload -Uz compinit && compinit'
+
+# fzf-tab (must be after compinit, before other plugins)
+[plugins.fzf-tab]
+github = "Aloxaf/fzf-tab"
+
+# Deferred plugins (load after prompt for faster startup)
+[plugins.zsh-defer]
+github = "romkatv/zsh-defer"
+
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+apply = ["defer"]
+
+[plugins.zsh-syntax-highlighting]
+github = "zsh-users/zsh-syntax-highlighting"
+apply = ["defer"]
+
+[plugins.zsh-completions]
+github = "zsh-users/zsh-completions"
+apply = ["defer"]
+
+[plugins.zsh-z]
+github = "agkozak/zsh-z"
+apply = ["defer"]
 
 # Local plugins
 [plugins.git-aliases]
 local = "~/.config/zsh/plugins"
 use = ["git.zsh"]
-
-[plugins]
-zsh-autosuggestions = { github = "zsh-users/zsh-autosuggestions" }
-zsh-syntax-highlighting = { github = "zsh-users/zsh-syntax-highlighting" }
-zsh-completions = { github = "zsh-users/zsh-completions" }
-
