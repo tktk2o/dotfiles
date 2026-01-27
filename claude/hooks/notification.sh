@@ -1,21 +1,5 @@
 #!/bin/bash
+# Claude Code Notification Hook
+# Triggered when Claude Code is waiting for user permission
 
-# Claude Code notification hook
-# Sends macOS notification when Claude needs input
-
-read -r notification_data
-
-notification_type=$(echo "$notification_data" | jq -r '.notification_type // empty')
-message=$(echo "$notification_data" | jq -r '.message // empty')
-
-case "$notification_type" in
-  permission_prompt)
-    osascript -e "display notification \"$message\" with title \"Claude Code\""
-    afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
-    ;;
-  idle_prompt)
-    osascript -e "display notification \"Awaiting your input\" with title \"Claude Code - Idle\""
-    ;;
-esac
-
-exit 0
+osascript -e 'display notification "Claude Codeが許可を求めています" with title "Claude Code" subtitle "確認待ち" sound name "Glass"'

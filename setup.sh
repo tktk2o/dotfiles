@@ -49,6 +49,7 @@ create_symlink "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.
 
 # Claude Code
 create_symlink "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
+create_symlink "$DOTFILES_DIR/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 create_symlink "$DOTFILES_DIR/claude/hooks" "$HOME/.claude/hooks"
 create_symlink "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
 

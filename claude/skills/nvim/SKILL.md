@@ -22,10 +22,7 @@ nvim/
 │   ├── lazy.lua                # LazyVim + Extras設定
 │   ├── options.lua             # vim.opt設定
 │   └── keymaps.lua             # カスタムキーマップ
-└── lua/plugins/
-    ├── colorscheme.lua         # Dracula
-    ├── neo-tree.lua            # ファイラー
-    └── git-review.lua          # octo.nvim + diffview.nvim
+└── lua/plugins/                # プラグイン設定（*.lua を参照）
 ```
 
 ## 回答時の注意
