@@ -1,4 +1,5 @@
 # CLI tools
+brew "neovim"
 brew "awscli"
 brew "docker"
 brew "docker-compose"

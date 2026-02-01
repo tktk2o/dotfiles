@@ -35,7 +35,6 @@ create_symlink() {
 create_symlink "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
 create_symlink "$DOTFILES_DIR/tmux/.tmux.conf" "$HOME/.tmux.conf"
 create_symlink "$DOTFILES_DIR/git/.gitconfig" "$HOME/.gitconfig"
-create_symlink "$DOTFILES_DIR/.ideavimrc" "$HOME/.ideavimrc"
 create_symlink "$DOTFILES_DIR/brew/.Brewfile" "$HOME/.Brewfile"
 
 # ~/.config directory
