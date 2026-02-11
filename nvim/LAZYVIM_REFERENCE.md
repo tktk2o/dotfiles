@@ -208,8 +208,8 @@ return {
 ## このリポジトリの設定
 
 ### カスタムオプション (`lua/config/options.lua`)
-- `tabstop = 4`
-- `shiftwidth = 4`
+- `tabstop = 2`
+- `shiftwidth = 2`
 
 ### カラースキーム
 - Dracula (`lua/plugins/colorscheme.lua`)

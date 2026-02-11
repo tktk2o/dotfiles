@@ -26,7 +26,6 @@ cd dotfiles
 2. **シンボリックリンク**: 設定ファイルをホームディレクトリにリンク
 3. **Brewパッケージ**: `~/.Brewfile`からすべてのパッケージをインストール
 4. **gh拡張機能**: gh-dashをインストール
-5. **launchd**: 自動更新ジョブを登録（平日09:30にclaude-code更新）
 
 ### オプション
 
@@ -58,16 +57,14 @@ cd dotfiles
 | `~/.claude/settings.json` | `claude/settings.json` |
 | `~/.claude/hooks` | `claude/hooks/` |
 | `~/.claude/skills` | `claude/skills/` |
-| `~/scripts/update-claude-code.sh` | `brew/scripts/update-claude-code.sh` |
 | `~/Library/.../Code/User/settings.json` | `vscode/settings.json` |
 | `~/Library/.../Code/User/keybindings.json` | `vscode/keybindings.json` |
-| `~/Library/LaunchAgents/com.user.update-claude-code.plist` | `brew/scripts/com.user.update-claude-code.plist` |
 
 ## ディレクトリ構成
 
 ```
 dotfiles/
-├── brew/            # Homebrew Brewfile + 自動更新スクリプト
+├── brew/            # Homebrew Brewfile
 ├── claude/          # Claude Code設定 (hooks, skills)
 ├── gh/              # GitHub CLI設定
 ├── gh-dash/         # gh-dash設定
@@ -88,6 +85,6 @@ dotfiles/
 - **シェル**: zsh + sheldon (プラグイン管理) + starship (プロンプト)
 - **ターミナル**: Ghostty
 - **エディタ**: Neovim (LazyVim) / VSCode
-- **マルチプレクサ**: tmux (prefix: Ctrl+J)
+- **マルチプレクサ**: tmux (prefix: Ctrl+A)
 - **キーボード**: Karabiner-Elements
-- **AI**: Claude Code（平日09:30に自動更新）
+- **AI**: Claude Code

@@ -1,3 +1,10 @@
+# OPENSPEC:START
+# OpenSpec shell completions configuration
+fpath=("/Users/takuto_kato/.zsh/completions" $fpath)
+autoload -Uz compinit
+compinit
+# OPENSPEC:END
+
 # git
 fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
 
@@ -34,4 +41,4 @@ eval "$(sheldon source)"
 export PATH="/opt/homebrew/opt/mysql@8.4/bin:$PATH"
 
 # . "$HOME/.local/bin/env"
-# export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"

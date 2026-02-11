@@ -114,12 +114,6 @@ create_symlinks() {
         create_symlink "$DOTFILES_DIR/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
     fi
 
-    # Auto-update scripts
-    create_symlink "$DOTFILES_DIR/brew/scripts/update-claude-code.sh" "$HOME/scripts/update-claude-code.sh"
-    if [ "$(uname)" = "Darwin" ]; then
-        create_symlink "$DOTFILES_DIR/brew/scripts/com.user.update-claude-code.plist" "$HOME/Library/LaunchAgents/com.user.update-claude-code.plist"
-    fi
-
     echo "[Symlinks] Done."
 }
 
@@ -160,24 +154,8 @@ setup_gh_extensions() {
     fi
 }
 
-setup_launchd() {
-    if [ "$(uname)" != "Darwin" ]; then
-        return 0
-    fi
-
-    echo ""
-    echo "[launchd] Registering scheduled jobs..."
-
-    local plist="$HOME/Library/LaunchAgents/com.user.update-claude-code.plist"
-    if [ -L "$plist" ] || [ -f "$plist" ]; then
-        launchctl unload "$plist" 2>/dev/null || true
-        launchctl load "$plist"
-        echo "[launchd] Registered: com.user.update-claude-code (weekdays 09:30)"
-    fi
-}
-
 # ===========================================
-# Phase 5: Summary
+# Phase 4: Summary
 # ===========================================
 
 print_summary() {
@@ -188,6 +166,15 @@ print_summary() {
     echo ""
     echo "Restart your terminal to apply changes."
     echo ""
+
+    # Raycast
+    if [ -d "$DOTFILES_DIR/raycast" ] && ls "$DOTFILES_DIR/raycast/"*.rayconfig &> /dev/null; then
+        echo "Raycast: Import settings manually:"
+        echo "  1. Open Raycast"
+        echo "  2. Run 'Import Settings & Data' command"
+        echo "  3. Select: $DOTFILES_DIR/raycast/*.rayconfig"
+        echo ""
+    fi
 
     if ! command -v brew &> /dev/null; then
         echo "Note: Homebrew was not installed."
@@ -221,9 +208,8 @@ main() {
 
     # Phase 4: Additional Setup
     setup_gh_extensions
-    setup_launchd
 
-    # Phase 5: Summary
+    # Summary
     print_summary
 }
 
