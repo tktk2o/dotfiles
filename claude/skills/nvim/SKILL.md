@@ -1,32 +1,38 @@
 ---
 name: nvim
-description: Neovim/LazyVim configuration assistant for this repository
+description: >
+  Neovim/LazyVim configuration assistant.
+  Use when: adding/editing plugins in nvim/lua/plugins/,
+  modifying keymaps or options, troubleshooting LazyVim config.
+allowed-tools: Read, Edit, Write, Glob, Grep, WebSearch, WebFetch
 ---
 
 # Neovim/LazyVim Configuration Assistant
 
-このリポジトリのNeovim (LazyVim) 設定に関する質問に回答します。
+## 現在のプラグイン一覧
+!`ls nvim/lua/plugins/`
 
-## 手順
+## 必須ルール
 
-1. **まず `nvim/LAZYVIM_REFERENCE.md` を読む** - LazyVimの規約とこのリポジトリの設定パターン
-2. **次に該当する `lua/plugins/*.lua` を確認** - 既存のプラグイン設定
-3. **上記で解決しない場合のみWeb検索** - 新プラグインの追加、詳細なAPI、エラー対応
+- プラグイン追加は `nvim/lua/plugins/<name>.lua` に1ファイル1プラグイン
+- フォーマット: `return { "author/plugin", opts = {} }`
+- `lazy = false` は明示的に必要な場合のみ（smart-splits等）
+- キーマップは `keys = {}` で遅延読み込みを優先
+- カラースキームは Dracula で統一
 
-## ファイル構成
+## プラグイン追加テンプレート
 
+```lua
+return {
+  "author/plugin-name",
+  keys = {
+    { "<leader>xx", "<cmd>Command<cr>", desc = "Description" },
+  },
+  opts = {},
+}
 ```
-nvim/
-├── init.lua                    # エントリーポイント
-├── lua/config/
-│   ├── lazy.lua                # LazyVim + Extras設定
-│   ├── options.lua             # vim.opt設定
-│   └── keymaps.lua             # カスタムキーマップ
-└── lua/plugins/                # プラグイン設定（*.lua を参照）
-```
 
-## 回答時の注意
+## 参照ドキュメント
 
-- LazyVimの規約に従った設定を提案する
-- 既存の設定スタイル（opts, keys, cmd パターン）に合わせる
-- プラグイン追加時は `lua/plugins/` に新ファイルを作成
+詳細なキーマップ一覧、Extras設定、トラブルシューティングは
+[LAZYVIM_REFERENCE.md](../../nvim/LAZYVIM_REFERENCE.md) を参照。
