@@ -12,8 +12,11 @@ return {
     })
   end,
   opts = function(_, opts)
+    opts.close_if_last_window = true
+
     -- filesystem settings
     opts.filesystem = opts.filesystem or {}
+    opts.filesystem.use_libuv_file_watcher = true
     opts.filesystem.filtered_items = vim.tbl_deep_extend("force",
       opts.filesystem.filtered_items or {},
       {
