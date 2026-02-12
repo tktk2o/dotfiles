@@ -1,9 +1,9 @@
 -- 日報（daily report）即時生成
--- テンプレート: ~/docs/diary/template/template.md
--- 生成先:      ~/docs/diary/YYYY-MM-DD.md
+-- テンプレート: ~/docs/diary/raw/template/template.md
+-- 生成先:      ~/docs/diary/raw/YYYY-MM-DD-raw.md
 
-local template_path = vim.fn.expand("~/docs/diary/template/template.md")
-local diary_dir = vim.fn.expand("~/docs/diary")
+local template_path = vim.fn.expand("~/docs/diary/raw/template/template.md")
+local raw_dir = vim.fn.expand("~/docs/diary/raw")
 
 local weekdays = { "日", "月", "火", "水", "木", "金", "土" }
 
@@ -12,7 +12,7 @@ local function open_diary(offset)
   local time = os.time() + offset * 86400
   local date = os.date("%Y-%m-%d", time)
   local weekday = weekdays[tonumber(os.date("%w", time)) + 1]
-  local filename = diary_dir .. "/" .. date .. ".md"
+  local filename = raw_dir .. "/" .. date .. "-raw.md"
 
   if vim.fn.filereadable(filename) == 1 then
     vim.cmd.edit(filename)
@@ -28,7 +28,7 @@ local function open_diary(offset)
     end
   end
 
-  vim.fn.mkdir(diary_dir, "p")
+  vim.fn.mkdir(raw_dir, "p")
   vim.fn.writefile(lines, filename)
   vim.cmd.edit(filename)
 end

@@ -29,7 +29,7 @@ function fgh() {
   [[ -n "${REPO_NAME}" ]] && cd "$(ghq root)/${REPO_NAME}"
 }
 
-# tmux dev layout: nvim(left) + claude(top-right) + zsh(bottom-right)
+# tmux dev layout: nvim(left) + claude(right)
 function dev() {
   if [[ -z "$TMUX" ]]; then
     echo "dev: tmux session required"
@@ -42,7 +42,6 @@ function dev() {
 
   tmux new-window -n "$name" -c "$dir" "nvim"
   tmux split-window -h -c "$dir" "claude"
-  tmux split-window -v -c "$dir"
   tmux select-pane -t 0
 }
 
