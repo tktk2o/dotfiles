@@ -1,12 +1,10 @@
 # OPENSPEC:START
 # OpenSpec shell completions configuration
 fpath=("/Users/takuto_kato/.zsh/completions" $fpath)
-autoload -Uz compinit
-compinit
 # OPENSPEC:END
 
 # git
-fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
+fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
 
 export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache

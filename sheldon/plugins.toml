@@ -22,7 +22,7 @@ inline = 'eval "$(starship init zsh)"'
 
 # Completion system initialization (must be before fzf-tab)
 [plugins.compinit]
-inline = 'autoload -Uz compinit && compinit'
+inline = 'autoload -Uz compinit && if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then compinit; else compinit -C; fi'
 
 # fzf-tab (must be after compinit, before other plugins)
 [plugins.fzf-tab]
