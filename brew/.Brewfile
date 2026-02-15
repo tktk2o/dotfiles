@@ -23,6 +23,7 @@ brew "sheldon"
 brew "starship"
 brew "tig"
 brew "tmux"
+brew "uv"
 
 # Casks
 cask "aws-vault"

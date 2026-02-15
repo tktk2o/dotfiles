@@ -3,12 +3,12 @@ name: calendar
 description: >
   Google Calendarから予定を取得して日報に追加する。
   Use when: 「カレンダー取得」「今日の予定」「明日の予定」「日報にMTG追加」など。
-allowed-tools: Read, Write, Edit, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_click, mcp__plugin_playwright_playwright__browser_close
+allowed-tools: Read, Write, Edit, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__computer
 ---
 
 # Google Calendar 予定取得 Skill
 
-Playwrightでカレンダーにアクセスし、予定を取得して日報形式で出力する。
+Claude in Chromeでカレンダーにアクセスし、予定を取得して日報形式で出力する。
 
 ## 使い方
 
@@ -18,22 +18,26 @@ Playwrightでカレンダーにアクセスし、予定を取得して日報形�
 
 ## 手順
 
-1. カレンダーURLにアクセス
+1. `tabs_context_mcp` で現在のタブ状況を確認
+
+2. `tabs_create_mcp` で新しいタブを作成
+
+3. `navigate` でカレンダーURLにアクセス
    - ベースURL: `https://calendar.google.com/calendar/u/0/r`
    - 日付指定: `/day/YYYY/M/D` を付加
 
-2. browser_snapshot でページを取得
+4. `read_page` でページ内容を取得
 
-3. 予定を抽出してフォーマット:
+5. 予定を抽出してフォーマット:
    ```
    - HH:MM-HH:MM MTG名
    - HH:MM-HH:MM MTG名
    ```
 
-4. 必要に応じて日報の raw ファイルに追記
+6. 必要に応じて日報の raw ファイルに追記
 
 ## 注意事項
 
-- Googleにログイン済みの状態が必要
+- Googleにログイン済みのChromeが必要
 - ログインしていない場合はユーザーに通知する
-- 取得後はブラウザを閉じる
+- タブはそのまま残る（ユーザーが確認可能）

@@ -17,3 +17,15 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- プロジェクトローカル設定を有効化 (.nvim.lua)
 opt.exrc = true
+
+-- 外部変更の自動検知（Claude Code連携用）
+vim.opt.autoread = true
+
+-- BufEnterでもchecktime（LazyVimはFocusGainedのみ）
+vim.api.nvim_create_autocmd("BufEnter", {
+  callback = function()
+    if vim.bo.buftype == "" then
+      vim.cmd("checktime")
+    end
+  end,
+})
