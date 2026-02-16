@@ -29,3 +29,10 @@ vim.api.nvim_create_autocmd("BufEnter", {
     end
   end,
 })
+
+-- VSCode風: フォーカスを失ったら自動保存
+vim.api.nvim_create_autocmd({ "FocusLost" }, {
+  callback = function()
+    vim.cmd("silent! wa")
+  end,
+})
