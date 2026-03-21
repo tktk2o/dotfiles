@@ -51,4 +51,4 @@ apply = ["defer"]
 # Local plugins
 [plugins.git-aliases]
 local = "~/.config/zsh/plugins"
-use = ["git.zsh"]
+use = ["*.zsh"]
