@@ -1,11 +1,9 @@
 return {
   "nvim-neo-tree/neo-tree.nvim",
   init = function()
-    -- 起動時に Neo-tree を自動で開く
     vim.api.nvim_create_autocmd("VimEnter", {
       callback = function()
         if vim.fn.argc() == 0 then
-          -- 引数なしで起動した場合のみ開く
           vim.cmd("Neotree show")
         end
       end,

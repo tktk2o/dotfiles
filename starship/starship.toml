@@ -1,24 +1,68 @@
 # Don't print a new line at the start of the prompt
 add_newline = false
 
+# Global timeout: fail fast
+command_timeout = 300
+
 [directory]
 style = "fg:#8be9fd"
 
 [git_branch]
-style = "#ff79c6"	
+style = "#ff79c6"
 
 [git_commit]
-disabled = false
-style = "#bd93f9"
+disabled = true
 
 [git_status]
 style = "#ff5555"
+# Only check for simple indicators (skip expensive operations)
+ignore_submodules = true
 
-# [line_break]
-# disabled = true
+# Disable slow/unused modules
+[package]
+disabled = true
 
-[env_var]
-variable = "ENV"
-default = "NO ENV"
-style = "#ff5555" 
-format = " 📟[$env_value]($style) "
+[nodejs]
+disabled = true
+
+[python]
+disabled = true
+
+[ruby]
+disabled = true
+
+[rust]
+disabled = true
+
+[golang]
+disabled = true
+
+[java]
+disabled = true
+
+[php]
+disabled = true
+
+[docker_context]
+disabled = true
+
+[aws]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[terraform]
+disabled = true
+
+[vagrant]
+disabled = true
+
+[helm]
+disabled = true
+
+[cmake]
+disabled = true
+
+[dotnet]
+disabled = true

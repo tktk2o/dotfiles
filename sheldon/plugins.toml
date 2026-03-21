@@ -16,9 +16,17 @@ shell = "zsh"
 [templates]
 defer = "{{ hooks?.pre | nl }}{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}{{ hooks?.post | nl }}"
 
-# Prompt (load first)
+# Prompt (cached for speed)
 [plugins.starship]
-inline = 'eval "$(starship init zsh)"'
+inline = '''
+_starship_cache="${XDG_CACHE_HOME:-$HOME/.cache}/starship/init.zsh"
+if [[ ! -r "$_starship_cache" || "$(which starship)" -nt "$_starship_cache" ]]; then
+  mkdir -p "${_starship_cache:h}"
+  starship init zsh > "$_starship_cache"
+fi
+source "$_starship_cache"
+unset _starship_cache
+'''
 
 # Completion system initialization (must be before fzf-tab)
 [plugins.compinit]
@@ -48,7 +56,8 @@ apply = ["defer"]
 github = "agkozak/zsh-z"
 apply = ["defer"]
 
-# Local plugins
+# Local plugins (deferred)
 [plugins.git-aliases]
 local = "~/.config/zsh/plugins"
 use = ["*.zsh"]
+apply = ["defer"]

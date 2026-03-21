@@ -1,29 +1,24 @@
-# OPENSPEC:START
-# OpenSpec shell completions configuration
-fpath=("/Users/takuto_kato/.zsh/completions" $fpath)
-# OPENSPEC:END
-
-# git
-fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+# fpath (completions)
+fpath=("/Users/takuto_kato/.zsh/completions" /opt/homebrew/share/zsh/site-functions $fpath)
 
 export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache
 
-# claude
+# PATH (consolidated)
+export PATH="$HOME/.local/bin:/Users/takuto_kato/.rd/bin:/opt/homebrew/opt/mysql@8.4/bin:$PATH"
+
+# aliases
 alias c='claude'
-# nvim
 alias nv='nvim'
 
-# mise
-eval "$(mise activate zsh)"
+# sheldon (cached)
+_sheldon_cache="$XDG_CACHE_HOME/sheldon/source.zsh"
+if [[ ! -r "$_sheldon_cache" || "$XDG_CONFIG_HOME/sheldon/plugins.toml" -nt "$_sheldon_cache" ]]; then
+  mkdir -p "${_sheldon_cache:h}"
+  sheldon source > "$_sheldon_cache"
+fi
+source "$_sheldon_cache"
+unset _sheldon_cache
 
-### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/takuto_kato/.rd/bin:$PATH"
-### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
-
-# sheldon
-eval "$(sheldon source)"
-export PATH="/opt/homebrew/opt/mysql@8.4/bin:$PATH"
-
-# . "$HOME/.local/bin/env"
-export PATH="$HOME/.local/bin:$PATH"
+# mise (deferred)
+zsh-defer eval "$(mise activate zsh)"
