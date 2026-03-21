@@ -10,11 +10,11 @@ allowed-tools: Read, Edit, Write, Glob, Grep, WebSearch, WebFetch
 # Neovim/LazyVim Configuration Assistant
 
 ## 現在のプラグイン一覧
-!`ls nvim/lua/plugins/`
+!`ls ~/.config/nvim/lua/plugins/`
 
 ## 必須ルール
 
-- プラグイン追加は `nvim/lua/plugins/<name>.lua` に1ファイル1プラグイン
+- プラグイン追加は `~/.config/nvim/lua/plugins/<name>.lua` に1ファイル1プラグイン
 - フォーマット: `return { "author/plugin", opts = {} }`
 - `lazy = false` は明示的に必要な場合のみ（smart-splits等）
 - キーマップは `keys = {}` で遅延読み込みを優先
@@ -35,4 +35,4 @@ return {
 ## 参照ドキュメント
 
 詳細なキーマップ一覧、Extras設定、トラブルシューティングは
-[LAZYVIM_REFERENCE.md](../../nvim/LAZYVIM_REFERENCE.md) を参照。
+[LAZYVIM_REFERENCE.md](~/.config/nvim/LAZYVIM_REFERENCE.md) を参照。

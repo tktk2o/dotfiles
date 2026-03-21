@@ -3,6 +3,10 @@
 
 local opt = vim.opt
 
+-- 行番号: 現在行は絶対行、それ以外は相対行
+opt.number = true
+opt.relativenumber = true
+
 -- インデント（LazyVimデフォルトは2）
 opt.tabstop = 2
 opt.shiftwidth = 2
