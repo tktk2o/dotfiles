@@ -1,4 +1,14 @@
-# claude code pane switcher & manager
+# fcl - Claude Code pane switcher
+#
+# Usage: fcl
+#   Lists all Claude Code panes across tmux sessions with fzf.
+#   Press Enter to switch to the selected pane.
+#
+# Display:
+#   🔄 Running  📋 Plan mode  ✏️  Accepting edits  ⏸  Idle
+#   📁 Project name  🌿 Branch  🧠 Context usage  ⏱ Elapsed time
+#
+# Requires: tmux, fzf
 
 function _fcl_list() {
   tmux list-panes -a -F '#{pane_id} #{pane_pid}' \
@@ -41,54 +51,20 @@ function _fcl_list() {
     done
 }
 
-function _fcl_send() {
-  local prompt
-  printf "prompt> "
-  read -r prompt
-  [[ -z "$prompt" ]] && return
-  for pid in "$@"; do
-    tmux send-keys -t "$pid" "$prompt" Enter
-  done
-  echo "Sent to $# pane(s). Press Enter to return."
-  read -r
-}
-
-function _fcl_log() {
-  local dir="$HOME/claude-logs"
-  mkdir -p "$dir"
-  for pid in "$@"; do
-    local f="$dir/$(date +%Y%m%d-%H%M%S)-${pid}.log"
-    tmux capture-pane -t "$pid" -p -S - > "$f"
-    echo "Saved: $f"
-  done
-  echo "Press Enter to return."
-  read -r
-}
-
 function fcl() {
   if [[ -z "$TMUX" ]]; then
     echo "fcl: tmux session required"
     return 1
   fi
-
-  local src="$HOME/.config/zsh/plugins/fcl.zsh"
-  local reload="reload(zsh -c 'source $src && _fcl_list')"
-
-  local result
-  result=$(
+  local selected
+  selected=$(
     _fcl_list \
-    | fzf-tmux --reverse --multi --with-nth=2.. --delimiter=$'\t' --ansi \
-        --header='enter:switch │ tab:select │ ctrl-s:send │ ctrl-k:compact │ ctrl-x:exit │ ctrl-l:log │ ctrl-r:refresh' \
+    | fzf-tmux --reverse +m --with-nth=2.. --delimiter=$'\t' \
+        --header='Claude Code panes' --ansi \
         --preview='tmux capture-pane -t {1} -p -S -20 2>/dev/null' \
-        --preview-window='right:50%:wrap' \
-        --bind "ctrl-s:execute(zsh -c 'source $src && _fcl_send {+1}')" \
-        --bind "ctrl-k:execute-silent(for pid in {+1}; do tmux send-keys -t \"\$pid\" /compact Enter; done)+$reload" \
-        --bind "ctrl-x:execute-silent(for pid in {+1}; do tmux send-keys -t \"\$pid\" /exit Enter; done)+$reload" \
-        --bind "ctrl-l:execute(zsh -c 'source $src && _fcl_log {+1}')" \
-        --bind "ctrl-r:$reload"
+        --preview-window='right:50%:wrap'
   )
-  [[ -z "$result" ]] && return
-
-  local pane_id=$(cut -f1 <<< "$result")
+  [[ -z "$selected" ]] && return
+  local pane_id=$(cut -f1 <<< "$selected")
   tmux switch-client -t "$pane_id" && tmux select-pane -t "$pane_id"
 }
