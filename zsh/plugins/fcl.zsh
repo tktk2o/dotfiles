@@ -13,8 +13,14 @@
 function _fcl_list() {
   tmux list-panes -a -F '#{pane_id} #{pane_pid}' \
   | while read -r pane_id pid; do
-      ps -o args= -p "$pid" 2>/dev/null | command grep -q '^claude' || continue
-      local raw_etime=$(ps -o etime= -p "$pid" 2>/dev/null | tr -d ' ')
+      local claude_pid=""
+      if ps -o args= -p "$pid" 2>/dev/null | command grep -q '^claude'; then
+        claude_pid=$pid
+      else
+        claude_pid=$(pgrep -P "$pid" -x claude 2>/dev/null | head -1)
+        [[ -z "$claude_pid" ]] && continue
+      fi
+      local raw_etime=$(ps -o etime= -p "$claude_pid" 2>/dev/null | tr -d ' ')
       local elapsed=""
       if [[ "$raw_etime" == *-* ]]; then
         elapsed="${raw_etime%%-*}d${${raw_etime#*-}%%:*}h"
