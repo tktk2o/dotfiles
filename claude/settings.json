@@ -29,7 +29,7 @@
   "hooks": {
     "Notification": [
       {
-        "matcher": ".*",
+        "matcher": "permission_prompt",
         "hooks": [
           {
             "type": "command",
