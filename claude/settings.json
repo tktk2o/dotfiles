@@ -88,5 +88,10 @@
     }
   },
   "language": "japanese",
-  "autoUpdatesChannel": "latest"
+  "autoUpdatesChannel": "latest",
+  "voiceEnabled": true,
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  }
 }
