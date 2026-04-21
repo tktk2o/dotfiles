@@ -20,8 +20,14 @@ fi
 source "$_sheldon_cache"
 unset _sheldon_cache
 
-# mise (deferred)
-zsh-defer eval "$(mise activate zsh)"
+# mise (deferred if possible)
+if command -v mise &>/dev/null; then
+  if (( $+functions[zsh-defer] )); then
+    zsh-defer eval "$(mise activate zsh)"
+  else
+    eval "$(mise activate zsh)"
+  fi
+fi
 
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
 export PATH="/Users/takuto_kato/.rd/bin:$PATH"
