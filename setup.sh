@@ -137,6 +137,18 @@ run_brew_bundle() {
 # Phase 4: Additional Setup
 # ===========================================
 
+setup_sheldon() {
+    if ! command -v sheldon &> /dev/null; then
+        echo "[sheldon] Skipped (sheldon not installed)."
+        return 0
+    fi
+
+    echo ""
+    echo "[sheldon] Cloning plugins..."
+    sheldon lock --update
+    echo "[sheldon] Done."
+}
+
 setup_gh_extensions() {
     if ! command -v gh &> /dev/null; then
         echo "[gh extensions] Skipped (gh not installed)."
@@ -207,6 +219,7 @@ main() {
     fi
 
     # Phase 4: Additional Setup
+    setup_sheldon
     setup_gh_extensions
 
     # Summary
