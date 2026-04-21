@@ -187,7 +187,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/takuto_kato/.claude/hooks/rtk-rewrite.sh"
+            "command": "rtk hook claude"
           }
         ]
       }
@@ -210,6 +210,12 @@
       "source": {
         "source": "github",
         "repo": "kkhs/ax-toolkit"
+      }
+    },
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
       }
     }
   },

@@ -75,3 +75,38 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 2. Add config file(s) to the subdirectory
 3. Add symlink command to `setup.sh`
 4. If installable via Homebrew, add to `brew/.Brewfile`
+
+## RTK (Bash-output token filter for Claude Code)
+
+`rtk` (installed via `brew/.Brewfile`) compacts Bash tool output before it reaches the model. It is wired through the `PreToolUse` hook in `claude/settings.json` as the command `rtk hook claude` — no custom shim script is used (earlier versions of this repo had a `claude/hooks/rtk-rewrite.sh` wrapper; that has been removed).
+
+### Layout
+
+- **Binary**: `brew "rtk"` in `brew/.Brewfile`
+- **Hook registration**: `claude/settings.json` → `hooks.PreToolUse[].hooks[].command = "rtk hook claude"`
+- **Project filters**: `.rtk/filters.toml` (committed, currently just the stub template)
+
+### New-machine migration
+
+After `./setup.sh` + `brew bundle`, project filters must be trusted once per machine (rtk refuses to apply untrusted project filters for security):
+
+```bash
+cd ~/src/github.com/tktk2o/dotfiles && rtk trust
+```
+
+`setup.sh` prints this reminder when filters are not yet trusted; it cannot run the command automatically because `rtk trust` is interactive by design.
+
+### Health check (for future Claude sessions)
+
+If any of these fail, rtk is misconfigured:
+
+```bash
+command -v rtk                                  # binary is on PATH
+rtk trust --list | grep dotfiles/.rtk           # this repo's filters are trusted
+ls -la ~/.claude/settings.json                  # symlink to dotfiles/claude/settings.json
+grep 'rtk hook claude' ~/.claude/settings.json  # correct hook command is wired
+```
+
+Symptom of forgotten `rtk trust`: every Bash tool result starts with `[rtk] WARNING: untrusted project filters (.rtk/filters.toml)`. That noise also corrupts downstream parsing of tool output.
+
+RTK moves fast; if the commands or CLI surface above have changed, prefer `rtk --help` / `rtk trust --help` over blindly trusting this doc.

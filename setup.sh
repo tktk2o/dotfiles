@@ -167,6 +167,35 @@ setup_gh_extensions() {
     fi
 }
 
+# rtk filters token-heavy Bash output for Claude Code (wired via the
+# PreToolUse hook in claude/settings.json). Project-local filters in
+# .rtk/filters.toml must be explicitly trusted on each machine; this
+# step can't be automated because `rtk trust` is interactive by design.
+setup_rtk() {
+    if ! command -v rtk &> /dev/null; then
+        echo "[rtk] Skipped (rtk not installed)."
+        return 0
+    fi
+
+    local filters_path="$DOTFILES_DIR/.rtk/filters.toml"
+    if [ ! -f "$filters_path" ]; then
+        echo "[rtk] Skipped (no $filters_path)."
+        return 0
+    fi
+
+    echo ""
+    echo "[rtk] Checking trust state..."
+    if rtk trust --list 2>/dev/null | grep -qF "$filters_path"; then
+        echo "[rtk] Project filters already trusted."
+        return 0
+    fi
+
+    echo "[rtk] Project filters are NOT yet trusted on this machine."
+    echo "      To enable filters (interactive confirm):"
+    echo "          cd \"$DOTFILES_DIR\" && rtk trust"
+    echo "      Verify with: rtk trust --list"
+}
+
 # ===========================================
 # Phase 4: Summary
 # ===========================================
@@ -222,6 +251,7 @@ main() {
     # Phase 4: Additional Setup
     setup_sheldon
     setup_gh_extensions
+    setup_rtk
 
     # Summary
     print_summary
