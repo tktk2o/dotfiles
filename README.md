@@ -56,6 +56,7 @@ cd dotfiles
 | `~/.zshrc` | `zsh/.zshrc` |
 | `~/.tmux.conf` | `tmux/.tmux.conf` |
 | `~/.gitconfig` | `git/.gitconfig` |
+| `~/.gitignore_global` | `git/.gitignore_global` |
 | `~/.Brewfile` | `brew/.Brewfile` |
 | `~/.config/zsh/plugins` | `zsh/plugins/` |
 | `~/.config/nvim` | `nvim/` |

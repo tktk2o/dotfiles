@@ -7,3 +7,5 @@
 	root = ~/src
 [pull]
 	rebase = true
+[core]
+	excludesfile = ~/.gitignore_global

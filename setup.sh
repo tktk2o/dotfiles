@@ -89,6 +89,7 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
     create_symlink "$DOTFILES_DIR/tmux/.tmux.conf" "$HOME/.tmux.conf"
     create_symlink "$DOTFILES_DIR/git/.gitconfig" "$HOME/.gitconfig"
+    create_symlink "$DOTFILES_DIR/git/.gitignore_global" "$HOME/.gitignore_global"
     create_symlink "$DOTFILES_DIR/brew/.Brewfile" "$HOME/.Brewfile"
 
     # ~/.config directory
