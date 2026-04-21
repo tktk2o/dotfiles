@@ -29,6 +29,7 @@ brew "uv"
 # Casks
 cask "aws-vault-binary"
 cask "font-hack-nerd-font"
+cask "font-monaspace-nf"
 cask "font-sauce-code-pro-nerd-font"
 cask "ngrok"
 cask "visual-studio-code"
