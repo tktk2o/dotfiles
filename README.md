@@ -40,14 +40,14 @@ cd dotfiles
 
 ### 4. Native install するアプリ
 
-以下はBrewfileで管理せず、公式サイトからインストールします:
+以下はBrewfileで管理せず、公式サイト/コマンドでインストールします:
 
-- Ghostty
-- Claude Code CLI
-- Raycast
-- Karabiner-Elements
-- Figma
-- Rancher Desktop
+- Claude Code CLI: `curl -fsSL https://claude.ai/install.sh | bash`
+- [Ghostty](https://ghostty.org/download)
+- [Raycast](https://www.raycast.com/)
+- [Karabiner-Elements](https://karabiner-elements.pqrs.org/)
+- [Figma](https://www.figma.com/downloads/)
+- [Rancher Desktop](https://rancherdesktop.io/)
 
 ## シンボリックリンク一覧
 
