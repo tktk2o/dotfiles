@@ -38,6 +38,17 @@ cd dotfiles
 
 設定を反映するためにターミナルを再起動してください。
 
+### 4. Native install するアプリ
+
+以下はBrewfileで管理せず、公式サイトからインストールします:
+
+- Ghostty
+- Claude Code CLI
+- Raycast
+- Karabiner-Elements
+- Figma
+- Rancher Desktop
+
 ## シンボリックリンク一覧
 
 | リンク先 | ソース |
