@@ -11,14 +11,28 @@ export PATH="$HOME/.local/bin:/Users/takuto_kato/.rd/bin:/opt/homebrew/opt/mysql
 alias c='claude'
 alias nv='nvim'
 
-# sheldon (cached)
+# sheldon (cached). Regenerate the source script when plugins.toml or
+# any local *.zsh plugin is newer than the cache; otherwise reuse it.
 _sheldon_cache="$XDG_CACHE_HOME/sheldon/source.zsh"
-if [[ ! -r "$_sheldon_cache" || "$XDG_CONFIG_HOME/sheldon/plugins.toml" -nt "$_sheldon_cache" ]]; then
+_sheldon_stale=
+if [[ ! -r "$_sheldon_cache" ]]; then
+  _sheldon_stale=1
+else
+  for _f in "$XDG_CONFIG_HOME/sheldon/plugins.toml" "$XDG_CONFIG_HOME/zsh/plugins"/*.zsh(N); do
+    if [[ "$_f" -nt "$_sheldon_cache" ]]; then
+      _sheldon_stale=1
+      break
+    fi
+  done
+fi
+if [[ -n "$_sheldon_stale" ]]; then
   mkdir -p "${_sheldon_cache:h}"
-  sheldon source > "$_sheldon_cache"
+  # --relock re-discovers local plugin files (e.g. newly added *.zsh)
+  # without hitting the network for github-hosted plugins.
+  sheldon source --relock > "$_sheldon_cache"
 fi
 source "$_sheldon_cache"
-unset _sheldon_cache
+unset _sheldon_cache _sheldon_stale _f
 
 # mise (deferred if possible)
 if command -v mise &>/dev/null; then
