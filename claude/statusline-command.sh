@@ -29,7 +29,12 @@ dir_name=$(basename "$cwd")
 
 if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)
-    git_info=" ($branch)"
+    git_dir=$(git -C "$cwd" rev-parse --git-dir 2>/dev/null)
+    case "$git_dir" in
+        */worktrees/*) wt_marker=" ⎇" ;;
+        *) wt_marker="" ;;
+    esac
+    git_info=" (${branch}${wt_marker})"
 else
     git_info=""
 fi

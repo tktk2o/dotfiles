@@ -107,6 +107,7 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
     create_symlink "$DOTFILES_DIR/claude/hooks" "$HOME/.claude/hooks"
     create_symlink "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
+    create_symlink "$DOTFILES_DIR/claude/worktree.md" "$HOME/.claude/worktree.md"
 
     # VSCode (macOS)
     if [ "$(uname)" = "Darwin" ]; then
@@ -168,22 +169,36 @@ setup_gh_extensions() {
 }
 
 # rtk filters token-heavy Bash output for Claude Code (wired via the
-# PreToolUse hook in claude/settings.json). Project-local filters in
-# .rtk/filters.toml must be explicitly trusted on each machine; this
-# step can't be automated because `rtk trust` is interactive by design.
+# PreToolUse hook in claude/settings.json). This step:
+#   1. Runs `rtk init -g --no-patch` to install ~/.claude/RTK.md and
+#      ensure ~/.claude/CLAUDE.md references @RTK.md. We use --no-patch
+#      because settings.json is fully managed by dotfiles.
+#   2. Appends @worktree.md to ~/.claude/CLAUDE.md (idempotent).
+#   3. Verifies project-local filters in .rtk/filters.toml are trusted.
+#      Trusting must be done interactively by the user (`rtk trust`).
 setup_rtk() {
     if ! command -v rtk &> /dev/null; then
         echo "[rtk] Skipped (rtk not installed)."
         return 0
     fi
 
+    echo ""
+    echo "[rtk] Running 'rtk init -g --no-patch' (RTK.md + CLAUDE.md @RTK.md)..."
+    rtk init -g --no-patch
+
+    # Append @worktree.md reference (idempotent).
+    local claude_md="$HOME/.claude/CLAUDE.md"
+    if [ -f "$claude_md" ] && ! grep -qxF '@worktree.md' "$claude_md"; then
+        echo '@worktree.md' >> "$claude_md"
+        echo "[rtk] Appended @worktree.md to $claude_md"
+    fi
+
     local filters_path="$DOTFILES_DIR/.rtk/filters.toml"
     if [ ! -f "$filters_path" ]; then
-        echo "[rtk] Skipped (no $filters_path)."
+        echo "[rtk] Skipped trust check (no $filters_path)."
         return 0
     fi
 
-    echo ""
     echo "[rtk] Checking trust state..."
     if rtk trust --list 2>/dev/null | grep -qF "$filters_path"; then
         echo "[rtk] Project filters already trusted."
