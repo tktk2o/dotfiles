@@ -83,3 +83,4 @@ merge せず PoC コミットを range で載せ替える。
 - `.venv` / `node_modules` は worktree ごとに作り直す
 - 同一ブランチを複数 worktree で同時 checkout は不可（git の制約）
 - 作業前に `pwd` と statusline で main repo / worktree のどちらにいるかを確認
+- ユーザー対話用に `wta` / `wtj` zsh 関数が定義されているが、Bash tool では使わず素の `git worktree` を直接呼ぶこと（非対話シェルでは関数が読み込まれない可能性があるため）
