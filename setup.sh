@@ -98,6 +98,7 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/ghostty/config" "$HOME/.config/ghostty/config"
     create_symlink "$DOTFILES_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
     create_symlink "$DOTFILES_DIR/sheldon/plugins.toml" "$HOME/.config/sheldon/plugins.toml"
+    create_symlink "$DOTFILES_DIR/mise/config.toml" "$HOME/.config/mise/config.toml"
     create_symlink "$DOTFILES_DIR/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
     create_symlink "$DOTFILES_DIR/gh/config.yml" "$HOME/.config/gh/config.yml"
     create_symlink "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.yml"
