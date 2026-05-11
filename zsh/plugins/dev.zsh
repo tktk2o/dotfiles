@@ -1,4 +1,4 @@
-# tmux dev layout: nvim(left) + claude(right)
+# tmux dev layout: claude(right) + nvim(top-left) + terminal(bottom-left)
 function dev() {
   if [[ -z "$TMUX" ]]; then
     echo "dev: tmux session required"
@@ -11,5 +11,7 @@ function dev() {
 
   tmux new-window -n "$name" -c "$dir" "nvim"
   tmux split-window -h -c "$dir" "claude"
+  tmux select-pane -t 0
+  tmux split-window -v -c "$dir"
   tmux select-pane -t 0
 }
