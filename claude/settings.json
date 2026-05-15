@@ -43,6 +43,7 @@
       "Bash(gh search:*)",
       "Bash(gh api:*)",
       "Bash(ls:*)",
+      "Bash(/bin/ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(cat:*)",
@@ -221,9 +222,10 @@
   },
   "language": "japanese",
   "autoUpdatesChannel": "latest",
-  "voiceEnabled": true,
   "voice": {
     "enabled": true,
     "mode": "hold"
-  }
+  },
+  "voiceEnabled": true,
+  "theme": "dark-ansi"
 }
