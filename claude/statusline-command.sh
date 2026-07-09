@@ -56,8 +56,19 @@ fi
 #   🤖 model | 💰 cost | 🔥 burn rate | 🧠 context
 # dir/git/model/ctx are already rendered above, so we append only the 💰 and 🔥
 # segments to avoid duplication.
-if command -v npx > /dev/null 2>&1; then
-    usage=$(echo "$input" | npx -y ccusage statusline 2>/dev/null)
+#
+# Resolve ccusage without spawning npx on every render (slow): prefer a global
+# binary, then the mise shim (works without `mise activate`), else fall back to
+# npx. ccusage is declared in dotfiles/mise/config.toml as npm:ccusage.
+if command -v ccusage > /dev/null 2>&1; then
+    ccusage_cmd=(ccusage)
+elif [ -x "$HOME/.local/share/mise/shims/ccusage" ]; then
+    ccusage_cmd=("$HOME/.local/share/mise/shims/ccusage")
+elif command -v npx > /dev/null 2>&1; then
+    ccusage_cmd=(npx -y ccusage)
+fi
+if [ -n "${ccusage_cmd:-}" ]; then
+    usage=$(echo "$input" | "${ccusage_cmd[@]}" statusline 2>/dev/null)
     if [ -n "$usage" ]; then
         cost=$(echo "$usage" | awk -F ' \\| ' '{for (i=1;i<=NF;i++) if ($i ~ /^💰/) print $i}')
         burn=$(echo "$usage" | awk -F ' \\| ' '{for (i=1;i<=NF;i++) if ($i ~ /^🔥/) print $i}')

@@ -2,6 +2,7 @@
 go = "latest"
 node = "latest"
 qdns = "latest"
+"npm:ccusage" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
