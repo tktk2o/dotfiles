@@ -8,7 +8,7 @@ export XDG_CACHE_HOME=$HOME/.cache
 export PATH="$HOME/.local/bin:/Users/takuto_kato/.rd/bin:/opt/homebrew/opt/mysql@8.4/bin:$PATH"
 
 # aliases
-alias c='claude'
+alias c='claude --permission-mode acceptEdits'
 alias nv='nvim'
 
 # sheldon (cached). Regenerate the source script when plugins.toml or

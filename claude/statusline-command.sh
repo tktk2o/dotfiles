@@ -48,14 +48,22 @@ if [ -n "$ctx" ]; then
     parts="${parts}${sep}ctx $(dot "$ctx")"
 fi
 
-five=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
-if [ -n "$five" ]; then
-    parts="${parts}${sep}5h $(dot "$five")"
-fi
-
-week=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
-if [ -n "$week" ]; then
-    parts="${parts}${sep}7d $(dot "$week")"
+# Subscription rate limits (.rate_limits.*) only appear for Claude.ai Pro/Max
+# accounts; on API/console billing those fields are absent, so 5h/7d usage
+# stopped rendering. We surface cost-based usage via ccusage instead.
+#
+# ccusage statusline emits " | "-separated segments:
+#   🤖 model | 💰 cost | 🔥 burn rate | 🧠 context
+# dir/git/model/ctx are already rendered above, so we append only the 💰 and 🔥
+# segments to avoid duplication.
+if command -v npx > /dev/null 2>&1; then
+    usage=$(echo "$input" | npx -y ccusage statusline 2>/dev/null)
+    if [ -n "$usage" ]; then
+        cost=$(echo "$usage" | awk -F ' \\| ' '{for (i=1;i<=NF;i++) if ($i ~ /^💰/) print $i}')
+        burn=$(echo "$usage" | awk -F ' \\| ' '{for (i=1;i<=NF;i++) if ($i ~ /^🔥/) print $i}')
+        [ -n "$cost" ] && parts="${parts}${sep}${cost}"
+        [ -n "$burn" ] && parts="${parts}${sep}${burn}"
+    fi
 fi
 
 printf '%b' "$parts"

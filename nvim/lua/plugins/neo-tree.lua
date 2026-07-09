@@ -39,5 +39,15 @@ return {
       end,
       desc = "Copy Relative Path",
     }
+    -- Override y (default copies to neo-tree internal clipboard) to copy filename to system clipboard
+    opts.window.mappings["y"] = {
+      function(state)
+        local node = state.tree:get_node()
+        local name = node.name
+        vim.fn.setreg("+", name, "c")
+        vim.notify("Copied: " .. name)
+      end,
+      desc = "Copy Filename",
+    }
   end,
 }

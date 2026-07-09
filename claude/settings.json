@@ -124,6 +124,7 @@
       "Bash(mdfind:*)",
       "Bash(sysctl:*)",
       "WebSearch",
+      "WebFetch",
       "WebFetch(domain:docs.claude.com)",
       "WebFetch(domain:code.claude.com)",
       "WebFetch(domain:docs.anthropic.com)",
@@ -203,16 +204,11 @@
     "frontend-design@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "mhlw-guideline-compliance@kkhs-plugin-marketplace": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "chrome-devtools-mcp@claude-plugins-official": true,
+    "datadog@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
-    "kkhs-plugin-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "kkhs/ax-toolkit"
-      }
-    },
     "claude-plugins-official": {
       "source": {
         "source": "github",
@@ -221,11 +217,12 @@
     }
   },
   "language": "japanese",
+  "effortLevel": "medium",
   "autoUpdatesChannel": "latest",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
-  "voiceEnabled": true,
-  "theme": "dark-ansi"
+  "theme": "dark-ansi",
+  "alwaysThinkingEnabled": true
 }

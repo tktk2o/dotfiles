@@ -1,4 +1,4 @@
-# tmux dev layout: claude(right) + nvim(top-left) + terminal(bottom-left)
+# tmux dev layout: claude(left) + claude(right)
 function dev() {
   if [[ -z "$TMUX" ]]; then
     echo "dev: tmux session required"
@@ -9,9 +9,8 @@ function dev() {
   local dir="$(ghq root)/$repo"
   local name=$(basename "$repo")
 
-  tmux new-window -n "$name" -c "$dir" "nvim"
-  tmux split-window -h -c "$dir" "claude"
-  tmux select-pane -t 0
-  tmux split-window -v -c "$dir"
-  tmux select-pane -t 0
+  local claude_cmd="claude --permission-mode acceptEdits"
+  tmux new-window -n "$name" -c "$dir" "$claude_cmd"
+  tmux split-window -h -c "$dir" "$claude_cmd"
+  tmux select-pane -L
 }
