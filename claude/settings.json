@@ -193,6 +193,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/post-edit-lint.sh"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
