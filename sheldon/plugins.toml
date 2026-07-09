@@ -52,9 +52,21 @@ apply = ["defer"]
 github = "zsh-users/zsh-completions"
 apply = ["defer"]
 
-[plugins.zsh-z]
-github = "agkozak/zsh-z"
-apply = ["defer"]
+# zoxide (smarter cd; replaces zsh-z). Cached like starship for speed.
+# Provides `z` (jump) and `zi` (interactive). Init after compinit for
+# completions; not deferred so the precmd hook tracks every directory.
+[plugins.zoxide]
+inline = '''
+if command -v zoxide > /dev/null; then
+  _zoxide_cache="${XDG_CACHE_HOME:-$HOME/.cache}/zoxide/init.zsh"
+  if [[ ! -r "$_zoxide_cache" || "$(command -v zoxide)" -nt "$_zoxide_cache" ]]; then
+    mkdir -p "${_zoxide_cache:h}"
+    zoxide init zsh > "$_zoxide_cache"
+  fi
+  source "$_zoxide_cache"
+  unset _zoxide_cache
+fi
+'''
 
 # Local plugins (deferred)
 [plugins.git-aliases]

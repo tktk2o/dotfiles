@@ -11,6 +11,16 @@
 	autoSetupRemote = true
 [rerere]
 	enabled = true
+[core]
+	pager = delta
+	excludesfile = ~/.gitignore_global
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	line-numbers = true
+	syntax-theme = Dracula
+	dark = true
 [diff]
 	algorithm = histogram
 	colorMoved = default
@@ -18,8 +28,6 @@
 	conflictstyle = zdiff3
 [branch]
 	sort = -committerdate
-[core]
-	excludesfile = ~/.gitignore_global
 [credential "https://github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
