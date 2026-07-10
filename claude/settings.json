@@ -228,12 +228,14 @@
     }
   },
   "language": "japanese",
+  "alwaysThinkingEnabled": true,
   "effortLevel": "medium",
+  "fallbackModel": "claude-sonnet-5",
   "autoUpdatesChannel": "latest",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
   "theme": "dark-ansi",
-  "alwaysThinkingEnabled": true
+  "voiceEnabled": true
 }

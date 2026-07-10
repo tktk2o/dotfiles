@@ -109,6 +109,7 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/claude/hooks" "$HOME/.claude/hooks"
     create_symlink "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
     create_symlink "$DOTFILES_DIR/claude/worktree.md" "$HOME/.claude/worktree.md"
+    create_symlink "$DOTFILES_DIR/claude/model-policy.md" "$HOME/.claude/model-policy.md"
 
     # VSCode (macOS)
     if [ "$(uname)" = "Darwin" ]; then
@@ -187,11 +188,15 @@ setup_rtk() {
     echo "[rtk] Running 'rtk init -g --no-patch' (RTK.md + CLAUDE.md @RTK.md)..."
     rtk init -g --no-patch
 
-    # Append @worktree.md reference (idempotent).
+    # Append @worktree.md and @model-policy.md references (idempotent).
     local claude_md="$HOME/.claude/CLAUDE.md"
     if [ -f "$claude_md" ] && ! grep -qxF '@worktree.md' "$claude_md"; then
         echo '@worktree.md' >> "$claude_md"
         echo "[rtk] Appended @worktree.md to $claude_md"
+    fi
+    if [ -f "$claude_md" ] && ! grep -qxF '@model-policy.md' "$claude_md"; then
+        echo '@model-policy.md' >> "$claude_md"
+        echo "[rtk] Appended @model-policy.md to $claude_md"
     fi
 
     local filters_path="$DOTFILES_DIR/.rtk/filters.toml"
