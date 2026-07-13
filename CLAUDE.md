@@ -83,8 +83,22 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 
 1. Create subdirectory: `mkdir toolname/`
 2. Add config file(s) to the subdirectory
-3. Add symlink command to `setup.sh`
+3. Add symlink command to `setup.sh` — always via the `create_symlink` helper, never a raw `ln -s`
 4. If installable via Homebrew, add to `brew/.Brewfile`
+
+Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempotent and supports `./setup.sh --no-brew`.
+
+## Verifying Changes
+
+- **Never run `./setup.sh` to "test" a change on this machine** — `create_symlink` does `rm -rf "$dest"` before linking, clobbering real files at target paths.
+- Validate shell edits statically instead:
+  - `bash -n setup.sh` (syntax check; run after every edit)
+  - `shellcheck setup.sh` if installed (`brew install shellcheck`)
+- To confirm a symlink line resolves, check the source path exists and inspect the target with `ls -la` — don't re-run setup.
+
+## Commit Conventions
+
+Single-maintainer personal repo — commit directly to `main`, no feature branches or PRs for routine changes. Use worktrees only for the cases in `claude/worktree.md` (PoC / upstream-dependent / parallel work).
 
 ## RTK (Bash-output token filter for Claude Code)
 
