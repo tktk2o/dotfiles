@@ -104,6 +104,7 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.yml"
 
     # Claude Code
+    create_symlink "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
     create_symlink "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
     create_symlink "$DOTFILES_DIR/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
     create_symlink "$DOTFILES_DIR/claude/hooks" "$HOME/.claude/hooks"
@@ -172,11 +173,13 @@ setup_gh_extensions() {
 
 # rtk filters token-heavy Bash output for Claude Code (wired via the
 # PreToolUse hook in claude/settings.json). This step:
-#   1. Runs `rtk init -g --no-patch` to install ~/.claude/RTK.md and
-#      ensure ~/.claude/CLAUDE.md references @RTK.md. We use --no-patch
-#      because settings.json is fully managed by dotfiles.
-#   2. Appends @worktree.md to ~/.claude/CLAUDE.md (idempotent).
-#   3. Verifies project-local filters in .rtk/filters.toml are trusted.
+#   1. Runs `rtk init -g --no-patch` to install the rtk-managed
+#      ~/.claude/RTK.md content file. We use --no-patch because both
+#      settings.json and CLAUDE.md are fully managed by dotfiles.
+#      ~/.claude/CLAUDE.md is a symlink to claude/CLAUDE.md, which already
+#      contains the @RTK.md / @worktree.md / @model-policy.md imports, so
+#      rtk's CLAUDE.md patching is a no-op.
+#   2. Verifies project-local filters in .rtk/filters.toml are trusted.
 #      Trusting must be done interactively by the user (`rtk trust`).
 setup_rtk() {
     if ! command -v rtk &> /dev/null; then
@@ -185,19 +188,8 @@ setup_rtk() {
     fi
 
     echo ""
-    echo "[rtk] Running 'rtk init -g --no-patch' (RTK.md + CLAUDE.md @RTK.md)..."
+    echo "[rtk] Running 'rtk init -g --no-patch' (installs ~/.claude/RTK.md)..."
     rtk init -g --no-patch
-
-    # Append @worktree.md and @model-policy.md references (idempotent).
-    local claude_md="$HOME/.claude/CLAUDE.md"
-    if [ -f "$claude_md" ] && ! grep -qxF '@worktree.md' "$claude_md"; then
-        echo '@worktree.md' >> "$claude_md"
-        echo "[rtk] Appended @worktree.md to $claude_md"
-    fi
-    if [ -f "$claude_md" ] && ! grep -qxF '@model-policy.md' "$claude_md"; then
-        echo '@model-policy.md' >> "$claude_md"
-        echo "[rtk] Appended @model-policy.md to $claude_md"
-    fi
 
     local filters_path="$DOTFILES_DIR/.rtk/filters.toml"
     if [ ! -f "$filters_path" ]; then

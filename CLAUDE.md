@@ -36,8 +36,18 @@ brew bundle --file=~/.Brewfile      # Install packages
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` |
 | `gh/config.yml` | `~/.config/gh/config.yml` |
 | `gh-dash/config.yml` | `~/.config/gh-dash/config.yml` |
+| `claude/CLAUDE.md` | `~/.claude/CLAUDE.md` |
+| `claude/settings.json` | `~/.claude/settings.json` |
+| `claude/worktree.md` | `~/.claude/worktree.md` |
+| `claude/model-policy.md` | `~/.claude/model-policy.md` |
 | `vscode/settings.json` | `~/Library/Application Support/Code/User/settings.json` |
 | `vscode/keybindings.json` | `~/Library/Application Support/Code/User/keybindings.json` |
+
+> `~/.claude/CLAUDE.md` is a symlink to `claude/CLAUDE.md`, which holds the
+> `@RTK.md` / `@worktree.md` / `@model-policy.md` imports. `@` imports resolve
+> relative to the symlink's location (`~/.claude/`), not its realpath, so
+> `@RTK.md` correctly loads the rtk-managed `~/.claude/RTK.md` (which is *not*
+> checked into dotfiles — `rtk init -g` installs it).
 
 ### Neovim (LazyVim)
 
