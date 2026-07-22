@@ -86,18 +86,38 @@
             "type": "command"
           },
           {
-            "command": "bash ~/.claude/hooks/tmux-agent-state.sh done",
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh stop",
             "type": "command"
           }
         ],
         "matcher": ".*"
       }
     ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh subagent-start",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh subagent-stop",
+            "type": "command"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
           {
-            "command": "bash ~/.claude/hooks/tmux-agent-state.sh working",
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh start",
             "type": "command"
           }
         ]
