@@ -102,6 +102,7 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
     create_symlink "$DOTFILES_DIR/gh/config.yml" "$HOME/.config/gh/config.yml"
     create_symlink "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.yml"
+    create_symlink "$DOTFILES_DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 
     # Claude Code
     create_symlink "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"

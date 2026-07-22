@@ -1,0 +1,34 @@
+# herdr config — https://herdr.dev
+# Prefix-mode keybindings aligned to this repo's tmux setup (tmux/.tmux.conf).
+# Only overrides are listed; unset actions keep herdr defaults.
+# See `herdr --default-config` for the full set of options.
+# Reload after edits with `herdr server reload-config` (or prefix+r below).
+
+[keys]
+prefix = "ctrl+b"
+
+# --- align to tmux muscle memory ---
+detach           = "prefix+d"        # tmux default prefix+d (herdr default is q)
+reload_config    = "prefix+r"        # tmux's prefix+r
+resize_mode      = "prefix+shift+r"  # moved off r so reload can take it
+rename_tab       = "prefix+comma"    # tmux default prefix+,
+previous_tab     = "prefix+ctrl+h"   # tmux's prefix C-h (previous window)
+next_tab         = "prefix+ctrl+l"   # tmux's prefix C-l (next window)
+split_horizontal = "prefix+minus"    # tmux's `-` (stacked / horizontal divider)
+split_vertical   = "prefix+v"        # stand-in for tmux's `|` (pipe isn't a bindable punctuation)
+
+# --- already matching tmux defaults; pinned here to keep them stable ---
+new_tab          = "prefix+c"
+close_pane       = "prefix+x"
+zoom             = "prefix+z"
+focus_pane_left  = "prefix+h"
+focus_pane_down  = "prefix+j"
+focus_pane_up    = "prefix+k"
+focus_pane_right = "prefix+l"
+switch_tab       = "prefix+1..9"
+
+# Notes on tmux features that do NOT port to herdr:
+#   - bare C-h/j/k/l vim-aware pane nav: herdr has no if-shell conditional binding;
+#     binding bare ctrl+hjkl would steal nvim's own C-hjkl. Use prefix+hjkl instead.
+#   - prefix H/J/K/L direct resize: herdr uses a resize *mode* (resize_mode above).
+#   - prefix v copy-mode: herdr has no vi copy-mode; closest is edit_scrollback (prefix+e).
