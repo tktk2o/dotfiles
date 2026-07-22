@@ -1,52 +1,67 @@
-# モデル運用方針（Claude 向け）
+# Model Policy (for Claude)
 
-メインスレッドは opus（ユーザーの価値＝ファクトチェックと難所の推論）に集中させ、
-fan-out のグラント作業はサブエージェントに安いモデルで逃がす。目的はサブスク枠
-（5h / 週）の温存と、長時間・多段タスクでのトークン/セッション上限到達の回避。
+Keep the main thread on opus (where the user's value is: fact-checking and
+hard reasoning) and fan out grunt work to subagents on cheaper models. The goal
+is to preserve the subscription budget (5h / week) and avoid hitting
+token/session limits on long, multi-stage tasks.
 
-## サブエージェント起動時のモデル既定
+## Default model when launching a subagent
 
-Agent tool で子エージェントを起動するときは、**必ず `model` を明示指定する**
-（省略すると親の opus を継承してしまい、枠温存の狙いと真逆になる）。
-判定は「成果物が**取得**か**判断**か」で切る:
+When launching a child agent with the Agent tool, **always specify `model`
+explicitly** (omitting it inherits the parent's opus, which defeats the whole
+budget-saving point). Decide by whether the deliverable is **retrieval** or
+**judgment**:
 
-- **haiku**（`claude-haiku-4-5`）— *既定*: 成果物が「結論・該当箇所・一覧」で済む
-  取得系。検索・探索・ファイル収集・ログ/差分の grep・命名規約の洗い出し・分類・要約。
-  **コードを読む調査でも、やることが "どこにあるか/どうなっているか" の特定なら haiku**
-  （例:「〜のトリガーを特定」「〜の経路を確認」「該当関数を探す」）。
-- **sonnet**（`claude-sonnet-5`）: 成果物が「判断・変更・評価」を含むもの。定型実装・
-  リファクタ・PR ごとの並列レビュー・複数仮説を突き合わせる中程度の推論。
-- **opus**（`claude-opus-4-8`）: 本当に難しい根本原因推論やアーキ判断を子に委ねる時のみ。
+- **haiku** (`claude-haiku-4-5`) — *default*: work whose deliverable is a
+  "conclusion / location / list". Searching, exploring, collecting files,
+  grepping logs/diffs, surveying naming conventions, classification, summarizing.
+  **Even code investigation is haiku when the job is "where is it / how does it
+  work" location** (e.g. "find the trigger for X", "confirm the path for Y",
+  "locate the relevant function").
+- **sonnet** (`claude-sonnet-5`): work whose deliverable involves
+  "judgment / change / evaluation". Routine implementation, refactoring,
+  per-PR parallel review, medium reasoning that weighs multiple hypotheses.
+- **opus** (`claude-opus-4-8`): only when delegating genuinely hard
+  root-cause reasoning or architectural judgment to a child.
 
-**「迷ったら sonnet」ではなく「取得だけなら haiku、判断が要るなら sonnet」。**
-sonnet を安全な既定にして探索まで吸い込ませない。メインスレッドの opus は落とさない。
+**Not "when in doubt, sonnet" but "retrieval → haiku, judgment → sonnet".**
+Don't let sonnet become the safe default that sweeps up exploration.
+Never drop the main thread's opus.
 
-## 委譲トリガー（いつ subagent を起こすか）
+## Delegation triggers (when to spawn a subagent)
 
-モデル選択の前に「そもそもメインで抱えず子に逃がす」判断を先に行う。目的は
-offload 率を上げることではなく、**opus メインスレッドの context（特に cache read）
-を膨らませないこと**。以下に当てはまれば、原則メインで直接やらず subagent を起こす:
+Before choosing a model, first decide "should this even be held on the main
+thread, or offloaded to a child?". The goal is not to maximize the offload rate
+but to **avoid inflating the opus main thread's context (especially cache
+read)**. If any of the following apply, spawn a subagent rather than doing it
+directly on the main thread:
 
-- **探索・調査**: 答え/該当箇所を得るのに 3 ファイル以上読む見込み → Explore 系
-  subagent（haiku）に投げ、結論だけ受け取る。ファイル本文をメインに載せない。
-- **横断 grep / ログ・差分の走査 / 命名規約の洗い出し** → haiku に丸投げ。
-- **2 件以上の独立作業** → 並列 subagent（3〜5 まで、model-policy に従いモデル選択）。
-- **実装後のレビュー / 検証** → 別 subagent（fresh context）に回す。書いた本人が
-  採点しないことでバイアスを避ける。
+- **Exploration / investigation**: likely to read 3+ files to get the
+  answer/location → hand it to an Explore-type subagent (haiku) and take back
+  only the conclusion. Don't load file bodies onto the main thread.
+- **Cross-cutting grep / scanning logs/diffs / surveying naming conventions**
+  → offload wholesale to haiku.
+- **2+ independent pieces of work** → parallel subagents (up to 3–5, choosing
+  models per this policy).
+- **Post-implementation review / verification** → route to a separate subagent
+  (fresh context). Avoid bias by not having the author grade their own work.
 
-逆に、1〜2 ファイルで完結する参照や、難所推論そのものはメイン opus で直接やる
-（委譲のオーバーヘッドが勝つ）。
+Conversely, references that finish within 1–2 files, and hard reasoning itself,
+should be done directly on the main opus (the delegation overhead wins otherwise).
 
-## context 衛生（opus 実消費を直接削る）
+## Context hygiene (directly cuts real opus consumption)
 
-- 無関係タスクに移るときは `/clear`。長い単一セッションの引きずりが cache read を
-  肥大させる最大要因。
-- 同じ問題で 2 回修正して直らなければ、粘らず `/clear` して学びを込めた新プロンプト
-  で再スタートする方が速い。
-- 上記はユーザー操作だが、Claude 側も「メインで広域探索を始めそう」なときは自ら
-  subagent 委譲を提案する。
+- `/clear` when moving to an unrelated task. Dragging a long single session is
+  the biggest driver of bloated cache read.
+- If two fixes on the same problem don't resolve it, don't grind — `/clear` and
+  restart with a fresh prompt that bakes in the learnings; it's faster.
+- The above are user actions, but Claude should also proactively propose
+  delegating to a subagent when it's about to start broad exploration on the
+  main thread.
 
-## 補足
+## Notes
 
-- 並列サブエージェントを多数立てるほど枠を食う。3〜5 並列が日常の適量。
-- `fallbackModel` により opus がレート制限時は自動で sonnet に退避する（settings.json）。
+- The more parallel subagents you stand up, the more budget you burn. 3–5
+  parallel is the everyday sweet spot.
+- `fallbackModel` automatically falls back to sonnet when opus is rate-limited
+  (settings.json).
