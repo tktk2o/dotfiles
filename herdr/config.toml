@@ -1,3 +1,4 @@
+onboarding = false
 # herdr config — https://herdr.dev
 # Prefix-mode keybindings aligned to this repo's tmux setup (tmux/.tmux.conf).
 # Only overrides are listed; unset actions keep herdr defaults.
