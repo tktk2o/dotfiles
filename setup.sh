@@ -104,6 +104,9 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.yml"
     create_symlink "$DOTFILES_DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 
+    # Executables (~/.local/bin — already on PATH via zsh/.zshrc)
+    create_symlink "$DOTFILES_DIR/tmux/scripts/tmux-window-restore.sh" "$HOME/.local/bin/twr"
+
     # Claude Code
     create_symlink "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
     create_symlink "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"

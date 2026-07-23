@@ -79,6 +79,15 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 - **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — restores layout + cwd, and relaunches Claude Code panes as `claude --continue`; other programs are not relaunched)
 - **Editor**: Neovim with LazyVim, octo.nvim, diffview.nvim
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
+- **Past-window restore**: `twr` (`tmux/scripts/tmux-window-restore.sh`, symlinked to `~/.local/bin/twr`; `prefix + W` opens it in a popup)
+
+### Restoring a past window (`twr`)
+
+`twr` lists windows captured across the full tmux-resurrect snapshot **history** (`~/.local/share/tmux/resurrect/tmux_resurrect_*.txt`, not just `last`), de-duplicated by name+cwd (newest kept), and reconstructs the chosen one into the current session via an fzf picker.
+
+- **Reconstruction, not revival**: recreates the window name + layout + each pane's cwd; claude panes relaunch as `claude --continue`, other programs come back as a plain shell (matches the resurrect scope in `.tmux.conf`).
+- **Modes**: `twr` (picker, inside tmux), `twr --list` (print candidates, no tmux/fzf needed). Env: `TMUX_RESURRECT_DIR` (snapshot dir override, used by tests), `TWR_TARGET` (restore into a specific session).
+- **New-machine dependency**: relies on the `~/.local/bin/twr` symlink created by `setup.sh` and on tmux-resurrect snapshots existing.
 
 ## Adding New Configurations
 
