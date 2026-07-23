@@ -1,130 +1,10 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "alwaysThinkingEnabled": true,
-  "autoUpdatesChannel": "latest",
-  "effortLevel": "medium",
-  "enabledPlugins": {
-    "chrome-devtools-mcp@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "datadog@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true
-  },
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
     "OTEL_LOGS_EXPORTER": "console",
     "OTEL_METRICS_EXPORTER": "console"
   },
-  "extraKnownMarketplaces": {
-    "claude-plugins-official": {
-      "source": {
-        "repo": "anthropics/claude-plugins-official",
-        "source": "github"
-      }
-    }
-  },
-  "fallbackModel": [
-    "claude-sonnet-5"
-  ],
-  "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "command": "bash ~/.claude/hooks/notification.sh",
-            "type": "command"
-          },
-          {
-            "command": "bash ~/.claude/hooks/tmux-agent-state.sh blocked",
-            "type": "command"
-          }
-        ],
-        "matcher": "permission_prompt"
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "bash ~/.claude/hooks/post-edit-lint.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": "Edit|Write|MultiEdit"
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "rtk hook claude",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "bash '/Users/takuto_kato/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10,
-            "type": "command"
-          }
-        ],
-        "matcher": "*"
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "command": "bash ~/.claude/hooks/stop.sh",
-            "type": "command"
-          },
-          {
-            "command": "bash ~/.claude/hooks/tmux-agent-state.sh stop",
-            "type": "command"
-          }
-        ],
-        "matcher": ".*"
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "command": "bash ~/.claude/hooks/tmux-agent-state.sh subagent-start",
-            "type": "command"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "command": "bash ~/.claude/hooks/tmux-agent-state.sh subagent-stop",
-            "type": "command"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "command": "bash ~/.claude/hooks/tmux-agent-state.sh start",
-            "type": "command"
-          }
-        ]
-      }
-    ]
-  },
-  "language": "japanese",
   "permissions": {
     "allow": [
       "Bash(git status:*)",
@@ -280,14 +160,134 @@
       "Bash(chgrp:*)"
     ]
   },
-  "statusLine": {
-    "command": "bash ~/.claude/statusline-command.sh",
-    "type": "command"
+  "fallbackModel": [
+    "claude-sonnet-5"
+  ],
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/notification.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh blocked"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/post-edit-lint.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rtk hook claude"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/takuto_kato/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/stop.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh stop"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh subagent-start"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh subagent-stop"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-agent-state.sh start"
+          }
+        ]
+      }
+    ]
   },
-  "theme": "dark-ansi",
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "chrome-devtools-mcp@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "datadog@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    }
+  },
+  "language": "japanese",
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "low",
+  "autoUpdatesChannel": "latest",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
+  "theme": "dark-ansi",
   "voiceEnabled": true
 }
