@@ -155,6 +155,26 @@ setup_sheldon() {
     echo "[sheldon] Done."
 }
 
+setup_git_hooks() {
+    echo ""
+    echo "[git hooks] Enabling pre-commit hook for the dotfiles repo (repo-local)..."
+    # Repo-local so it never runs on work repos (which legitimately contain
+    # company names and would false-positive).
+    git -C "$DOTFILES_DIR" config --local core.hooksPath "$DOTFILES_DIR/git/hooks"
+    chmod +x "$DOTFILES_DIR/git/hooks/pre-commit" 2>/dev/null || true
+
+    local denylist="$HOME/.config/git/denylist.txt"
+    if [ -f "$denylist" ]; then
+        echo "[git hooks] Company denylist present: $denylist"
+    else
+        echo "[git hooks] NOTE: company-term denylist not found at:"
+        echo "                $denylist"
+        echo "            Create it (one grep -E regex per line) to enable"
+        echo "            company-specific leak checks. It is intentionally NOT"
+        echo "            tracked in this repo (the terms are themselves sensitive)."
+    fi
+}
+
 setup_tmux_plugins() {
     if ! command -v tmux &> /dev/null; then
         echo "[tmux plugins] Skipped (tmux not installed)."
@@ -285,6 +305,7 @@ main() {
     fi
 
     # Phase 4: Additional Setup
+    setup_git_hooks
     setup_sheldon
     setup_tmux_plugins
     setup_gh_extensions

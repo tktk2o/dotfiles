@@ -101,6 +101,17 @@ Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempote
 
 Single-maintainer personal repo — commit directly to `main`, no feature branches or PRs for routine changes. Use worktrees only for the cases in `claude/worktree.md` (PoC / upstream-dependent / parallel work).
 
+## Pre-commit Leak Scanning
+
+This is a **public** repo, so a `pre-commit` hook blocks commits that would leak secrets or company-specific terms. Two layers:
+
+- **Generic secrets**: patterns baked into `git/hooks/pre-commit` (AWS/GitHub/Slack/Google keys, private-key blocks). Safe to keep tracked.
+- **Company-specific terms**: loaded at runtime from a **local, untracked** file `~/.config/git/denylist.txt` (one `grep -E`, case-insensitive regex per line). This file is deliberately *not* tracked — the terms are themselves sensitive, so committing the denylist would defeat its purpose.
+
+The hook is scoped to this repo only via repo-local `core.hooksPath` (set by `setup.sh` → `setup_git_hooks`), so it never false-positives on work repos that legitimately contain company names.
+
+**New-machine migration**: after `./setup.sh`, recreate `~/.config/git/denylist.txt` manually (it is not in the repo). Until it exists, the hook runs generic-secret checks only and prints a warning. Bypass a verified false positive with `git commit --no-verify`.
+
 ## RTK (Bash-output token filter for Claude Code)
 
 `rtk` (installed via `brew/.Brewfile`) compacts Bash tool output before it reaches the model. It is wired through the `PreToolUse` hook in `claude/settings.json` as the command `rtk hook claude` — no custom shim script is used (earlier versions of this repo had a `claude/hooks/rtk-rewrite.sh` wrapper; that has been removed).
