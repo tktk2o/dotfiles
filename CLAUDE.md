@@ -76,7 +76,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 
 - **Shell**: zsh + sheldon (plugin manager) + starship (prompt)
 - **Terminal**: Ghostty
-- **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — restores layout + cwd, and relaunches Claude Code panes as `claude --continue`; other programs are not relaunched)
+- **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — restores layout + cwd, and relaunches Claude Code panes with their saved command verbatim so `claude --resume <id>` panes return to their exact session; other programs are not relaunched)
 - **Editor**: Neovim with LazyVim, octo.nvim, diffview.nvim
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
 - **Past-window restore**: `twr` (`tmux/scripts/tmux-window-restore.sh`, symlinked to `~/.local/bin/twr`; `prefix + W` opens it in a popup)
@@ -85,7 +85,8 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 
 `twr` lists windows captured across the full tmux-resurrect snapshot **history** (`~/.local/share/tmux/resurrect/tmux_resurrect_*.txt`, not just `last`), de-duplicated by name+cwd (newest kept), and reconstructs the chosen one into the current session via an fzf picker.
 
-- **Reconstruction, not revival**: recreates the window name + layout + each pane's cwd; claude panes relaunch as `claude --continue`, other programs come back as a plain shell (matches the resurrect scope in `.tmux.conf`).
+- **Reconstruction, not revival**: recreates the window name + layout + each pane's cwd; other programs come back as a plain shell (matches the resurrect scope in `.tmux.conf`).
+- **Per-pane claude session**: a pane whose saved command pins a session (`--resume <id>` / `--session-id`) is replayed verbatim (exact session). An id-less claude pane relaunches as `claude --continue` when it is the only claude pane in its cwd, or `claude --resume` (interactive picker) when several id-less claude panes share a cwd — so distinct conversations are not collapsed onto the cwd's most-recent one. (resurrect snapshots only carry a session id when it was in the process args, so id-less panes cannot be mapped to their exact past conversation automatically.)
 - **Modes**: `twr` (picker, inside tmux), `twr --list` (print candidates, no tmux/fzf needed). Env: `TMUX_RESURRECT_DIR` (snapshot dir override, used by tests), `TWR_TARGET` (restore into a specific session).
 - **New-machine dependency**: relies on the `~/.local/bin/twr` symlink created by `setup.sh` and on tmux-resurrect snapshots existing.
 

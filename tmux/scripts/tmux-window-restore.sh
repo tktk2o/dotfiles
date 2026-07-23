@@ -91,6 +91,12 @@ build_list() {
     ' "${snaps[@]}"
 }
 
+# True if a saved command pins a specific claude session (so it can be restored
+# exactly, rather than collapsing onto the cwd's most-recent conversation).
+_has_session_id() {
+    printf '%s' "$1" | grep -Eq -- '(--resume|-r)[[:space:]]+[0-9a-fA-F][0-9a-fA-F-]{7,}|--session-id[[:space:]]+[0-9a-fA-F-]{8,}'
+}
+
 # ---- reconstruct a window from a picked "DISPLAY\tname\tlayout\tpacked" line -
 reconstruct() {
     local line="$1"
@@ -100,13 +106,17 @@ reconstruct() {
     packed="$(printf '%s' "$line" | cut -f4)"
     [ -n "$packed" ] || { echo "twr: empty selection" >&2; return 1; }
 
-    local -a pane_ids=() pane_cmds=() segs=()
-    local first=1 anchor="" pid cwd cmd seg
+    local -a pane_ids=() pane_cmds=() pane_cwds=() segs=()
+    local first=1 anchor="" pid cwd seg idx
 
     IFS="$RS" read -r -a segs <<< "$packed"
     for seg in "${segs[@]}"; do
-        cwd="${seg%%"$US"*}"
-        cmd="${seg#*"$US"}"
+        pane_cwds+=("${seg%%"$US"*}")
+        pane_cmds+=("${seg#*"$US"}")
+    done
+
+    for idx in "${!pane_cwds[@]}"; do
+        cwd="${pane_cwds[$idx]}"
         [ -d "$cwd" ] || cwd="$HOME" # fall back if the dir is gone
         if [ "$first" -eq 1 ]; then
             # macOS /bin/bash 3.2 errors on empty-array expansion under set -u,
@@ -122,16 +132,31 @@ reconstruct() {
         fi
         anchor="$pid"
         pane_ids+=("$pid")
-        pane_cmds+=("$cmd")
     done
 
     tmux select-layout -t "${pane_ids[0]}" "$layout" 2>/dev/null || true
 
-    local i
-    for i in "${!pane_ids[@]}"; do
-        case "${pane_cmds[$i]}" in
-            *claude*) tmux send-keys -t "${pane_ids[$i]}" "claude --continue" C-m ;;
-        esac
+    # Relaunch claude panes preserving per-pane session identity:
+    #   - saved cmd carries a session id -> replay verbatim (exact session)
+    #   - id-less & only claude pane in its cwd -> `claude --continue`
+    #   - id-less & multiple claude panes share the cwd -> `claude --resume`
+    #     (interactive picker) so distinct conversations don't collapse onto one.
+    local launch cmd j n
+    for idx in "${!pane_ids[@]}"; do
+        cmd="${pane_cmds[$idx]}"
+        case "$cmd" in *claude*) ;; *) continue ;; esac
+        if _has_session_id "$cmd"; then
+            launch="$cmd"
+        else
+            n=0
+            for j in "${!pane_cmds[@]}"; do
+                case "${pane_cmds[$j]}" in *claude*) ;; *) continue ;; esac
+                _has_session_id "${pane_cmds[$j]}" && continue
+                [ "${pane_cwds[$j]}" = "${pane_cwds[$idx]}" ] && n=$((n + 1))
+            done
+            if [ "$n" -gt 1 ]; then launch="claude --resume"; else launch="claude --continue"; fi
+        fi
+        tmux send-keys -t "${pane_ids[$idx]}" "$launch" C-m
     done
 
     tmux select-window -t "${pane_ids[0]}" 2>/dev/null || true
