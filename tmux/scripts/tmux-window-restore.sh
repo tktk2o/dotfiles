@@ -100,8 +100,7 @@ reconstruct() {
     packed="$(printf '%s' "$line" | cut -f4)"
     [ -n "$packed" ] || { echo "twr: empty selection" >&2; return 1; }
 
-    local -a pane_ids=() pane_cmds=() segs=() target_args=()
-    [ -n "${TWR_TARGET:-}" ] && target_args=(-t "$TWR_TARGET")
+    local -a pane_ids=() pane_cmds=() segs=()
     local first=1 anchor="" pid cwd cmd seg
 
     IFS="$RS" read -r -a segs <<< "$packed"
@@ -110,7 +109,13 @@ reconstruct() {
         cmd="${seg#*"$US"}"
         [ -d "$cwd" ] || cwd="$HOME" # fall back if the dir is gone
         if [ "$first" -eq 1 ]; then
-            pid="$(tmux new-window "${target_args[@]}" -P -F '#{pane_id}' -n "$name" -c "$cwd")"
+            # macOS /bin/bash 3.2 errors on empty-array expansion under set -u,
+            # so branch instead of passing an optional -t via an array.
+            if [ -n "${TWR_TARGET:-}" ]; then
+                pid="$(tmux new-window -t "$TWR_TARGET" -P -F '#{pane_id}' -n "$name" -c "$cwd")"
+            else
+                pid="$(tmux new-window -P -F '#{pane_id}' -n "$name" -c "$cwd")"
+            fi
             first=0
         else
             pid="$(tmux split-window -P -F '#{pane_id}' -t "$anchor" -c "$cwd")"
