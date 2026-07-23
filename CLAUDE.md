@@ -76,7 +76,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 
 - **Shell**: zsh + sheldon (plugin manager) + starship (prompt)
 - **Terminal**: Ghostty
-- **Multiplexer**: tmux (prefix: Ctrl+B)
+- **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — restores layout + cwd, and relaunches Claude Code panes as `claude --continue`; other programs are not relaunched)
 - **Editor**: Neovim with LazyVim, octo.nvim, diffview.nvim
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
 

@@ -155,6 +155,28 @@ setup_sheldon() {
     echo "[sheldon] Done."
 }
 
+setup_tmux_plugins() {
+    if ! command -v tmux &> /dev/null; then
+        echo "[tmux plugins] Skipped (tmux not installed)."
+        return 0
+    fi
+
+    local tpm_dir="$HOME/.tmux/plugins/tpm"
+    echo ""
+    if [ ! -d "$tpm_dir" ]; then
+        echo "[tmux plugins] Cloning TPM..."
+        git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+    else
+        echo "[tmux plugins] TPM already present."
+    fi
+
+    # install_plugins reads ~/.tmux.conf (symlinked) for @plugin lines and
+    # clones resurrect/continuum into ~/.tmux/plugins/. Non-fatal if it fails
+    # (e.g. no network); plugins can also be installed later via `prefix + I`.
+    echo "[tmux plugins] Installing plugins..."
+    "$tpm_dir/bin/install_plugins" || echo "[tmux plugins] install_plugins failed; run 'prefix + I' inside tmux."
+}
+
 setup_gh_extensions() {
     if ! command -v gh &> /dev/null; then
         echo "[gh extensions] Skipped (gh not installed)."
@@ -264,6 +286,7 @@ main() {
 
     # Phase 4: Additional Setup
     setup_sheldon
+    setup_tmux_plugins
     setup_gh_extensions
     setup_rtk
 
