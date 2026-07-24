@@ -1,12 +1,28 @@
+# gh-dash config — TEMPLATE / SEED
+#
+# The live config is the untracked, machine-local file `config.local.yml`
+# (company-specific repo/org names live there and must NOT be committed —
+# this is a public repo). setup.sh seeds config.local.yml from this file on
+# first run, then symlinks it to ~/.config/gh-dash/config.yml.
+#
+# To add company-specific sections, edit config.local.yml (NOT this file):
+#
+#   - title: <team> (team)
+#     filters: >-
+#       is:open draft:false -author:@me
+#       repo:<org>/<repo-a>
+#       repo:<org>/<repo-b>
+#     limit: 30
+
 repoPaths:
   :owner/:repo: ~/src/github.com/:owner/:repo
 
 prSections:
-  - title: My Pull Requests
-    filters: is:open author:@me
-    limit: 15
   - title: Review Requests
     filters: is:open review-requested:@me
+    limit: 15
+  - title: My Pull Requests
+    filters: is:open author:@me
     limit: 15
 
 defaults:

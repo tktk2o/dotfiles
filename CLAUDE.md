@@ -35,7 +35,7 @@ brew bundle --file=~/.Brewfile      # Install packages
 | `sheldon/plugins.toml` | `~/.config/sheldon/plugins.toml` |
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` |
 | `gh/config.yml` | `~/.config/gh/config.yml` |
-| `gh-dash/config.yml` | `~/.config/gh-dash/config.yml` |
+| `gh-dash/config.local.yml` (untracked; seeded from `config.yml.example`) | `~/.config/gh-dash/config.yml` |
 | `herdr/config.toml` | `~/.config/herdr/config.toml` |
 | `claude/CLAUDE.md` | `~/.claude/CLAUDE.md` |
 | `claude/settings.json` | `~/.claude/settings.json` |
@@ -49,6 +49,18 @@ brew bundle --file=~/.Brewfile      # Install packages
 > relative to the symlink's location (`~/.claude/`), not its realpath, so
 > `@RTK.md` correctly loads the rtk-managed `~/.claude/RTK.md` (which is *not*
 > checked into dotfiles — `rtk init -g` installs it).
+
+### Local-only (untracked) files — recreate per machine
+
+These hold machine- or company-specific data that must **not** be committed to
+this public repo. They are intentionally untracked; a fresh clone will not have
+them. After `./setup.sh` on a new machine, recreate each one:
+
+| File | Purpose | How to recreate |
+|------|---------|-----------------|
+| `gh-dash/config.local.yml` | Live gh-dash config; holds company repo/org names in `prSections`. Symlinked to `~/.config/gh-dash/config.yml`. | `setup.sh` auto-seeds it from `gh-dash/config.yml.example`; then add company-specific sections (per-repo/org `prSections`). Ignored via `gh-dash/.gitignore`. |
+| `~/.config/git/denylist.txt` | Company-specific terms for the pre-commit leak scanner (one case-insensitive `grep -E` regex per line). | Recreate manually — the terms are themselves sensitive, so they are never committed. Until it exists, the hook runs generic-secret checks only. See *Pre-commit Leak Scanning* below. |
+| `~/.claude/RTK.md` | rtk global instructions imported by `claude/CLAUDE.md`. | Installed by `rtk init -g` (not part of this repo). |
 
 ### Neovim (LazyVim)
 

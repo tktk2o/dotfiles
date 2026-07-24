@@ -101,7 +101,13 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/mise/config.toml" "$HOME/.config/mise/config.toml"
     create_symlink "$DOTFILES_DIR/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
     create_symlink "$DOTFILES_DIR/gh/config.yml" "$HOME/.config/gh/config.yml"
-    create_symlink "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.yml"
+    # gh-dash: the live config is machine-local (company-specific repo/org names,
+    # kept untracked). Seed it from the tracked template on first run, then symlink.
+    if [ ! -f "$DOTFILES_DIR/gh-dash/config.local.yml" ]; then
+        cp "$DOTFILES_DIR/gh-dash/config.yml.example" "$DOTFILES_DIR/gh-dash/config.local.yml"
+        echo "[gh-dash] Seeded config.local.yml from template — add company-specific sections there."
+    fi
+    create_symlink "$DOTFILES_DIR/gh-dash/config.local.yml" "$HOME/.config/gh-dash/config.yml"
     create_symlink "$DOTFILES_DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 
     # Executables (~/.local/bin — already on PATH via zsh/.zshrc)
