@@ -16,24 +16,17 @@ gh dash
 
 | キー | 動作 |
 |------|------|
-| `d` | diffview.nvimでdiff表示（tmux新窓） |
-| `C` | Octo.nvimでPRレビュー画面（tmux新窓） |
+| `d` | `gh pr diff <n> -R <repo> \| delta --paging=always` をtmux新窓で表示（checkoutなし） |
+| `R` | AIレビュー: tmux新窓を2分割し、左で `claude "/review <PR URL>"`、右で同じdiffを表示 |
 | `o` | ブラウザでPR表示 |
 | `m` | PRをsquash merge |
 | `a` | PRをApprove |
+| `y` | PR番号をコピー（gh-dash組み込み） |
+| `Y` | PR URLをコピー（gh-dash組み込み） |
 
 ## Neovim内キーバインド
 
-### PR操作 (Octo.nvim)
-
-| キー | 動作 |
-|------|------|
-| `<leader>gpl` | PR一覧表示 |
-| `<leader>gpr` | レビュー開始 |
-| `<leader>gps` | レビュー送信 |
-| `<leader>gpm` | PRマージ (squash) |
-
-### Diff表示 (diffview.nvim)
+### Diff表示 (diffview.nvim, ローカルの差分確認用)
 
 | キー | 動作 |
 |------|------|
@@ -43,41 +36,24 @@ gh dash
 
 ## 典型的なワークフロー
 
-### 1. gh-dashから開始
+### 1. gh-dashから差分だけ確認する
 ```bash
 gh dash
 # Review Requestsセクションでレビュー待ちPRを確認
-# d キーでdiffview表示、または C キーでOcto画面
+# d キーでdiff表示（gh pr diff | delta、checkout不要）
 ```
 
-### 2. Neovim単体で開始
-```vim
-:Octo pr list
-" PRを選択してEnter
-:Octo review start
-" コードを確認、コメント追加
-:Octo review submit
+### 2. gh-dashからAIレビューを依頼する
+```bash
+gh dash
+# R キーでtmux新窓を分割し、左でclaude "/review <PR URL>"、右で同じdiffを表示
 ```
 
-### 3. diffviewでの差分確認
+### 3. ローカルにチェックアウト済みのブランチをdiffviewで確認する
 ```vim
 :DiffviewOpen origin/main...HEAD
 " または特定コミット間
 :DiffviewOpen HEAD~3
-```
-
-## Octo.nvim コマンド一覧
-
-```vim
-:Octo pr list           " PR一覧
-:Octo pr checkout {num} " PRをcheckout
-:Octo pr changes        " PR変更ファイル一覧
-:Octo review start      " レビュー開始
-:Octo review submit     " レビュー送信
-:Octo review comments   " レビューコメント一覧
-:Octo comment add       " コメント追加
-:Octo pr merge squash   " squash merge
-:Octo pr approve        " Approve
 ```
 
 ## トラブルシューティング

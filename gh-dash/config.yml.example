@@ -28,7 +28,7 @@ prSections:
 defaults:
   preview:
     open: true
-    width: 60
+    width: 250
   view: prs
 
 keybindings:
@@ -37,13 +37,14 @@ keybindings:
       command: >-
         tmux new-window -n "diff #{{.PrNumber}}"
         'gh pr diff {{.PrNumber}} -R {{.RepoName}} | delta --paging=always'
-    - key: C
-      command: |-
-        tmux new-window -c {{.RepoPath}} '
-          tmux rename-window {{.RepoName}}#{{.PrNumber}} &&
-          gh pr checkout {{.PrNumber}} &&
-          nvim -c ":Octo pr edit {{.PrNumber}}"
-        '
+    # overrides the built-in refreshAll (r still refreshes the current section)
+    # left pane: claude /review, right pane: the same diff as `d`
+    - key: R
+      command: >-
+        tmux new-window -n "review #{{.PrNumber}}" -c {{.RepoPath}}
+        'claude "/review https://github.com/{{.RepoName}}/pull/{{.PrNumber}}"'
+        \; split-window -h -d -c {{.RepoPath}}
+        'gh pr diff {{.PrNumber}} -R {{.RepoName}} | delta --paging=always'
     - key: o
       command: gh pr view --web {{.PrNumber}} -R {{.RepoName}}
     - key: m

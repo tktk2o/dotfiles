@@ -75,10 +75,10 @@ GitHub PR review integrates gh-dash with Neovim:
 
 ```bash
 gh dash  # Start dashboard
-# Keybindings: d=DiffviewOpen, C=Octo edit, o=browser, m=merge, a=approve
+# Keybindings: d=diff (gh pr diff | delta), R=AI review (claude /review + diff split), o=browser, m=merge, a=approve
 ```
 
-Neovim leader keys: `<leader>gpl` (list PRs), `<leader>gpr` (review), `<leader>gpm` (merge)
+Neovim leader keys: `<leader>gdo` / `<leader>gdc` / `<leader>gdh` (diffview.nvim, for local diffs)
 
 ### Theme
 
@@ -89,7 +89,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 - **Shell**: zsh + sheldon (plugin manager) + starship (prompt)
 - **Terminal**: Ghostty
 - **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — restores layout + cwd, and relaunches Claude Code panes with their saved command verbatim so `claude --resume <id>` panes return to their exact session; other programs are not relaunched)
-- **Editor**: Neovim with LazyVim, octo.nvim, diffview.nvim
+- **Editor**: Neovim with LazyVim, diffview.nvim
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
 - **Past-window restore**: `twr` (`tmux/scripts/tmux-window-restore.sh`, symlinked to `~/.local/bin/twr`; `prefix + W` opens it in a popup)
 

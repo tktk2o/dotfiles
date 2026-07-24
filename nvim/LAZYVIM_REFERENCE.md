@@ -160,22 +160,6 @@ return {
 
 ## インストール済みプラグインのコマンド
 
-### octo.nvim (GitHub PR)
-
-| キーマップ | コマンド | 説明 |
-|-----------|---------|------|
-| `<leader>gpl` | `:Octo pr list` | PR一覧 |
-| `<leader>gpr` | `:Octo review start` | レビュー開始 |
-| `<leader>gps` | `:Octo review submit` | レビュー提出 |
-| `<leader>gpm` | `:Octo pr merge squash` | PRマージ |
-
-**その他のOctoコマンド:**
-- `:Octo pr create` - PR作成
-- `:Octo pr checkout {number}` - PRをチェックアウト
-- `:Octo pr close` - PRクローズ
-- `:Octo comment add` - コメント追加（レビュー中）
-- `:Octo review comments` - レビューコメント一覧
-
 ### diffview.nvim (差分表示)
 
 | キーマップ | コマンド | 説明 |
