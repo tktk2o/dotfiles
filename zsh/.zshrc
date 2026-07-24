@@ -10,6 +10,7 @@ export PATH="$HOME/.local/bin:/Users/takuto_kato/.rd/bin:/opt/homebrew/opt/mysql
 # aliases
 alias c='claude --permission-mode acceptEdits'
 alias nv='nvim'
+alias ghd='gh dash'
 
 # sheldon (cached). Regenerate the source script when plugins.toml or
 # any local *.zsh plugin is newer than the cache; otherwise reuse it.
