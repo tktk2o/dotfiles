@@ -74,8 +74,8 @@ Located in `nvim/`, using LazyVim framework:
 GitHub PR review integrates gh-dash with Neovim:
 
 ```bash
-gh dash  # Start dashboard
-# Keybindings: d=diff (gh pr diff | delta), R=AI review (claude /review + diff split), o=browser, m=merge, a=approve
+gh dash  # Start dashboard (aliased to `ghd` in zsh/.zshrc)
+# Keybindings: d=diff (gh pr diff | delta), R=AI review (claude /review + diff split), o=browser, m=merge, a=approve, y/Y=copy PR number/URL
 ```
 
 Neovim leader keys: `<leader>gdo` / `<leader>gdc` / `<leader>gdh` (diffview.nvim, for local diffs)
