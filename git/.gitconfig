@@ -24,6 +24,13 @@
 [diff]
 	algorithm = histogram
 	colorMoved = default
+	# `git diff` still pages through delta (core.pager); `git difftool` opens
+	# hunk's review TUI instead. Standalone `hunk diff` works without this.
+	tool = hunk
+[difftool]
+	prompt = false
+[difftool "hunk"]
+	cmd = hunk difftool "$LOCAL" "$REMOTE" "$BASE"
 [merge]
 	conflictstyle = zdiff3
 [branch]

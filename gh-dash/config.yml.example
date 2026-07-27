@@ -28,7 +28,11 @@ prSections:
 defaults:
   preview:
     open: true
-    width: 250
+    # position: auto (default) falls back to "bottom" when
+    # (screenWidth - previewWidth) < 80, so pin it to right.
+    position: right
+    # 0 < width < 1 is treated as a ratio of the screen width
+    width: 0.5
   view: prs
 
 keybindings:
@@ -36,7 +40,7 @@ keybindings:
     - key: d
       command: >-
         tmux new-window -n "diff #{{.PrNumber}}"
-        'gh pr diff {{.PrNumber}} -R {{.RepoName}} | delta --paging=always'
+        'gh pr diff {{.PrNumber}} -R {{.RepoName}} | hunk patch'
     # overrides the built-in refreshAll (r still refreshes the current section)
     # left pane: claude /review, right pane: the same diff as `d`
     - key: R
@@ -44,7 +48,7 @@ keybindings:
         tmux new-window -n "review #{{.PrNumber}}" -c {{.RepoPath}}
         'claude "/review https://github.com/{{.RepoName}}/pull/{{.PrNumber}}"'
         \; split-window -h -d -c {{.RepoPath}}
-        'gh pr diff {{.PrNumber}} -R {{.RepoName}} | delta --paging=always'
+        'gh pr diff {{.PrNumber}} -R {{.RepoName}} | hunk patch'
     - key: o
       command: gh pr view --web {{.PrNumber}} -R {{.RepoName}}
     - key: m
