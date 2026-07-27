@@ -68,7 +68,11 @@ elif command -v npx > /dev/null 2>&1; then
     ccusage_cmd=(npx -y ccusage)
 fi
 if [ -n "${ccusage_cmd:-}" ]; then
-    usage=$(echo "$input" | "${ccusage_cmd[@]}" statusline 2>/dev/null)
+    # --no-offline is required: statusline defaults to --offline, whose bundled
+    # price table lacks the newest models (opus-5 etc.), silently costing them
+    # at $0 and under-reporting today / block / burn rate. Fetching live pricing
+    # is also faster here (~1.2s vs ~3.1s) since it is cached on disk.
+    usage=$(echo "$input" | "${ccusage_cmd[@]}" statusline --no-offline 2>/dev/null)
     if [ -n "$usage" ]; then
         cost=$(echo "$usage" | awk -F ' \\| ' '{for (i=1;i<=NF;i++) if ($i ~ /^💰/) print $i}')
         burn=$(echo "$usage" | awk -F ' \\| ' '{for (i=1;i<=NF;i++) if ($i ~ /^🔥/) print $i}')

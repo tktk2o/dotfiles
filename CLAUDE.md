@@ -45,10 +45,16 @@ brew bundle --file=~/.Brewfile      # Install packages
 | `vscode/keybindings.json` | `~/Library/Application Support/Code/User/keybindings.json` |
 
 > `~/.claude/CLAUDE.md` is a symlink to `claude/CLAUDE.md`, which holds the
-> `@RTK.md` / `@worktree.md` / `@model-policy.md` imports. `@` imports resolve
-> relative to the symlink's location (`~/.claude/`), not its realpath, so
-> `@RTK.md` correctly loads the rtk-managed `~/.claude/RTK.md` (which is *not*
-> checked into dotfiles — `rtk init -g` installs it).
+> `@RTK.md` / `@worktree.md` / `@model-policy.md` / `@local.md` imports. `@`
+> imports resolve relative to the symlink's location (`~/.claude/`), not its
+> realpath, so `@RTK.md` correctly loads the rtk-managed `~/.claude/RTK.md` and
+> `@local.md` the machine-local `~/.claude/local.md` — neither is checked into
+> dotfiles (`rtk init -g` installs the former; see the table below for the latter).
+>
+> There is no user-level `~/.claude/CLAUDE.local.md` mechanism in Claude Code —
+> `CLAUDE.local.md` is *project*-scoped only. Importing an untracked file from
+> `~/.claude/` is the documented way to keep personal instructions out of a
+> tracked CLAUDE.md ([memory docs](https://code.claude.com/docs/en/memory.md)).
 
 ### Local-only (untracked) files — recreate per machine
 
@@ -61,6 +67,8 @@ them. After `./setup.sh` on a new machine, recreate each one:
 | `gh-dash/config.local.yml` | Live gh-dash config; holds company repo/org names in `prSections`. Symlinked to `~/.config/gh-dash/config.yml`. | `setup.sh` auto-seeds it from `gh-dash/config.yml.example`; then add company-specific sections (per-repo/org `prSections`). Ignored via `gh-dash/.gitignore`. |
 | `~/.config/git/denylist.txt` | Company-specific terms for the pre-commit leak scanner (one case-insensitive `grep -E` regex per line). | Recreate manually — the terms are themselves sensitive, so they are never committed. Until it exists, the hook runs generic-secret checks only. See *Pre-commit Leak Scanning* below. |
 | `~/.claude/RTK.md` | rtk global instructions imported by `claude/CLAUDE.md`. | Installed by `rtk init -g` (not part of this repo). |
+| `~/.claude/local.md` + `~/.claude/local/*.md` | Machine-local Claude instructions. `local.md` is a **thin hub** imported via `@local.md` (a few lines per topic, always in context); the detail sits in `local/*.md` (e.g. `local/slack.md`: use `slack-cli` over the Slack MCP, the `all` / `ext` profiles, the Slack writing persona) and is **not** imported, so it is read on demand and costs nothing in unrelated sessions. Add topics as new `local/<topic>.md` + one hub line. | Recreate manually — contents name internal workspaces/colleagues, so they stay out of this public repo. Missing on a fresh machine: the `@local.md` import simply resolves to nothing. |
+| `~/.claude/settings.local.json` | Machine-local Claude settings: extra `permissions`, `deny` rules (Slack MCP is blocked here), enabled company plugins/marketplaces. | Recreate manually; Claude Code also writes to it as permissions are granted. Not symlinked — `claude/settings.json` is the tracked half. |
 
 ### Neovim (LazyVim)
 
@@ -75,7 +83,7 @@ GitHub PR review integrates gh-dash with Neovim:
 
 ```bash
 gh dash  # Start dashboard (aliased to `ghd` in zsh/.zshrc)
-# Keybindings: d=diff (gh pr diff | delta), R=AI review (claude /review + diff split), o=browser, m=merge, a=approve, y/Y=copy PR number/URL
+# Keybindings: d=diff (gh pr diff | hunk patch), R=AI review (claude /review + diff split), o=browser, m=merge, a=approve, y/Y=copy PR number/URL
 ```
 
 Neovim leader keys: `<leader>gdo` / `<leader>gdc` / `<leader>gdh` (diffview.nvim, for local diffs)
@@ -90,6 +98,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 - **Terminal**: Ghostty
 - **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — auto-save every 15 min, but auto-restore is **off** (`@continuum-restore 'off'`), so restoring is manual: `prefix + Ctrl-r` for the whole snapshot, `prefix + W` / `twr` for a single window. A restore brings back layout + cwd, and relaunches Claude Code panes with their saved command verbatim so `claude --resume <id>` panes return to their exact session; other programs are not relaunched)
 - **Editor**: Neovim with LazyVim, diffview.nvim
+- **Diff review**: hunk (review-first TUI — `hunk diff`, `git difftool`, and gh-dash `d`/`R`). delta stays the plain `git diff` pager (`core.pager`).
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
 - **Past-window restore**: `twr` (`tmux/scripts/tmux-window-restore.sh`, symlinked to `~/.local/bin/twr`; `prefix + W` opens it in a popup)
 
