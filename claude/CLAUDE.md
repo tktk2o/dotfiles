@@ -1,4 +1,4 @@
-@RTK.md
+@~/.claude/RTK.md
 @worktree.md
 @model-policy.md
-@local.md
+@~/.claude/local.md

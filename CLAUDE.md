@@ -45,11 +45,21 @@ brew bundle --file=~/.Brewfile      # Install packages
 | `vscode/keybindings.json` | `~/Library/Application Support/Code/User/keybindings.json` |
 
 > `~/.claude/CLAUDE.md` is a symlink to `claude/CLAUDE.md`, which holds the
-> `@RTK.md` / `@worktree.md` / `@model-policy.md` / `@local.md` imports. `@`
-> imports resolve relative to the symlink's location (`~/.claude/`), not its
-> realpath, so `@RTK.md` correctly loads the rtk-managed `~/.claude/RTK.md` and
-> `@local.md` the machine-local `~/.claude/local.md` — neither is checked into
-> dotfiles (`rtk init -g` installs the former; see the table below for the latter).
+> `@~/.claude/RTK.md` / `@worktree.md` / `@model-policy.md` / `@~/.claude/local.md`
+> imports. **Relative `@` imports resolve against the symlink's realpath
+> (`dotfiles/claude/`), not `~/.claude/`** — so the two untracked files, which live
+> only in `~/.claude/`, must be imported by absolute `@~/…` path. Bare `@RTK.md` /
+> `@local.md` silently resolved to nothing (no error, no warning: the personal
+> instructions were simply never in context), which is why they are spelled out in
+> full. `@worktree.md` / `@model-policy.md` sit next to `claude/CLAUDE.md` in this
+> repo, so their relative form is correct.
+>
+> Neither untracked file is checked into dotfiles (`rtk init -g` installs the
+> former; see the table below for the latter).
+>
+> Symptom to watch for: `~/.claude/RTK.md` or `~/.claude/local.md` content missing
+> from a session's loaded instructions. Verify with `claude` → `/memory`, or by
+> checking that a string unique to each file appears in the session context.
 >
 > There is no user-level `~/.claude/CLAUDE.local.md` mechanism in Claude Code —
 > `CLAUDE.local.md` is *project*-scoped only. Importing an untracked file from
@@ -66,8 +76,8 @@ them. After `./setup.sh` on a new machine, recreate each one:
 |------|---------|-----------------|
 | `gh-dash/config.local.yml` | Live gh-dash config; holds company repo/org names in `prSections`. Symlinked to `~/.config/gh-dash/config.yml`. | `setup.sh` auto-seeds it from `gh-dash/config.yml.example`; then add company-specific sections (per-repo/org `prSections`). Ignored via `gh-dash/.gitignore`. |
 | `~/.config/git/denylist.txt` | Company-specific terms for the pre-commit leak scanner (one case-insensitive `grep -E` regex per line). | Recreate manually — the terms are themselves sensitive, so they are never committed. Until it exists, the hook runs generic-secret checks only. See *Pre-commit Leak Scanning* below. |
-| `~/.claude/RTK.md` | rtk global instructions imported by `claude/CLAUDE.md`. | Installed by `rtk init -g` (not part of this repo). |
-| `~/.claude/local.md` + `~/.claude/local/*.md` | Machine-local Claude instructions. `local.md` is a **thin hub** imported via `@local.md` (a few lines per topic, always in context); the detail sits in `local/*.md` (e.g. `local/slack.md`: use `slack-cli` over the Slack MCP, the `all` / `ext` profiles, the Slack writing persona) and is **not** imported, so it is read on demand and costs nothing in unrelated sessions. Add topics as new `local/<topic>.md` + one hub line. | Recreate manually — contents name internal workspaces/colleagues, so they stay out of this public repo. Missing on a fresh machine: the `@local.md` import simply resolves to nothing. |
+| `~/.claude/RTK.md` | rtk global instructions imported by `claude/CLAUDE.md` (as `@~/.claude/RTK.md`). | Installed by `rtk init -g` (not part of this repo). |
+| `~/.claude/local.md` + `~/.claude/local/*.md` | Machine-local Claude instructions. `local.md` is a **thin hub** imported via `@~/.claude/local.md` (a few lines per topic, always in context); the detail sits in `local/*.md` (e.g. `local/slack.md`: use `slack-cli` over the Slack MCP, the `all` / `ext` profiles, the Slack writing persona) and is **not** imported, so it is read on demand and costs nothing in unrelated sessions. Add topics as new `local/<topic>.md` + one hub line. | Recreate manually — contents name internal workspaces/colleagues, so they stay out of this public repo. Missing on a fresh machine: the `@~/.claude/local.md` import simply resolves to nothing. |
 | `~/.claude/settings.local.json` | Machine-local Claude settings: extra `permissions`, `deny` rules (Slack MCP is blocked here), enabled company plugins/marketplaces. | Recreate manually; Claude Code also writes to it as permissions are granted. Not symlinked — `claude/settings.json` is the tracked half. |
 
 ### Neovim (LazyVim)
