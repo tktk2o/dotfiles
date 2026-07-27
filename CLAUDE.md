@@ -132,9 +132,33 @@ Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempote
 
 Single-maintainer personal repo — commit directly to `main`, no feature branches or PRs for routine changes. Use worktrees only for the cases in `claude/worktree.md` (PoC / upstream-dependent / parallel work).
 
-## Pre-commit Leak Scanning
+## Never commit this — what must stay out of this repo
 
-This is a **public** repo, so a `pre-commit` hook blocks commits that would leak secrets or company-specific terms. Two layers:
+This is a **public** repo. The categories below must never be committed, in any
+file (including CLAUDE.md, comments, commit messages and example configs). This
+list is intentionally category-level: writing down the actual names/values would
+itself be the leak. When a config needs one of these, keep the config untracked
+and record it in *Local-only (untracked) files* above instead.
+
+| Category | Examples of what this covers | Where it lives instead |
+|----------|------------------------------|------------------------|
+| Credentials & tokens | API keys, OAuth/bot/user tokens (`xox*`), private keys, `.netrc`, session cookies | outside the repo entirely (keychain / tool-managed credential files) |
+| Employer identity & internal naming | company/product names, internal repo, org and team names, service and system codenames, internal URLs and hostnames | untracked local config (`gh-dash/config.local.yml`, `~/.claude/local/*.md`) |
+| People | colleague names, nicknames/handles, Slack user IDs, email addresses other than the git author identity | `~/.claude/local/*.md` |
+| Internal channels & workspaces | Slack channel names/IDs, workspace or profile names, mailing lists | `~/.claude/local/*.md` |
+| Internal ticket / doc references | issue keys, Jira/Confluence/Drive URLs, dashboard and monitor links | `~/.claude/local/*.md` |
+| Business data | customer/pharmacy/store names, query results, log excerpts, trace IDs, metric values from production | `~/docs/` (not git-managed at all) |
+| Machine-specific paths worth hiding | anything embedding an internal mount, VPN host or company account | untracked local config |
+
+The list of *terms* that trip the scanner is `~/.config/git/denylist.txt` — local
+and untracked, for the same reason this table has no concrete names.
+
+Absolute local paths under `$HOME` and this machine's username are fine (they are
+already all over `setup.sh`), as is the git author identity in `git/.gitconfig`.
+
+### Pre-commit Leak Scanning
+
+A `pre-commit` hook enforces the above. Two layers:
 
 - **Generic secrets**: patterns baked into `git/hooks/pre-commit` (AWS/GitHub/Slack/Google keys, private-key blocks). Safe to keep tracked.
 - **Company-specific terms**: loaded at runtime from a **local, untracked** file `~/.config/git/denylist.txt` (one `grep -E`, case-insensitive regex per line). This file is deliberately *not* tracked — the terms are themselves sensitive, so committing the denylist would defeat its purpose.
