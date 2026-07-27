@@ -127,7 +127,7 @@ dotfiles/
 - **シェル**: zsh + sheldon (プラグイン管理) + starship (プロンプト)
 - **ターミナル**: Ghostty
 - **エディタ**: Neovim (LazyVim) / VSCode
-- **マルチプレクサ**: tmux (prefix: Ctrl+B) + tmux-resurrect/continuum (セッション永続化)
+- **マルチプレクサ**: tmux (prefix: Ctrl+B) + tmux-resurrect/continuum (セッション永続化: 自動保存のみ、復元は手動 `prefix + Ctrl-r` / `prefix + W`)
 - **キーボード**: Karabiner-Elements
 - **PRレビュー**: gh-dash + Neovim (diffview.nvim)
 - **プロジェクト移動**: ghq + fzf (`fgh`)

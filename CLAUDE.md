@@ -88,7 +88,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 
 - **Shell**: zsh + sheldon (plugin manager) + starship (prompt)
 - **Terminal**: Ghostty
-- **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — restores layout + cwd, and relaunches Claude Code panes with their saved command verbatim so `claude --resume <id>` panes return to their exact session; other programs are not relaunched)
+- **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — auto-save every 15 min, but auto-restore is **off** (`@continuum-restore 'off'`), so restoring is manual: `prefix + Ctrl-r` for the whole snapshot, `prefix + W` / `twr` for a single window. A restore brings back layout + cwd, and relaunches Claude Code panes with their saved command verbatim so `claude --resume <id>` panes return to their exact session; other programs are not relaunched)
 - **Editor**: Neovim with LazyVim, diffview.nvim
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
 - **Past-window restore**: `twr` (`tmux/scripts/tmux-window-restore.sh`, symlinked to `~/.local/bin/twr`; `prefix + W` opens it in a popup)
