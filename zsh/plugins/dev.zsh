@@ -1,4 +1,5 @@
 # tmux dev layout: claude(left) + claude(right)
+#: ghq リポジトリを選び、Claude Code を左右ペインに並べた tmux ウィンドウを作る
 function dev() {
   if [[ -z "$TMUX" ]]; then
     echo "dev: tmux session required"

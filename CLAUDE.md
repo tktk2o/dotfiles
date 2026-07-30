@@ -134,12 +134,31 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 - **`prefix + F`, not `S`**: tmux's own session picker is lowercase `s`, so `S` would read as a second session list; `C` is taken by `customize-mode`.
 - **New-machine dependency**: needs `go` (in `.Brewfile`) — `setup.sh` → `setup_csr` builds the binary, and skips with a warning when go is missing. Nothing is symlinked, so re-run `./setup.sh` (or `cd claude/csr && go build -o ~/.local/bin/csr .`) after editing the source.
 
+### Command inventory (`keys` / `docs/cheatsheet.md`)
+
+`docs/cheatsheet.md` lists everything this repo lets you type. It is **generated** — do not edit it by hand.
+
+- **Source of truth is the configs themselves.** `tools/cheatsheet` walks `zsh/`, `tmux/.tmux.conf`, `nvim/lua/plugins/*.lua`, `gh/config.yml`, `gh-dash/config.yml.example`, `claude/skills/*/SKILL.md`, `karabiner/karabiner.json` and the `~/.local/bin` lines of `setup.sh`.
+- **Descriptions come from a `#:` annotation** next to each definition — trailing it, or on the line above:
+  ```
+  alias gs='git status' #: working tree の状態を見る
+  #: 過去のウィンドウを復元する（twr, popup）
+  bind W display-popup ...
+  ```
+  The marker is `#:`, **not** `##`: `.tmux.conf` already uses `##` for section labels and banner rules, which would otherwise be swallowed as descriptions. In `.tmux.conf` put the annotation on the line **above** the bind — command lines there carry `#{...}` format strings, so trailing comments are risky.
+- **Neovim, gh aliases, skills and Karabiner need no annotation**: `desc = "..."`, the alias body, the SKILL.md frontmatter `description:` and the Karabiner rule `description` are already human-written.
+- **Modes**: `keys` (fzf browser; Enter prints the entry and its definition site, executes nothing), `keys <query>`, `keys --list`, `keys --generate` (rewrites the doc), `keys --check` (fails when the doc is stale **or** a definition lacks `#:`). Env: `DOTFILES_DIR`.
+- **Drift guard**: the pre-commit hook runs `keys --check` when a parsed source is staged and **warns** (does not block) — an undocumented alias is untidy, not dangerous.
+- Internal shell helpers named `_foo` are skipped, so they never need annotating.
+- Built by `setup.sh` → `setup_keys` (needs `go`, same as `csr`).
+
 ## Adding New Configurations
 
 1. Create subdirectory: `mkdir toolname/`
 2. Add config file(s) to the subdirectory
 3. Add symlink command to `setup.sh` — always via the `create_symlink` helper, never a raw `ln -s`
 4. If installable via Homebrew, add to `brew/.Brewfile`
+5. If it adds something you type (alias, function, key binding, executable), annotate it with `#:` and run `keys --generate`
 
 Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempotent and supports `./setup.sh --no-brew`.
 

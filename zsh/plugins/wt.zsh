@@ -11,6 +11,7 @@
 #   - Creates .worktrees/ with .gitignore (* pattern) on first use.
 #   - Worktree alias = branch name with / replaced by -.
 #   - cd's into the new worktree on success.
+#: worktree を .worktrees/ に作って移動する
 function wta() {
   local branch="$1"
   local base="${2:-origin/main}"
@@ -47,6 +48,7 @@ function wta() {
 # Usage: wtj
 #   Lists worktrees in the current repo (main + all worktrees) and
 #   cd's to the selected one.
+#: 既存の worktree をファジー選択して移動する
 function wtj() {
   if ! git rev-parse --git-dir > /dev/null 2>&1; then
     echo "wtj: not in a git repository" >&2

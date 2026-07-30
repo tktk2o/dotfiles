@@ -57,6 +57,7 @@ function _fcl_list() {
     done
 }
 
+#: 全 tmux セッションの Claude Code ペインを一覧して切り替える
 function fcl() {
   if [[ -z "$TMUX" ]]; then
     echo "fcl: tmux session required"

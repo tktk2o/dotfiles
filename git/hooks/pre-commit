@@ -58,6 +58,18 @@ else
     printf '\n\033[33m[pre-commit] WARNING: no company denylist at %s — company-term check skipped\033[0m\n' "$denylist" >&2
 fi
 
+# --- layer 3: cheatsheet drift ---
+# docs/cheatsheet.md is generated from `#:` annotations, so a commit that adds a
+# command without documenting it would silently leave the inventory incomplete.
+# Only runs when a file the generator reads is staged, and only warns: a missing
+# annotation is untidy, not dangerous.
+if command -v keys > /dev/null 2>&1; then
+    staged="$(git diff --cached --name-only)"
+    if printf '%s\n' "$staged" | grep -qE '^(zsh/|tmux/\.tmux\.conf|nvim/lua/plugins/|gh/config\.yml|gh-dash/config\.yml\.example|claude/skills/|karabiner/|setup\.sh)'; then
+        keys --check > /dev/null 2>&1 || printf '\n\033[33m[pre-commit] WARNING: cheatsheet is stale or a command lacks a `#:` annotation — run: keys --check\033[0m\n' >&2
+    fi
+fi
+
 if [ "$fail" -ne 0 ]; then
     printf '\nCommit aborted. Remove the flagged content, or use --no-verify if this is a verified false positive.\n' >&2
     exit 1

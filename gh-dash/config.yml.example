@@ -37,22 +37,27 @@ defaults:
 
 keybindings:
   prs:
+    #: PR の差分を新しい tmux ウィンドウで開く（hunk）
     - key: d
       command: >-
         tmux new-window -n "diff #{{.PrNumber}}"
         'gh pr diff {{.PrNumber}} -R {{.RepoName}} | hunk patch'
     # overrides the built-in refreshAll (r still refreshes the current section)
     # left pane: claude /review, right pane: the same diff as `d`
+    #: PR レビューを開始する（claude /review + 差分ペイン）
     - key: R
       command: >-
         tmux new-window -n "review #{{.PrNumber}}" -c {{.RepoPath}}
         'claude "/review https://github.com/{{.RepoName}}/pull/{{.PrNumber}}"'
         \; split-window -h -d -c {{.RepoPath}}
         'gh pr diff {{.PrNumber}} -R {{.RepoName}} | hunk patch'
+    #: PR をブラウザで開く
     - key: o
       command: gh pr view --web {{.PrNumber}} -R {{.RepoName}}
+    #: PR を squash マージする
     - key: m
       command: gh pr merge {{.PrNumber}} --squash -R {{.RepoName}}
+    #: PR を approve する
     - key: a
       command: gh pr review {{.PrNumber}} --approve -R {{.RepoName}}
 

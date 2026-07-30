@@ -8,9 +8,9 @@ export XDG_CACHE_HOME=$HOME/.cache
 export PATH="$HOME/.local/bin:/Users/takuto_kato/.rd/bin:/opt/homebrew/opt/mysql@8.4/bin:$PATH"
 
 # aliases
-alias c='claude --permission-mode acceptEdits'
-alias nv='nvim'
-alias ghd='gh dash'
+alias c='claude --permission-mode acceptEdits' #: Claude Code を編集許可モードで起動
+alias nv='nvim' #: nvim を起動
+alias ghd='gh dash' #: gh dash（PR ダッシュボード）を開く
 
 # sheldon (cached). Regenerate the source script when plugins.toml or
 # any local *.zsh plugin is newer than the cache; otherwise reuse it.

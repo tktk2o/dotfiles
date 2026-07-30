@@ -111,6 +111,7 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 
     # Executables (~/.local/bin — already on PATH via zsh/.zshrc)
+    #: 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf）
     create_symlink "$DOTFILES_DIR/tmux/scripts/tmux-window-restore.sh" "$HOME/.local/bin/twr"
 
     # Claude Code
@@ -272,8 +273,25 @@ setup_csr() {
     echo ""
     echo "[csr] Building claude/csr -> ~/.local/bin/csr..."
     mkdir -p "$HOME/.local/bin"
+    #: 過去の Claude セッションを自分の発言で検索して再開する（fzf）
     (cd "$DOTFILES_DIR/claude/csr" && go build -o "$HOME/.local/bin/csr" .)
     echo "[csr] Done. Search past Claude sessions with 'csr' or tmux 'prefix + F'."
+}
+
+# keys is the inventory of everything this repo lets you type; it reads the
+# configs directly, so it lives with them rather than being generated once.
+setup_keys() {
+    if ! command -v go &> /dev/null; then
+        echo "[keys] Skipped (go not installed — 'brew bundle' installs it)."
+        return 0
+    fi
+
+    echo ""
+    echo "[keys] Building tools/cheatsheet -> ~/.local/bin/keys..."
+    mkdir -p "$HOME/.local/bin"
+    #: この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf）
+    (cd "$DOTFILES_DIR/tools/cheatsheet" && go build -o "$HOME/.local/bin/keys" .)
+    echo "[keys] Done. Browse commands with 'keys'; regenerate docs with 'keys --generate'."
 }
 
 # ===========================================
@@ -335,6 +353,7 @@ main() {
     setup_gh_extensions
     setup_rtk
     setup_csr
+    setup_keys
 
     # Summary
     print_summary

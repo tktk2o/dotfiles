@@ -132,6 +132,13 @@ dotfiles/
 - **PRレビュー**: gh-dash + Neovim (diffview.nvim)
 - **プロジェクト移動**: ghq + fzf (`fgh`)
 - **過去ウィンドウ復元**: `twr` (`prefix + W`)
+- **過去セッション検索**: `csr` (`prefix + F`) — 過去の Claude Code セッションを自分の発言で全文検索して再開
 - **AI**: Claude Code (+ rtk: Bash出力フィルタ)
+
+## コマンド一覧
+
+この dotfiles が提供するエイリアス・関数・キーバインド・実行ファイルは
+[docs/cheatsheet.md](./docs/cheatsheet.md) にまとまっている（設定ファイルから自動生成）。
+ターミナルからは `keys` で fzf 検索、`keys --generate` で再生成。
 
 > 開発運用上の詳細（gh-dashのキーバインド、ローカル管理ファイル、pre-commitリーク検査、rtkの健全性チェックなど）は [CLAUDE.md](./CLAUDE.md) を参照。
