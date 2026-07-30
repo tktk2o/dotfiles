@@ -26,19 +26,30 @@
 
 ## 採用アプローチ
 
-**都度全抽出 + fzf 内で絞り込み。**
+**Go の単一バイナリ + mtime 差分インデックスキャッシュ。** 絞り込みは fzf。
 
-起動時に全 user 発言を 1 行 1 発言の TSV に落として fzf に流し、絞り込みは fzf の
-ファジー検索に任せる。
+最初は shell + jq で書いたが **8.3 秒**かかった。前段に grep を入れて jq の入力を
+1/5 に削っても改善せず、コストは入力量ではなく jq の正規表現側にあった。
+
+そもそも `rg` で 269MB を舐めるだけで **90ms**（ページキャッシュ上）なので、
+毎回全走査する設計では JSON パースを乗せた時点で 100ms は原理的に届かない。
+よって「全部読まない」しかなく、差分キャッシュが必須になる。
+
+実測結果:
+
+| 実装 | 初回 | 2 回目以降 |
+|---|---|---|
+| shell + jq | 8.3s | 8.3s |
+| shell + grep 前段 + jq | 8.3s | 8.3s |
+| Go + 差分キャッシュ | 0.76s | **0.02〜0.03s** |
 
 検討して却下した案:
 
-- **fzf の `change:reload` で rg を都度実行**: 抽出コストは払わないが、対象が生の
-  JSON なので 1 行 = 1 JSON エントリになり、表示整形のために結局 jq が必要。
-  マッチ位置と表示のズレも出るため旨みが薄い。
-- **キャッシュインデックス**（`~/.cache/` に TSV、mtime 差分更新）: 2 回目以降は
-  瞬時だが、キャッシュ無効化という可動部が増える。1.4 秒が待てなくなってから
-  CLI の見た目を変えずに後付けできるので、今は入れない。
+- **fzf の `change:reload` で rg を都度実行**: 対象が生の JSON なので 1 行 = 1
+  エントリになり、表示整形のために結局パースが必要。マッチ位置と表示のズレも出る。
+- **Rust**: このマシンに cargo/rustc が入っておらず、Go 1.26 は入っている。
+  性能要件は Go で満たせるので、ツールチェーンを増やす理由がない。
+- **キャッシュなしの Go 全走査**: 初回相当の 0.76s が毎回かかる。要件に届かない。
 
 ## インターフェース
 
@@ -50,30 +61,62 @@ csr --help      使い方
 ```
 
 - 既定スコープは**全プロジェクト横断**。`--here` で絞る。
-- `--list` は fzf も tmux も要らないため、動作確認の唯一の手段になる
+- `--list` は fzf も tmux も要らないため、動作確認の主な手段になる
   （`./setup.sh` を実行して確かめることは禁止されている。後述）。
-- 環境変数 `CLAUDE_PROJECTS_DIR`（既定 `~/.claude/projects`）でログ置き場を
-  差し替えられる。検証時に fixture ディレクトリを指すために使う。
+- 環境変数で差し替え可能: `CLAUDE_PROJECTS_DIR`（既定 `~/.claude/projects`）、
+  `CSR_CACHE_DIR`（既定 `~/.cache/csr`）。後者は計測時にキャッシュ無し状態を
+  作るために使う（`rm -rf` で本物のキャッシュを消さずに済む）。
+- `--preview FILE TIMESTAMP` は内部用。fzf が各行に対して自分自身を呼ぶ。
+
+## キャッシュ
+
+`~/.cache/csr/` に 2 ファイル持つ。
+
+- `manifest.tsv`: フォーマット版 + `path \t mtime(ns) \t size`
+- `index.tsv`: 抽出済みレコード（`file \t sid \t cwd \t ts \t when \t text`）
+
+実行時に全 jsonl を stat し、size と mtime が一致するものはキャッシュのレコードを
+再利用、変わったものだけワーカプールで再パースする。日常的に変わるのは「今いる
+セッション」1 本なので、定常状態は実質「小さな TSV を読むだけ」になる。
+
+- 書き込みは temp + rename。index → manifest の順に書く（レコードの無い manifest
+  はサーブできないヒットを主張してしまう）。
+- キャッシュが壊れていたり無い場合は「全部変更あり」として扱う。純粋な派生データ
+  なので、消しても遅い実行 1 回分のコストしかない。
+- キャッシュには**絞り込み前の全件**を入れる。`--here` の結果でキャッシュを
+  汚さないため、フィルタは最後に掛ける。
 
 ## 候補行の作り方
 
-`find "$CLAUDE_PROJECTS_DIR" -name '*.jsonl'` の各エントリを jq で処理し、
-1 行 1 発言の TSV を生成する。
+`CLAUDE_PROJECTS_DIR` 以下の `*.jsonl` を走査し、1 レコード = 1 発言にする。
 
 ```
-session_id \t cwd \t timestamp(ISO) \t 1行化した発言
+file \t session_id \t cwd \t timestamp \t local_time \t text
 ```
+
+session_id はファイルのベース名（`claude --resume` が取る値そのもの）。
 
 ### 抽出対象
 
 `.type == "user"` のうち**人間が打った発言のみ**。次を除外する:
 
-- `tool_result`（`.message.content` が配列で `type == "tool_result"` の要素）
-- `<system-reminder>` / `<command-name>` / `<local-command-stdout>` で始まるテキスト
+- `tool_result`（`.message.content` の配列要素のうち `type == "text"` 以外）
+- `.isMeta` が立っているエントリ
+- ハーネスが user ロールに差し込むブロックで始まるテキスト:
+  `<system-reminder>` `<command-name>` `<command-message>` `<command-args>`
+  `<local-command-stdout>` `<local-command-stderr>` `<user-prompt-submit-hook>`
+  `<bash-input>` `<bash-stdout>` `<bash-stderr>`
 - 空文字列になったもの
 
 `.message.content` は文字列の場合と配列の場合があるため、配列なら
 `type == "text"` の要素だけを結合する。
+
+実測で 77,762 の user エントリが **1,885 件の実発言**に落ちる。JSON デコードの前に
+`"type":"user"` のバイト列で弾く安価な前段フィルタを掛ける。
+
+セッションログには 1 行が巨大な行（貼り付けたファイル、大きな tool 結果）が
+あるため、行バッファ上限を 32MB まで引き上げる。書きかけの最終行で走査全体を
+落とさない。
 
 ### プロジェクト名の決定
 
@@ -91,12 +134,13 @@ session_id \t cwd \t timestamp(ISO) \t 1行化した発言
 
 ## fzf の見せ方
 
-- 表示列は `リポジトリ名  YYYY-MM-DD HH:MM  発言`。session_id と cwd のフルパスは
-  `--with-nth` で列から隠す（検索対象からも外す）
-- ソートは新しい順
-- プレビュー: 選択行のセッションファイルから、その発言の**前後数ターン**を jq で
-  切り出して表示。ヘッダに cwd フルパスと session_id を出す
+- 表示列（5 列目）は `リポジトリ名  YYYY-MM-DD HH:MM  発言`。1〜4 列目（file /
+  session_id / cwd / timestamp）は `--with-nth=5` で隠す（検索対象からも外れる）
+- ソートは新しい順（`--no-sort` で fzf 側の並べ替えを止める）
+- プレビュー: 選択行のセッションから、その発言の**前後 3 ターン**を表示。
+  マッチ行に `▶` を付ける
 - 引数の query は `--query` に流す
+- fzf のキャンセル（Esc / C-c）は非ゼロ終了だが、これは失敗ではないので黙って終わる
 
 ## Enter したときの挙動
 
@@ -127,40 +171,51 @@ bind F display-popup -E -w 80% -h 70% "$HOME/.local/bin/csr"
 
 | ファイル | 役割 |
 |---|---|
-| `claude/scripts/claude-session-search.sh` | 本体（新規） |
-| `setup.sh` | `~/.local/bin/csr` へのシンボリックリンクを `create_symlink` で追加 |
+| `claude/csr/main.go` | CLI・fzf 起動・プレビュー・resume |
+| `claude/csr/extract.go` | jsonl 1 本から発言/会話ターンを取り出す |
+| `claude/csr/cache.go` | 差分インデックスの読み書き |
+| `claude/csr/scan.go` | 走査・キャッシュ判定・並列パース・並べ替え |
+| `claude/csr/exec_unix.go` | `syscall.Exec`（tmux 外での置き換え起動） |
+| `setup.sh` | `setup_csr`: `go build -o ~/.local/bin/csr` |
 | `tmux/.tmux.conf` | `bind F` を追加 |
-| `CLAUDE.md` | `csr` の説明とローカル依存（`~/.local/bin/csr` リンク）を追記 |
+| `brew/.Brewfile` | `brew "go"`（ビルドに必要） |
+| `CLAUDE.md` | `csr` の説明と新マシン手順を追記 |
 
-シェルスクリプトは repo の規約どおり `#!/bin/bash` + `set -e`。
+`twr` と違いシンボリックリンクではなく**ビルド成果物**を置くので、`setup.sh` の
+`create_symlink` は通さない。go が無いマシンではスキップして警告を出す。
 
 ## エラー処理
 
 | 状況 | 挙動 |
 |---|---|
-| `jq` / `fzf` が無い | 起動時に不足しているコマンド名を出して exit 1（`--list` は fzf 不要なので jq のみ要求） |
-| `CLAUDE_PROJECTS_DIR` が無い | 「セッションログが見つかりません」で exit 1 |
-| 候補ゼロ（`--here` で絞った結果など） | メッセージを出して exit 0 |
+| `go` が無い（setup 時） | ビルドをスキップして理由を表示 |
+| `fzf` が無い | fzf 起動失敗をそのままエラーとして返す（`--list` は fzf 不要） |
+| `CLAUDE_PROJECTS_DIR` が無い | 走査エラーを表示して exit 1 |
+| 候補ゼロ（`--here` で絞った結果など） | `--here` を外す誘導を出して exit 1 |
 | fzf をキャンセル（Esc / C-c） | 何もせず exit 0 |
+| キャッシュが壊れている / 書けない | 黙って全件パースにフォールバック（速度だけの損失） |
+| 読めない jsonl / 壊れた行 | その行・その1本を飛ばし、検索全体は続行 |
 | `claude --resume` 自体の失敗 | claude 側のメッセージに委ねる（wrap しない） |
 
 ## 検証方法
 
-この repo には自動テスト基盤が無い（`twr` にも無い）ため、静的検査 + `--list` に
-よる手動確認で担保する。
+この repo には自動テスト基盤が無い（`twr` にも無い）ため、Go の標準チェックと
+`--list` による実データ確認で担保する。
 
-- `bash -n claude/scripts/claude-session-search.sh`（編集ごと）
-- `shellcheck claude/scripts/claude-session-search.sh`
+- `gofmt -l claude/csr` が何も出さないこと
+- `go vet ./...` / `go build`
 - `csr --list | head` で候補行の形を目視確認
-- `CLAUDE_PROJECTS_DIR=<fixture> csr --list` で、除外ルール（tool_result /
-  `<system-reminder>` / 空行）が効いていることを確認
+- `CSR_CACHE_DIR=<temp> csr --list` を 2 回走らせ、初回 < 1s・2 回目 < 100ms を確認
+- shell 実装との出力差分を突き合わせ、消えた行が `<bash-input>` / `<bash-stdout>`
+  だけであることを確認済み（意図した除外）
+- `bash -n setup.sh`
 - **`./setup.sh` は実行しない。** `create_symlink` が `rm -rf "$dest"` するため、
-  このマシンの実ファイルを壊す。シンボリックリンク行はソースパスの存在確認と
-  `ls -la` で足りる
+  このマシンの実ファイルを壊す
 
 ## 非目標（YAGNI）
 
 - 会話ビューア / ページャ（resume すれば読めるため不要）
 - assistant 発言や tool 出力の検索（ノイズが多い。必要になったらフラグで足す）
-- キャッシュインデックス（1.4 秒で足りているうちは入れない）
 - セッションの削除・アーカイブ管理
+- キャッシュのバックグラウンド更新やウォームアップ（0.76s の初回を 1 度だけ払えば
+  済む話で、常駐プロセスを増やす価値がない）

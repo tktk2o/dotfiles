@@ -9,6 +9,7 @@ brew "fzf"
 brew "gh"
 brew "ghq"
 brew "glow"
+brew "go" # also builds claude/csr in setup.sh
 brew "git"
 brew "git-delta"
 brew "hunk"

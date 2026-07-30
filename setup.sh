@@ -261,6 +261,21 @@ setup_rtk() {
     echo "      Verify with: rtk trust --list"
 }
 
+# csr is compiled rather than symlinked: it scans ~270MB of session logs and has
+# to stay interactive, which a shell/jq pipeline cannot do (see claude/csr/).
+setup_csr() {
+    if ! command -v go &> /dev/null; then
+        echo "[csr] Skipped (go not installed — 'brew bundle' installs it)."
+        return 0
+    fi
+
+    echo ""
+    echo "[csr] Building claude/csr -> ~/.local/bin/csr..."
+    mkdir -p "$HOME/.local/bin"
+    (cd "$DOTFILES_DIR/claude/csr" && go build -o "$HOME/.local/bin/csr" .)
+    echo "[csr] Done. Search past Claude sessions with 'csr' or tmux 'prefix + F'."
+}
+
 # ===========================================
 # Phase 4: Summary
 # ===========================================
@@ -319,6 +334,7 @@ main() {
     setup_tmux_plugins
     setup_gh_extensions
     setup_rtk
+    setup_csr
 
     # Summary
     print_summary

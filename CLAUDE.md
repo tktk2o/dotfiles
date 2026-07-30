@@ -111,6 +111,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 - **Diff review**: hunk (review-first TUI — `hunk diff`, `git difftool`, and gh-dash `d`/`R`). delta stays the plain `git diff` pager (`core.pager`).
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
 - **Past-window restore**: `twr` (`tmux/scripts/tmux-window-restore.sh`, symlinked to `~/.local/bin/twr`; `prefix + W` opens it in a popup)
+- **Past-session search**: `csr` (`claude/csr/`, a Go binary built into `~/.local/bin/csr`; `prefix + F` opens it in a popup)
 
 ### Restoring a past window (`twr`)
 
@@ -120,6 +121,18 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 - **Per-pane claude session**: a pane whose saved command pins a session (`--resume <id>` / `--session-id`) is replayed verbatim (exact session). An id-less claude pane relaunches as `claude --continue` when it is the only claude pane in its cwd, or `claude --resume` (interactive picker) when several id-less claude panes share a cwd — so distinct conversations are not collapsed onto the cwd's most-recent one. (resurrect snapshots only carry a session id when it was in the process args, so id-less panes cannot be mapped to their exact past conversation automatically.)
 - **Modes**: `twr` (picker, inside tmux), `twr --list` (print candidates, no tmux/fzf needed). Env: `TMUX_RESURRECT_DIR` (snapshot dir override, used by tests), `TWR_TARGET` (restore into a specific session).
 - **New-machine dependency**: relies on the `~/.local/bin/twr` symlink created by `setup.sh` and on tmux-resurrect snapshots existing.
+
+### Searching past Claude sessions (`csr`)
+
+`claude --resume` only lists the *current* project's sessions, so a session whose project you have forgotten is unreachable. `csr` searches **your own prompts** across every log under `~/.claude/projects` (all projects), and resumes the pick in a new tmux window at that session's cwd.
+
+- **Modes**: `csr [query]` (fzf picker; the query pre-fills the filter), `csr --here` (current directory's project only), `csr --list` (TSV, no fzf/tmux needed). Env: `CLAUDE_PROJECTS_DIR`, `CSR_CACHE_DIR`.
+- **Why Go, not shell**: the shell+jq version took **8.3s** over ~270MB of logs, and `rg` alone needs 90ms just to read them — a full re-scan per invocation can never be interactive. `csr` keeps a size+mtime-keyed index in `~/.cache/csr/` and re-parses only changed logs: **0.76s cold, 0.02–0.03s warm**.
+- **Cache is pure derived data**: deleting `~/.cache/csr/` costs one slow run. A corrupt or unwritable cache silently falls back to a full parse.
+- **What counts as a prompt**: `type == "user"` entries minus tool results, `isMeta` entries, and the harness-injected blocks (`<system-reminder>`, `<command-name>`, `<bash-input>`, `<bash-stdout>`, …). On this machine that filters 77,762 user entries down to ~1,885 real prompts.
+- **Project name comes from the entry's `cwd` field**, never from the `~/.claude/projects/` directory name — that encoding maps both `/` and `.` to `-` and cannot be reversed.
+- **`prefix + F`, not `S`**: tmux's own session picker is lowercase `s`, so `S` would read as a second session list; `C` is taken by `customize-mode`.
+- **New-machine dependency**: needs `go` (in `.Brewfile`) — `setup.sh` → `setup_csr` builds the binary, and skips with a warning when go is missing. Nothing is symlinked, so re-run `./setup.sh` (or `cd claude/csr && go build -o ~/.local/bin/csr .`) after editing the source.
 
 ## Adding New Configurations
 
