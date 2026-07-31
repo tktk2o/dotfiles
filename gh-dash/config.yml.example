@@ -44,11 +44,14 @@ keybindings:
         'gh pr diff {{.PrNumber}} -R {{.RepoName}} | hunk patch'
     # overrides the built-in refreshAll (r still refreshes the current section)
     # left pane: claude /review, right pane: the same diff as `d`
-    #: PR レビューを開始する（claude /review + 差分ペイン）
+    # --permission-mode auto: a review is read-heavy (fetch the PR, read files,
+    # run checks) and stopping to approve each read defeats the point of a
+    # one-keypress review.
+    #: PR レビューを auto モードで開始する（claude /review + 差分ペイン）
     - key: R
       command: >-
         tmux new-window -n "review #{{.PrNumber}}" -c {{.RepoPath}}
-        'claude "/review https://github.com/{{.RepoName}}/pull/{{.PrNumber}}"'
+        'claude --permission-mode auto "/review https://github.com/{{.RepoName}}/pull/{{.PrNumber}}"'
         \; split-window -h -d -c {{.RepoPath}}
         'gh pr diff {{.PrNumber}} -R {{.RepoName}} | hunk patch'
     #: PR をブラウザで開く

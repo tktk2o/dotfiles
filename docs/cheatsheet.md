@@ -84,10 +84,10 @@ or `keys <query>` to filter.
 | Press / type | Does | Defined in |
 |---|---|---|
 | `d` | PR の差分を新しい tmux ウィンドウで開く（hunk） | `gh-dash/config.yml.example:41` |
-| `R` | PR レビューを開始する（claude /review + 差分ペイン） | `gh-dash/config.yml.example:48` |
-| `o` | PR をブラウザで開く | `gh-dash/config.yml.example:55` |
-| `m` | PR を squash マージする | `gh-dash/config.yml.example:58` |
-| `a` | PR を approve する | `gh-dash/config.yml.example:61` |
+| `R` | PR レビューを auto モードで開始する（claude /review + 差分ペイン） | `gh-dash/config.yml.example:51` |
+| `o` | PR をブラウザで開く | `gh-dash/config.yml.example:58` |
+| `m` | PR を squash マージする | `gh-dash/config.yml.example:61` |
+| `a` | PR を approve する | `gh-dash/config.yml.example:64` |
 
 ## Claude Code skills
 
