@@ -313,6 +313,11 @@ setup_macos_handlers() {
     echo "[macOS] Building nvim-open + 'Open in Neovim.app'..."
     mkdir -p "$HOME/.local/bin" "$app/Contents/MacOS"
 
+    # Delete first: swiftc writes through a symlink, so a stale link left by an
+    # earlier layout would put the binary wherever that link pointed (this
+    # happened once, landing a compiled binary inside the repo).
+    rm -f "$HOME/.local/bin/nvim-open"
+
     # One binary serves both roles: on PATH as a CLI, and inside the bundle.
     #: ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口
     swiftc -O "$src" -o "$HOME/.local/bin/nvim-open"

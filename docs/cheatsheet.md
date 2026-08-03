@@ -13,7 +13,7 @@ or `keys <query>` to filter.
 | `twr` | 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf） | `setup.sh:117` |
 | `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:272` |
 | `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:288` |
-| `nvim-open` | ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口 | `setup.sh:318` |
+| `nvim-open` | ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口 | `setup.sh:323` |
 | `c` | Claude Code を編集許可モードで起動 | `zsh/.zshrc:11` |
 | `nv` | nvim を起動 | `zsh/.zshrc:12` |
 | `ghd` | gh dash（PR ダッシュボード）を開く | `zsh/.zshrc:13` |
