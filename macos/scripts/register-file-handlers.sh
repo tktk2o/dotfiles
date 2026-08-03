@@ -19,13 +19,19 @@ FALLBACK_ID="com.apple.TextEdit"
 
 # Text-ish things worth reading in an editor. Binary formats (pdf, images,
 # archives, office documents) are left alone - Quick Look is faster for those.
+#
+# html, htm and svg are deliberately absent: those you want rendered, so they
+# stay with the browser. Read the source of one with `nvim-open file.html`, or
+# Finder's Open With.
 EXTENSIONS=(
     txt md markdown
     json yaml yml toml xml
     csv tsv
     log diff patch
     sh bash zsh
-    py ts tsx js jsx go rs
+    py ts tsx js jsx go rs swift
+    css scss less
+    rb java kt c h cpp php
     sql tf hcl
     conf ini env
     lua vim

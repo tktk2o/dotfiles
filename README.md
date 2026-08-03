@@ -200,9 +200,16 @@ nvl        # Downloadsの最新ファイルを開く
 nvl 3      # 新しい順に3件
 ```
 
-紐付けるのはUTIではなく**拡張子**（txt, md, json, yaml, csv, log, ts, py, go, tf, sqlなど31種）。
-`public.plain-text`のようなUTIを奪うと影響範囲が広すぎるため。pdf・画像・zip・Office系は
-既定のまま（Quick Lookの方が速い）。
+開いたウィンドウには**ファイル名が付く**（複数選択時は`data.json +1`のように残り件数、
+長い名前は20文字で切る）。`.tmux.conf`の`allow-rename off`はプログラムによる後からの
+リネームを止めるだけで、作成時に付けた名前はそのまま残る。
+
+紐付けるのはUTIではなく**拡張子**（txt, md, json, yaml, csv, log, ts, py, go, tf, sql,
+css, swiftなど42種）。`public.plain-text`のようなUTIを奪うと影響範囲が広すぎるため。
+
+- **html / htm / svg は意図的に除外** — レンダリングして見たいのでブラウザのまま。
+  ソースを読みたいときは`nvim-open file.html`か、Finderの「このアプリケーションで開く」
+- pdf・画像・zip・Office系も既定のまま（Quick Lookの方が速い）
 
 新しいPCでは`swiftc`（Xcode Command Line Tools）と`duti`（Brewfileに含む）が必要。
 `swiftc`が無い場合`setup.sh`は警告を出してビルドをスキップする。

@@ -102,9 +102,37 @@ struct Opener {
         // Start in the file's directory so relative paths and :Explore behave.
         let cwd = isDirectory.boolValue ? files[0] : (files[0] as NSString).deletingLastPathComponent
 
+        // "=name:" and not plain "name": a bare target is read as a window
+        // index when the session is named numerically, so with a session called
+        // "0" this created a window AT index 0 and then failed with "index 0 in
+        // use" on every later open. The "=" forbids prefix-matching a different
+        // session, the ":" says session rather than window.
+        //
         // No -d: creating the window also selects it, which is the point.
         _ = run("/opt/homebrew/bin/tmux",
-                ["new-window", "-t", session, "-c", cwd, "-n", "nvim", shellCommand(files: files)])
+                ["new-window", "-t", "=\(session):", "-c", cwd,
+                 "-n", windowName(files: files), shellCommand(files: files)])
+    }
+
+    /// The window name is the file you are looking at, since "nvim" says nothing
+    /// when three of these are open. `allow-rename off` in .tmux.conf stops
+    /// programs renaming windows later, but a name given at creation sticks.
+    private func windowName(files: [String]) -> String {
+        var name = (files[0] as NSString).lastPathComponent
+        if name.isEmpty {
+            name = "nvim"
+        }
+
+        // The status line is shared with every other window, so keep it short.
+        let limit = 20
+        if name.count > limit {
+            name = String(name.prefix(limit - 1)) + "…"
+        }
+
+        if files.count > 1 {
+            name += " +\(files.count - 1)"
+        }
+        return name
     }
 
     private func launchGhostty(files: [String]) {
