@@ -1,21 +1,27 @@
 #!/bin/bash
 
 # dotfiles setup script
-# Usage: ./setup.sh [--no-brew]
+# Usage: ./setup.sh [--no-brew] [--no-file-handlers]
 #
 # Options:
-#   --no-brew    Skip Homebrew installation and brew bundle
+#   --no-brew             Skip Homebrew installation and brew bundle
+#   --no-file-handlers    Do not offer to change macOS default file handlers
 
 set -e
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKIP_BREW=false
+SKIP_FILE_HANDLERS=false
 
 # Parse arguments
 for arg in "$@"; do
     case $arg in
         --no-brew)
             SKIP_BREW=true
+            shift
+            ;;
+        --no-file-handlers)
+            SKIP_FILE_HANDLERS=true
             shift
             ;;
     esac
@@ -296,8 +302,8 @@ setup_keys() {
 # the event in-process saves the ~154ms an AppleScript applet spent on the OSA
 # runtime plus a shell hop.
 #
-# Building the app is safe and idempotent; pointing extensions at it is a
-# separate, explicit step because that changes system-wide defaults.
+# Building the app is safe and idempotent. Pointing extensions at it changes
+# system-wide defaults, so setup asks before doing that and defaults to No.
 setup_macos_handlers() {
     [ "$(uname)" = "Darwin" ] || return 0
 
@@ -358,13 +364,26 @@ PY
     [ -x "$lsregister" ] && "$lsregister" -f "$app"
 
     echo "[macOS] Built: $app"
-    if command -v duti &> /dev/null; then
-        echo "        To point text extensions at it (changes system defaults):"
-        echo "            $DOTFILES_DIR/macos/scripts/register-file-handlers.sh"
-        echo "        Undo with --revert, inspect with --list."
-    else
+    if ! command -v duti &> /dev/null; then
         echo "        Install duti first ('brew bundle'), then run:"
         echo "            $DOTFILES_DIR/macos/scripts/register-file-handlers.sh"
+        return 0
+    fi
+
+    if [ "$SKIP_FILE_HANDLERS" = true ]; then
+        echo "[macOS] File-handler registration skipped (--no-file-handlers)."
+        return 0
+    fi
+
+    local answer=""
+    if ! read -r -p "Register supported text files (csv, md, json, etc.) with Neovim? (y/N): " answer; then
+        echo ""
+    fi
+    if [[ "$answer" = "y" || "$answer" = "Y" ]]; then
+        "$DOTFILES_DIR/macos/scripts/register-file-handlers.sh"
+    else
+        echo "[macOS] File-handler registration skipped. Run later with:"
+        echo "        $DOTFILES_DIR/macos/scripts/register-file-handlers.sh"
     fi
 }
 

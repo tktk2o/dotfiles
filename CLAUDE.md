@@ -154,7 +154,7 @@ Double-clicking a text-ish file in Finder, or opening one a browser just downloa
 - **Why Swift, not Go**: macOS hands files only to `.app` bundles, and only as an Apple Event (`kAEOpenDocuments`). A bundled binary that just reads `argv` was measured receiving **`argc=0`** — Go cannot take the event without a cgo/Cocoa event loop. `macos/nvim-open/main.swift` is one binary in two roles: the executable inside `~/Applications/Open in Neovim.app`, and a CLI on `PATH`.
 - **Why not an AppleScript applet**: that was the first implementation. Its `do shell script` hop measured **154ms ± 62**; the Swift binary starts in **4.5ms ± 0.7**.
 - **Peek profile**: opened files use `NVIM_APPNAME=peek` → `nvim-peek/` (symlinked to `~/.config/peek`), a plugin-free config that starts in **30ms** against **~150ms** for LazyVim. `:Full` (or `<leader>f`) respawns the window with the full config when a peek turns into work. `nvim-open --full` skips the peek profile from the start.
-- **Registering extensions** is deliberately **not** part of `setup.sh`, because it changes system-wide defaults: run `macos/scripts/register-file-handlers.sh` (`--list` to inspect, `--revert` to hand them back to TextEdit). The extension list lives in that script — extensions, not UTIs, since claiming `public.plain-text` would drag in far more than intended. `html` / `htm` / `svg` are deliberately excluded: you want those rendered, so they stay with the browser. Binary formats (pdf, images, archives, office documents) are left alone too; Quick Look is faster for those.
+- **Registering extensions** is offered by `setup.sh` after the app is built, but requires an explicit `y` because it changes system-wide defaults; `--no-file-handlers` suppresses the prompt. It can also be run later with `macos/scripts/register-file-handlers.sh` (`--list` to inspect, `--revert` to hand them back to TextEdit). The extension list lives in that script — extensions, not UTIs, since claiming `public.plain-text` would drag in far more than intended. `html` / `htm` / `svg` are deliberately excluded: you want those rendered, so they stay with the browser. Binary formats (pdf, images, archives, office documents) are left alone too; Quick Look is faster for those.
 - **`nvl`** opens the newest file in `~/Downloads` (`nvl 3` for the newest three) — no macOS integration involved, and usually the quickest way to check a download.
 - **New-machine dependencies**: `swiftc` (Xcode Command Line Tools — `setup.sh` skips the build with a warning when missing) and `duti` (in `.Brewfile`). The `.app` is a build product; nothing is symlinked into `~/Applications`.
 
@@ -184,7 +184,7 @@ Double-clicking a text-ish file in Finder, or opening one a browser just downloa
 4. If installable via Homebrew, add to `brew/.Brewfile`
 5. If it adds something you type (alias, function, key binding, executable), annotate it with `#:` and run `keys --generate`
 
-Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempotent and supports `./setup.sh --no-brew`.
+Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempotent and supports `./setup.sh --no-brew` and `./setup.sh --no-file-handlers`.
 
 ## Verifying Changes
 

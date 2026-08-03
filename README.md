@@ -30,12 +30,16 @@ cd dotfiles
 6. **tmuxプラグイン**: TPM（tmux plugin manager）を導入
 7. **gh拡張機能**: gh-dashをインストール
 8. **rtk**: Claude Code用のBash出力フィルタを初期化
+9. **Finder連携**: `Open in Neovim.app`をビルドし、テキスト系拡張子を関連付けるか確認
 
 ### オプション
 
 ```bash
 # Homebrew関連の処理をスキップ（シンボリックリンクのみ作成）
 ./setup.sh --no-brew
+
+# macOSの既定アプリを変更する確認を出さない
+./setup.sh --no-file-handlers
 ```
 
 ### 3. ターミナルを再起動
@@ -191,7 +195,7 @@ Apple Eventを受けたプロセスがそのまま処理するのでホップも
 ### 使い方 / 元に戻し方
 
 ```bash
-# 拡張子を紐付ける（システム全体の既定アプリを変えるのでsetup.shには含めていない）
+# setup.sh の確認で見送った後、手動で拡張子を紐付ける
 macos/scripts/register-file-handlers.sh
 
 macos/scripts/register-file-handlers.sh --list     # 現在の紐付けを確認
