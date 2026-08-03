@@ -112,6 +112,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
 - **Past-window restore**: `twr` (`tmux/scripts/tmux-window-restore.sh`, symlinked to `~/.local/bin/twr`; `prefix + W` opens it in a popup)
 - **Past-session search**: `csr` (`claude/csr/`, a Go binary built into `~/.local/bin/csr`; `prefix + F` opens it in a popup)
+- **Command cheatsheet**: `keys` (`tools/cheatsheet/`, built into `~/.local/bin/keys`; `prefix + g` reads the generated `docs/cheatsheet.md` in a popup)
 
 ### Restoring a past window (`twr`)
 
@@ -147,7 +148,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
   ```
   The marker is `#:`, **not** `##`: `.tmux.conf` already uses `##` for section labels and banner rules, which would otherwise be swallowed as descriptions. In `.tmux.conf` put the annotation on the line **above** the bind — command lines there carry `#{...}` format strings, so trailing comments are risky.
 - **Neovim, gh aliases, skills and Karabiner need no annotation**: `desc = "..."`, the alias body, the SKILL.md frontmatter `description:` and the Karabiner rule `description` are already human-written.
-- **Modes**: `keys` (fzf browser; Enter prints the entry and its definition site, executes nothing), `keys <query>`, `keys --list`, `keys --generate` (rewrites the doc), `keys --check` (fails when the doc is stale **or** a definition lacks `#:`). Env: `DOTFILES_DIR`.
+- **Modes**: `keys` (fzf browser; Enter prints the entry and its definition site, executes nothing), `keys <query>`, `keys --doc` (regenerates, then pages the document through glow → less → cat; bound to tmux `prefix + g`), `keys --list`, `keys --generate` (rewrites the doc), `keys --check` (fails when the doc is stale **or** a definition lacks `#:`). Env: `DOTFILES_DIR`.
 - **Drift guard**: the pre-commit hook runs `keys --check` when a parsed source is staged and **warns** (does not block) — an undocumented alias is untidy, not dangerous.
 - Internal shell helpers named `_foo` are skipped, so they never need annotating.
 - Built by `setup.sh` → `setup_keys` (needs `go`, same as `csr`).

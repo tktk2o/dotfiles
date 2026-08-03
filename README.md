@@ -139,6 +139,7 @@ dotfiles/
 
 この dotfiles が提供するエイリアス・関数・キーバインド・実行ファイルは
 [docs/cheatsheet.md](./docs/cheatsheet.md) にまとまっている（設定ファイルから自動生成）。
-ターミナルからは `keys` で fzf 検索、`keys --generate` で再生成。
+ターミナルからは `keys` で fzf 検索、`keys --doc`（tmux は `prefix + g`）で
+そのまま読む、`keys --generate` で再生成。
 
 > 開発運用上の詳細（gh-dashのキーバインド、ローカル管理ファイル、pre-commitリーク検査、rtkの健全性チェックなど）は [CLAUDE.md](./CLAUDE.md) を参照。

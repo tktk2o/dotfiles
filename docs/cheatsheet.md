@@ -54,6 +54,7 @@ or `keys <query>` to filter.
 | `copy-mode-vi: Enter` | 選択範囲をクリップボードにコピーして抜ける | `tmux/.tmux.conf:142` |
 | `prefix + W` | 過去のウィンドウを resurrect 履歴から復元する（twr, popup） | `tmux/.tmux.conf:147` |
 | `prefix + F` | 過去の Claude セッションを検索して再開する（csr, popup） | `tmux/.tmux.conf:154` |
+| `prefix + g` | コマンド一覧（cheatsheet）を読む（keys --doc, popup） | `tmux/.tmux.conf:160` |
 
 ## Neovim
 

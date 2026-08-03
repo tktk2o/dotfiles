@@ -18,9 +18,10 @@ const usage = `keys - what this dotfiles repo lets you type
 
 Usage:
   keys [query]     browse the inventory in fzf (query pre-fills the filter)
+  keys --doc       read docs/cheatsheet.md in a pager (tmux: prefix + g)
   keys --list      print it as plain text
   keys --generate  write docs/cheatsheet.md
-  keys --check     fail if the doc is stale or a definition lacks a ## annotation
+  keys --check     fail if the doc is stale or a definition lacks a #: annotation
   keys --help      show this help
 
 Env:
@@ -43,6 +44,8 @@ func run(args []string) error {
 		case "--help", "-h":
 			fmt.Print(usage)
 			return nil
+		case "--doc":
+			mode = "doc"
 		case "--list":
 			mode = "list"
 		case "--generate":
@@ -67,6 +70,13 @@ func run(args []string) error {
 	}
 
 	switch mode {
+	case "doc":
+		// Regenerate first: reading a stale document is the one thing this
+		// command must not do, and it costs a few milliseconds.
+		if err := os.WriteFile(filepath.Join(root, cheatsheetPath), []byte(Render(entries)), 0o644); err != nil {
+			return err
+		}
+		return readDoc(filepath.Join(root, cheatsheetPath))
 	case "list":
 		for _, line := range pickerLines(entries) {
 			fmt.Println(line)
@@ -123,6 +133,28 @@ func reportMissing(missing []Entry) {
 	for _, e := range missing {
 		fmt.Fprintf(os.Stderr, "  %-9s %-16s %s\n", e.Category, e.Key, e.Source())
 	}
+}
+
+// readDoc pages the generated document. glow renders the Markdown tables, which
+// is the whole point of having a document rather than a flat list; less is the
+// fallback so a machine without glow still gets something readable.
+func readDoc(path string) error {
+	pagers := [][]string{
+		{"glow", "--pager", path},
+		{"less", "-R", path},
+		{"cat", path},
+	}
+
+	for _, argv := range pagers {
+		bin, err := exec.LookPath(argv[0])
+		if err != nil {
+			continue
+		}
+		cmd := exec.Command(bin, argv[1:]...)
+		cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+		return cmd.Run()
+	}
+	return fmt.Errorf("no pager available (tried glow, less, cat)")
 }
 
 // browse hands the inventory to fzf. Selecting an entry prints it, so you can
