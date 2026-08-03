@@ -80,6 +80,7 @@ cd ~/src/github.com/tktk2o/dotfiles && rtk trust
 | `~/.Brewfile` | `brew/.Brewfile` |
 | `~/.config/zsh/plugins` | `zsh/plugins/` |
 | `~/.config/nvim` | `nvim/` |
+| `~/.config/peek` | `nvim-peek/`（Finderから開く用の軽量プロファイル） |
 | `~/.config/ghostty/config` | `ghostty/config` |
 | `~/.config/starship.toml` | `starship/starship.toml` |
 | `~/.config/sheldon/plugins.toml` | `sheldon/plugins.toml` |
@@ -109,8 +110,10 @@ dotfiles/
 ├── git/             # Git設定 + hooks
 ├── herdr/           # herdr設定
 ├── karabiner/       # キーボードカスタマイズ
+├── macos/           # Finder連携 (nvim-open / 既定アプリ登録)
 ├── mise/            # ランタイムバージョン管理
 ├── nvim/            # Neovim (LazyVim) 設定
+├── nvim-peek/       # 覗き見用の軽量Neovim設定 (NVIM_APPNAME=peek)
 ├── raycast/         # Raycastスクリプト
 ├── sheldon/         # zshプラグインマネージャ
 ├── starship/        # シェルプロンプト
@@ -129,6 +132,7 @@ dotfiles/
 - **PRレビュー**: gh-dash + Neovim (diffview.nvim)
 - **プロジェクト移動**: ghq + fzf (`fgh`)
 - **過去ウィンドウ復元**: `twr` (`prefix + W`)
+- **Finderから開く**: `nvim-open` — テキスト系ファイルをtmux新ウィンドウのnvimで開く（`macos/scripts/register-file-handlers.sh`で拡張子を登録）
 - **過去セッション検索**: `csr` (`prefix + F`) — 過去の Claude Code セッションを自分の発言で全文検索して再開
 - **AI**: Claude Code (+ rtk: Bash出力フィルタ)
 

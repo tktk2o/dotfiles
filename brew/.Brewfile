@@ -4,6 +4,7 @@ brew "awscli"
 brew "docker"
 brew "docker-compose"
 brew "docker-credential-helper"
+brew "duti" # sets the default app per extension (macos/scripts/register-file-handlers.sh)
 brew "fd"
 brew "fzf"
 brew "gh"

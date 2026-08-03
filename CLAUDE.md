@@ -133,6 +133,17 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, Neovim).
 - **`prefix + F`, not `S`**: tmux's own session picker is lowercase `s`, so `S` would read as a second session list; `C` is taken by `customize-mode`.
 - **New-machine dependency**: needs `go` (in `.Brewfile`) — `setup.sh` → `setup_csr` builds the binary, and skips with a warning when go is missing. Nothing is symlinked, so re-run `./setup.sh` (or `cd claude/csr && go build -o ~/.local/bin/csr .`) after editing the source.
 
+### Opening files from Finder / a download (`nvim-open`)
+
+Double-clicking a text-ish file in Finder, or opening one a browser just downloaded, lands it in a **new tmux window** in the session you last used.
+
+- **Why Swift, not Go**: macOS hands files only to `.app` bundles, and only as an Apple Event (`kAEOpenDocuments`). A bundled binary that just reads `argv` was measured receiving **`argc=0`** — Go cannot take the event without a cgo/Cocoa event loop. `macos/nvim-open/main.swift` is one binary in two roles: the executable inside `~/Applications/Open in Neovim.app`, and a CLI on `PATH`.
+- **Why not an AppleScript applet**: that was the first implementation. Its `do shell script` hop measured **154ms ± 62**; the Swift binary starts in **4.5ms ± 0.7**.
+- **Peek profile**: opened files use `NVIM_APPNAME=peek` → `nvim-peek/` (symlinked to `~/.config/peek`), a plugin-free config that starts in **30ms** against **~150ms** for LazyVim. `:Full` (or `<leader>f`) respawns the window with the full config when a peek turns into work. `nvim-open --full` skips the peek profile from the start.
+- **Registering extensions** is deliberately **not** part of `setup.sh`, because it changes system-wide defaults: run `macos/scripts/register-file-handlers.sh` (`--list` to inspect, `--revert` to hand them back to TextEdit). The extension list lives in that script — extensions, not UTIs, since claiming `public.plain-text` would drag in far more than intended. Binary formats (pdf, images, archives, office documents) are left alone; Quick Look is faster for those.
+- **`nvl`** opens the newest file in `~/Downloads` (`nvl 3` for the newest three) — no macOS integration involved, and usually the quickest way to check a download.
+- **New-machine dependencies**: `swiftc` (Xcode Command Line Tools — `setup.sh` skips the build with a warning when missing) and `duti` (in `.Brewfile`). The `.app` is a build product; nothing is symlinked into `~/Applications`.
+
 ### Command inventory (`keys` / `docs/cheatsheet.md`)
 
 `docs/cheatsheet.md` lists everything this repo lets you type. It is **generated** — do not edit it by hand.

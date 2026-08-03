@@ -95,6 +95,8 @@ create_symlinks() {
     # ~/.config directory
     create_symlink "$DOTFILES_DIR/zsh/plugins" "$HOME/.config/zsh/plugins"
     create_symlink "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
+    # NVIM_APPNAME=peek — the lightweight profile Finder-opened files use
+    create_symlink "$DOTFILES_DIR/nvim-peek" "$HOME/.config/peek"
     create_symlink "$DOTFILES_DIR/ghostty/config" "$HOME/.config/ghostty/config"
     create_symlink "$DOTFILES_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
     create_symlink "$DOTFILES_DIR/sheldon/plugins.toml" "$HOME/.config/sheldon/plugins.toml"
@@ -287,6 +289,79 @@ setup_keys() {
     echo "[keys] Done. Browse commands with 'keys'; regenerate docs with 'keys --generate'."
 }
 
+# macOS hands files to .app bundles only, and as an Apple Event rather than as
+# argv, so treating nvim as a file handler needs a wrapper app with an AppKit
+# event loop. Swift, not Go: a bundled Go binary measured argc=0, and handling
+# the event in-process saves the ~154ms an AppleScript applet spent on the OSA
+# runtime plus a shell hop.
+#
+# Building the app is safe and idempotent; pointing extensions at it is a
+# separate, explicit step because that changes system-wide defaults.
+setup_macos_handlers() {
+    [ "$(uname)" = "Darwin" ] || return 0
+
+    if ! command -v swiftc &> /dev/null; then
+        echo "[macOS] Skipped (swiftc not found — install Xcode Command Line Tools)."
+        return 0
+    fi
+
+    local src="$DOTFILES_DIR/macos/nvim-open/main.swift"
+    local app="$HOME/Applications/Open in Neovim.app"
+    local bundle_id="com.tktk2o.open-in-neovim"
+
+    echo ""
+    echo "[macOS] Building nvim-open + 'Open in Neovim.app'..."
+    mkdir -p "$HOME/.local/bin" "$app/Contents/MacOS"
+
+    # One binary serves both roles: on PATH as a CLI, and inside the bundle.
+    #: ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口
+    swiftc -O "$src" -o "$HOME/.local/bin/nvim-open"
+    cp "$HOME/.local/bin/nvim-open" "$app/Contents/MacOS/nvim-open"
+
+    # The bundle needs a stable identifier for duti to target, an Editor
+    # document type before Finder will offer it as a default app, and
+    # LSUIElement so opening a file does not bounce a dock icon. Written from
+    # scratch each time, so re-running is a no-op.
+    python3 - "$app/Contents/Info.plist" "$bundle_id" << 'PY'
+import plistlib, sys
+
+path, bundle_id = sys.argv[1], sys.argv[2]
+plist = {
+    'CFBundleName': 'Open in Neovim',
+    'CFBundleDisplayName': 'Open in Neovim',
+    'CFBundleIdentifier': bundle_id,
+    'CFBundleExecutable': 'nvim-open',
+    'CFBundlePackageType': 'APPL',
+    'CFBundleInfoDictionaryVersion': '6.0',
+    'CFBundleShortVersionString': '1.0',
+    'LSMinimumSystemVersion': '13.0',
+    # Accessory app: no dock icon, no bounce.
+    'LSUIElement': True,
+    'CFBundleDocumentTypes': [{
+        'CFBundleTypeName': 'AllFiles',
+        'CFBundleTypeRole': 'Editor',
+        'LSItemContentTypes': ['public.item'],
+    }],
+}
+with open(path, 'wb') as f:
+    plistlib.dump(plist, f)
+PY
+
+    # Without re-registering, Finder keeps serving the pre-patch bundle.
+    local lsregister="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+    [ -x "$lsregister" ] && "$lsregister" -f "$app"
+
+    echo "[macOS] Built: $app"
+    if command -v duti &> /dev/null; then
+        echo "        To point text extensions at it (changes system defaults):"
+        echo "            $DOTFILES_DIR/macos/scripts/register-file-handlers.sh"
+        echo "        Undo with --revert, inspect with --list."
+    else
+        echo "        Install duti first ('brew bundle'), then run:"
+        echo "            $DOTFILES_DIR/macos/scripts/register-file-handlers.sh"
+    fi
+}
+
 # ===========================================
 # Phase 4: Summary
 # ===========================================
@@ -347,6 +422,7 @@ main() {
     setup_rtk
     setup_csr
     setup_keys
+    setup_macos_handlers
 
     # Summary
     print_summary

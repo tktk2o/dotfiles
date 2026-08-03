@@ -10,9 +10,10 @@ or `keys <query>` to filter.
 
 | Press / type | Does | Defined in |
 |---|---|---|
-| `twr` | 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf） | `setup.sh:115` |
-| `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:270` |
-| `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:286` |
+| `twr` | 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf） | `setup.sh:117` |
+| `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:272` |
+| `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:288` |
+| `nvim-open` | ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口 | `setup.sh:318` |
 | `c` | Claude Code を編集許可モードで起動 | `zsh/.zshrc:11` |
 | `nv` | nvim を起動 | `zsh/.zshrc:12` |
 | `ghd` | gh dash（PR ダッシュボード）を開く | `zsh/.zshrc:13` |
@@ -24,6 +25,7 @@ or `keys <query>` to filter.
 | `gc` | コミットする | `zsh/plugins/git.zsh:6` |
 | `gco` | ブランチ / ファイルを checkout する | `zsh/plugins/git.zsh:7` |
 | `gs` | working tree の状態を見る | `zsh/plugins/git.zsh:8` |
+| `nvl` | Downloads の最新ファイルを nvim で開く（引数で件数、既定 1） | `zsh/plugins/nvl.zsh:4` |
 | `wta` | worktree を .worktrees/ に作って移動する | `zsh/plugins/wt.zsh:15` |
 | `wtj` | 既存の worktree をファジー選択して移動する | `zsh/plugins/wt.zsh:52` |
 
