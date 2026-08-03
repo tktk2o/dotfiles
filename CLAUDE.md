@@ -41,8 +41,6 @@ brew bundle --file=~/.Brewfile      # Install packages
 | `claude/settings.json` | `~/.claude/settings.json` |
 | `claude/worktree.md` | `~/.claude/worktree.md` |
 | `claude/model-policy.md` | `~/.claude/model-policy.md` |
-| `vscode/settings.json` | `~/Library/Application Support/Code/User/settings.json` |
-| `vscode/keybindings.json` | `~/Library/Application Support/Code/User/keybindings.json` |
 
 > `~/.claude/CLAUDE.md` is a symlink to `claude/CLAUDE.md`, which holds the
 > `@~/.claude/RTK.md` / `@worktree.md` / `@model-policy.md` / `@~/.claude/local.md`
@@ -100,7 +98,7 @@ Neovim leader keys: `<leader>gdo` / `<leader>gdc` / `<leader>gdh` (diffview.nvim
 
 ### Theme
 
-Dracula color scheme across all tools (tmux, starship, Ghostty, VSCode, Neovim).
+Dracula color scheme across all tools (tmux, starship, Ghostty, Neovim).
 
 ## Key Tools
 

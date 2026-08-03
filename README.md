@@ -96,8 +96,6 @@ cd ~/src/github.com/tktk2o/dotfiles && rtk trust
 | `~/.claude/skills` | `claude/skills/` |
 | `~/.claude/worktree.md` | `claude/worktree.md` |
 | `~/.claude/model-policy.md` | `claude/model-policy.md` |
-| `~/Library/.../Code/User/settings.json` | `vscode/settings.json` |
-| `~/Library/.../Code/User/keybindings.json` | `vscode/keybindings.json` |
 
 ## ディレクトリ構成
 
@@ -117,7 +115,6 @@ dotfiles/
 ├── sheldon/         # zshプラグインマネージャ
 ├── starship/        # シェルプロンプト
 ├── tmux/            # ターミナルマルチプレクサ + scripts/ (twr)
-├── vscode/          # VSCode設定
 ├── zsh/             # シェル設定 + plugins/
 └── setup.sh         # セットアップスクリプト
 ```
@@ -126,7 +123,7 @@ dotfiles/
 
 - **シェル**: zsh + sheldon (プラグイン管理) + starship (プロンプト)
 - **ターミナル**: Ghostty
-- **エディタ**: Neovim (LazyVim) / VSCode
+- **エディタ**: Neovim (LazyVim)
 - **マルチプレクサ**: tmux (prefix: Ctrl+B) + tmux-resurrect/continuum (セッション永続化: 自動保存のみ、復元は手動 `prefix + Ctrl-r` / `prefix + W`)
 - **キーボード**: Karabiner-Elements
 - **PRレビュー**: gh-dash + Neovim (diffview.nvim)

@@ -11,8 +11,8 @@ or `keys <query>` to filter.
 | Press / type | Does | Defined in |
 |---|---|---|
 | `twr` | 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf） | `setup.sh:115` |
-| `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:277` |
-| `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:293` |
+| `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:270` |
+| `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:286` |
 | `c` | Claude Code を編集許可モードで起動 | `zsh/.zshrc:11` |
 | `nv` | nvim を起動 | `zsh/.zshrc:12` |
 | `ghd` | gh dash（PR ダッシュボード）を開く | `zsh/.zshrc:13` |

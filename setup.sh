@@ -123,13 +123,6 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/claude/worktree.md" "$HOME/.claude/worktree.md"
     create_symlink "$DOTFILES_DIR/claude/model-policy.md" "$HOME/.claude/model-policy.md"
 
-    # VSCode (macOS)
-    if [ "$(uname)" = "Darwin" ]; then
-        VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
-        create_symlink "$DOTFILES_DIR/vscode/settings.json" "$VSCODE_USER_DIR/settings.json"
-        create_symlink "$DOTFILES_DIR/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
-    fi
-
     echo "[Symlinks] Done."
 }
 
