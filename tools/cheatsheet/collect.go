@@ -48,20 +48,27 @@ func Collect(root string) (entries []Entry, missing []Entry, err error) {
 	}
 	entries = append(entries, bins...)
 
-	luaPaths, err := filepath.Glob(filepath.Join(root, "nvim/lua/plugins/*.lua"))
-	if err != nil {
-		return nil, nil, err
-	}
-	for _, abs := range luaPaths {
-		rel, err := filepath.Rel(root, abs)
+	// The peek profile is a separate config (NVIM_APPNAME=peek), so its keys are
+	// listed apart from the full editor's - they are not available in both.
+	for _, src := range []struct{ glob, category string }{
+		{"nvim/lua/plugins/*.lua", "nvim"},
+		{"nvim-peek/*.lua", "nvim-peek"},
+	} {
+		luaPaths, err := filepath.Glob(filepath.Join(root, src.glob))
 		if err != nil {
 			return nil, nil, err
 		}
-		s, err := readSource(root, rel)
-		if err != nil {
-			return nil, nil, err
+		for _, abs := range luaPaths {
+			rel, err := filepath.Rel(root, abs)
+			if err != nil {
+				return nil, nil, err
+			}
+			s, err := readSource(root, rel)
+			if err != nil {
+				return nil, nil, err
+			}
+			entries = append(entries, parseLua(s, src.category)...)
 		}
-		entries = append(entries, parseLua(s)...)
 	}
 
 	if s, err := readSource(root, "gh/config.yml"); err == nil {

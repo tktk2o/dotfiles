@@ -10,13 +10,14 @@ const cheatsheetPath = "docs/cheatsheet.md"
 // sectionTitles give each category a heading that says where you are when you
 // use it.
 var sectionTitles = map[string]string{
-	"shell":   "Shell (zsh)",
-	"tmux":    "tmux",
-	"nvim":    "Neovim",
-	"gh":      "GitHub CLI",
-	"gh-dash": "gh-dash (PR dashboard)",
-	"claude":  "Claude Code skills",
-	"macOS":   "macOS (Karabiner)",
+	"shell":     "Shell (zsh)",
+	"tmux":      "tmux",
+	"nvim":      "Neovim",
+	"nvim-peek": "Neovim (peek profile — Finder で開いたとき)",
+	"gh":        "GitHub CLI",
+	"gh-dash":   "gh-dash (PR dashboard)",
+	"claude":    "Claude Code skills",
+	"macOS":     "macOS (Karabiner)",
 }
 
 // Render builds docs/cheatsheet.md. It is generated, so it carries a banner

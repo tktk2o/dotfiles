@@ -76,6 +76,14 @@ or `keys <query>` to filter.
 | `<C-k>` | Move to above pane | `nvim/lua/plugins/smart-splits.lua:6` |
 | `<C-l>` | Move to right pane | `nvim/lua/plugins/smart-splits.lua:7` |
 
+## Neovim (peek profile — Finder で開いたとき)
+
+| Press / type | Does | Defined in |
+|---|---|---|
+| `q` | Quit the peek | `nvim-peek/init.lua:44` |
+| `<Esc>` | Clear search highlight | `nvim-peek/init.lua:45` |
+| `<leader>f` | Reopen with the full config | `nvim-peek/init.lua:59` |
+
 ## GitHub CLI
 
 | Press / type | Does | Defined in |

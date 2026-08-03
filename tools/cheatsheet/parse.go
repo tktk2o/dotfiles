@@ -158,14 +158,14 @@ done:
 // parseLua reads Neovim keymaps. lazy.nvim `keys` entries and
 // `vim.keymap.set` calls both already carry a `desc`, so no annotation is
 // needed here.
-func parseLua(s *sourceFile) []Entry {
+func parseLua(s *sourceFile, category string) []Entry {
 	var out []Entry
 	pendingKey, pendingLine := "", 0
 
 	for i, line := range s.lines {
 		if m := reLuaKeys.FindStringSubmatch(line); m != nil {
 			out = append(out, Entry{
-				Category: "nvim", Key: m[1], Desc: m[2],
+				Category: category, Key: m[1], Desc: m[2],
 				File: s.path, Line: i + 1,
 			})
 			pendingKey = ""
@@ -177,7 +177,7 @@ func parseLua(s *sourceFile) []Entry {
 			// desc may sit on the same line or a few lines down.
 			if d := reLuaDesc.FindStringSubmatch(line); d != nil {
 				out = append(out, Entry{
-					Category: "nvim", Key: pendingKey, Desc: d[1],
+					Category: category, Key: pendingKey, Desc: d[1],
 					File: s.path, Line: pendingLine,
 				})
 				pendingKey = ""
@@ -188,7 +188,7 @@ func parseLua(s *sourceFile) []Entry {
 		if pendingKey != "" {
 			if d := reLuaDesc.FindStringSubmatch(line); d != nil {
 				out = append(out, Entry{
-					Category: "nvim", Key: pendingKey, Desc: d[1],
+					Category: category, Key: pendingKey, Desc: d[1],
 					File: s.path, Line: pendingLine,
 				})
 				pendingKey = ""

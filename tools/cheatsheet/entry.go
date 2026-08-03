@@ -28,6 +28,7 @@ var categoryOrder = []string{
 	"shell",
 	"tmux",
 	"nvim",
+	"nvim-peek",
 	"gh",
 	"gh-dash",
 	"claude",
