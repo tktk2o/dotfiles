@@ -124,6 +124,7 @@ create_symlinks() {
     create_symlink "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
     create_symlink "$DOTFILES_DIR/claude/worktree.md" "$HOME/.claude/worktree.md"
     create_symlink "$DOTFILES_DIR/claude/model-policy.md" "$HOME/.claude/model-policy.md"
+create_symlink "$DOTFILES_DIR/claude/persona-github.md" "$HOME/.claude/persona-github.md"
 
     echo "[Symlinks] Done."
 }

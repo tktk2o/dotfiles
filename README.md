@@ -97,6 +97,7 @@ cd ~/src/github.com/tktk2o/dotfiles && rtk trust
 | `~/.claude/skills` | `claude/skills/` |
 | `~/.claude/worktree.md` | `claude/worktree.md` |
 | `~/.claude/model-policy.md` | `claude/model-policy.md` |
+| `~/.claude/persona-github.md` | `claude/persona-github.md`（gh のコメント文体） |
 
 ## ディレクトリ構成
 

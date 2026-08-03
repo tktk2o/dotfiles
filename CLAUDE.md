@@ -41,6 +41,7 @@ brew bundle --file=~/.Brewfile      # Install packages
 | `claude/settings.json` | `~/.claude/settings.json` |
 | `claude/worktree.md` | `~/.claude/worktree.md` |
 | `claude/model-policy.md` | `~/.claude/model-policy.md` |
+| `claude/persona-github.md` | `~/.claude/persona-github.md` |
 
 > `~/.claude/CLAUDE.md` is a symlink to `claude/CLAUDE.md`, which holds the
 > `@~/.claude/RTK.md` / `@worktree.md` / `@model-policy.md` / `@~/.claude/local.md`
@@ -64,6 +65,19 @@ brew bundle --file=~/.Brewfile      # Install packages
 > `~/.claude/` is the documented way to keep personal instructions out of a
 > tracked CLAUDE.md ([memory docs](https://code.claude.com/docs/en/memory.md)).
 
+### Posting personas (GitHub is tracked, Slack is not)
+
+`gh pr review` / `gh pr comment` の本文は `claude/persona-github.md` の文体で書く
+（`pr-review` skill が参照）。**この 1 枚だけが追跡されている**のは、GitHub 側の
+ルールが「`。` を打たない」「1〜2 行」「指摘は shields.io の `ask` / `imo` / `nits` /
+`memo` バッジ」「`--request-changes` を使わない」といった**媒体の書き方**に閉じていて、
+社名・同僚・社内システム名を一切必要としないため。例文はすべて一般化してある。
+
+Slack 側のペルソナは `~/.claude/local/slack.md` の末尾に置いたまま**追跡しない** —
+宛先メンションの ID、ワークスペース名、同僚の呼称という「誰に向けて書くか」が
+文体と不可分で、一般化すると意味が残らない。**両者は別物なので流用しない**
+（Slack の `:man-bowing:` 記法を GitHub に持ち込んで表示が壊れた事故がある）。
+
 ### Local-only (untracked) files — recreate per machine
 
 These hold machine- or company-specific data that must **not** be committed to
@@ -75,7 +89,7 @@ them. After `./setup.sh` on a new machine, recreate each one:
 | `gh-dash/config.local.yml` | Live gh-dash config; holds company repo/org names in `prSections`. Symlinked to `~/.config/gh-dash/config.yml`. | `setup.sh` auto-seeds it from `gh-dash/config.yml.example`; then add company-specific sections (per-repo/org `prSections`). Ignored via `gh-dash/.gitignore`. |
 | `~/.config/git/denylist.txt` | Company-specific terms for the pre-commit leak scanner (one case-insensitive `grep -E` regex per line). | Recreate manually — the terms are themselves sensitive, so they are never committed. Until it exists, the hook runs generic-secret checks only. See *Pre-commit Leak Scanning* below. |
 | `~/.claude/RTK.md` | rtk global instructions imported by `claude/CLAUDE.md` (as `@~/.claude/RTK.md`). | Installed by `rtk init -g` (not part of this repo). |
-| `~/.claude/local.md` + `~/.claude/local/*.md` | Machine-local Claude instructions. `local.md` is a **thin hub** imported via `@~/.claude/local.md` (a few lines per topic, always in context); the detail sits in `local/*.md` (e.g. `local/slack.md`: use `slack-cli` over the Slack MCP, the `all` / `ext` profiles, the Slack writing persona; `local/persona-github.md`: the separate persona for `gh pr review` / `gh pr comment` bodies, referenced by the `pr-review` skill) and is **not** imported, so it is read on demand and costs nothing in unrelated sessions. Add topics as new `local/<topic>.md` + one hub line. | Recreate manually — contents name internal workspaces/colleagues, so they stay out of this public repo. Missing on a fresh machine: the `@~/.claude/local.md` import simply resolves to nothing. |
+| `~/.claude/local.md` + `~/.claude/local/*.md` | Machine-local Claude instructions. `local.md` is a **thin hub** imported via `@~/.claude/local.md` (a few lines per topic, always in context); the detail sits in `local/*.md` (e.g. `local/slack.md`: use `slack-cli` over the Slack MCP, the `all` / `ext` profiles, the Slack writing persona) and is **not** imported, so it is read on demand and costs nothing in unrelated sessions. Add topics as new `local/<topic>.md` + one hub line. | Recreate manually — contents name internal workspaces/colleagues, so they stay out of this public repo. Missing on a fresh machine: the `@~/.claude/local.md` import simply resolves to nothing. |
 | `~/.claude/settings.local.json` | Machine-local Claude settings: extra `permissions`, `deny` rules (Slack MCP is blocked here), enabled company plugins/marketplaces. | Recreate manually; Claude Code also writes to it as permissions are granted. Not symlinked — `claude/settings.json` is the tracked half. |
 
 ### Neovim (LazyVim)

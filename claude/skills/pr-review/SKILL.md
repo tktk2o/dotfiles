@@ -37,8 +37,8 @@ description: >
 ## 投稿する文面の文体（gh コメント / approve 本文も同じ）
 
 `gh pr review` / `gh pr comment` / `gh api` で **GitHub に投稿する日本語の本文**は、
-**`~/.claude/local/persona-github.md`** の文体で書く。**ドラフトを起こす前に必ず
-そのファイルを読む**（machine-local で `@import` されていないので、記憶で書かない）。
+**`~/.claude/persona-github.md`**（= `claude/persona-github.md`）の文体で書く。
+**ドラフトを起こす前に必ずそのファイルを読む**（`@import` されていないので、記憶で書かない）。
 
 **Slack 用ペルソナ（`~/.claude/local/slack.md` 末尾）とは別物**なので流用しない。
 GitHub は宛先メンションなし・`。` なし・1〜2行が基本・shields.io のレビューラベル、
