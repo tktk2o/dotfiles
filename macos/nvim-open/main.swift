@@ -80,7 +80,8 @@ struct Opener {
     /// Resolved explicitly rather than letting tmux default to "current
     /// session", which is ambiguous when invoked with no attached client.
     private func activeTmuxSession() -> String? {
-        guard let out = run("/opt/homebrew/bin/tmux",
+        guard let tmux = executable(named: "tmux"),
+              let out = run(tmux,
                             ["list-sessions", "-F", "#{session_last_attached} #{session_name}"]),
               !out.isEmpty else { return nil }
 
@@ -109,7 +110,11 @@ struct Opener {
         // session, the ":" says session rather than window.
         //
         // No -d: creating the window also selects it, which is the point.
-        _ = run("/opt/homebrew/bin/tmux",
+        guard let tmux = executable(named: "tmux") else {
+            notify("tmux was not found")
+            return
+        }
+        _ = run(tmux,
                 ["new-window", "-t", "=\(session):", "-c", cwd,
                  "-n", windowName(files: files), shellCommand(files: files)])
     }
@@ -165,6 +170,23 @@ struct Opener {
 }
 
 // MARK: - Process helpers
+
+/// LaunchServices starts apps with a minimal PATH. Check both Homebrew prefixes
+/// so the wrapper works on Apple Silicon (/opt/homebrew) and Intel (/usr/local).
+func executable(named name: String) -> String? {
+    let home = FileManager.default.homeDirectoryForCurrentUser.path
+    let directories = [
+        "/opt/homebrew/bin",
+        "/usr/local/bin",
+        "\(home)/.local/bin",
+        "/usr/bin",
+        "/bin",
+    ]
+
+    return directories
+        .map { "\($0)/\(name)" }
+        .first { FileManager.default.isExecutableFile(atPath: $0) }
+}
 
 /// Runs a command and returns its trimmed stdout, or nil if it could not run or
 /// exited non-zero.
