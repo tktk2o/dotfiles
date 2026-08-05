@@ -7,10 +7,11 @@ token/session limits on long, multi-stage tasks.
 
 ## Default model when launching a subagent
 
-When launching a child agent with the Agent tool, **always specify `model`
-explicitly** (omitting it inherits the parent's opus, which defeats the whole
-budget-saving point). Decide by whether the deliverable is **retrieval** or
-**judgment**:
+When launching a child agent with the Agent tool, **always specify both `model`
+and `subagent_type` explicitly** (omitting `model` inherits the parent's opus,
+which defeats the whole budget-saving point; omitting `subagent_type` silently
+takes the heavyweight catch-all when `Explore` would have done). Decide by
+whether the deliverable is **retrieval** or **judgment**:
 
 - **haiku** (`claude-haiku-4-5`) — *default*: work whose deliverable is a
   "conclusion / location / list". Searching, exploring, collecting files,
@@ -21,12 +22,51 @@ budget-saving point). Decide by whether the deliverable is **retrieval** or
 - **sonnet** (`claude-sonnet-5`): work whose deliverable involves
   "judgment / change / evaluation". Routine implementation, refactoring,
   per-PR parallel review, medium reasoning that weighs multiple hypotheses.
-- **opus** (`claude-opus-4-8`): only when delegating genuinely hard
+- **opus** (`claude-opus-5`): only when delegating genuinely hard
   root-cause reasoning or architectural judgment to a child.
 
 **Not "when in doubt, sonnet" but "retrieval → haiku, judgment → sonnet".**
 Don't let sonnet become the safe default that sweeps up exploration.
 Never drop the main thread's opus.
+
+### The two hard rules (measured failure modes, not theory)
+
+A 14-day log audit found **52% of Agent calls on sonnet, and 40% of those were
+retrieval by their own description**. Both leaks have a mechanical fix:
+
+1. **`Explore` is always haiku — no exceptions.** Its deliverable is a location
+   by definition. If a task feels too heavy for haiku-on-Explore, the task is not
+   an Explore; pick `general-purpose` and justify the model separately. Real
+   offenders from the audit: `Investigate line-api endpoint`,
+   `配信バッチフロー調査`, `4経路のエラーログ出力文字列を特定`.
+2. **The description decides the model.** If the task can be written with any of
+   these words, it is haiku:
+
+   > 調査 / 収集 / 確認 / 特定 / 列挙 / 突合 / 集計 / 実測 / 検出 / 棚卸 / 探索 /
+   > 経緯整理 / Investigate / Collect / Verify / Survey / Find / Check / Extract /
+   > Summarize / Inventory / Scan / archaeology
+
+   Counting whether a PR has unit tests (`〜PR の UT 調査`), reconstructing an
+   incident timeline from Slack, and `Git archaeology on …` are all haiku work no
+   matter how important the surrounding task is.
+
+### Splitting review work
+
+- **Someone else's PR** (the `pr-review` skill): sonnet. Unchanged — that is
+  judgment on code you did not write.
+- **Your own freshly split subtask** (one file / tens of lines, `Review Task N`
+  and its `Re-review …` after a fix): haiku running a checklist. Escalate to
+  sonnet **only when haiku flags something** and the call is whether the flag is
+  real. The audit had 14 such calls on sonnet.
+
+### databricks-investigator
+
+Branch on whether the child has to *design* the query:
+
+- **haiku**: running a query whose shape is already decided — row counts, pulling
+  ids, tallying a known table (`吸入クエリの行数を実測`, `3薬局のorg_id等を検出`).
+- **sonnet**: choosing tables, working out JOIN/dedup/NULL handling, or deciding
+  what would even answer the question.
 
 ## Delegation triggers (when to spawn a subagent)
 
@@ -41,6 +81,10 @@ directly on the main thread:
   only the conclusion. Don't load file bodies onto the main thread.
 - **Cross-cutting grep / scanning logs/diffs / surveying naming conventions**
   → offload wholesale to haiku.
+- **Bulk aggregation / throwaway analysis scripts**: counting over JSONL logs,
+  tallying git history, one-off python/jq to produce a statistic → haiku, take back
+  only the numbers. The same audit found **3,246 Bash calls sitting on the opus
+  main thread** — much of it script output that never needed to be in opus context.
 - **2+ independent pieces of work** → parallel subagents (up to 3–5, choosing
   models per this policy).
 - **Post-implementation review / verification** → route to a separate subagent
