@@ -10,9 +10,7 @@ function dev() {
   local dir="$(ghq root)/$repo"
   local name=$(basename "$repo")
 
-  # caffeinate -i: a long agent run should not be cut short by idle sleep.
-  # It exits with claude, so nothing has to release the assertion.
-  local claude_cmd="caffeinate -i claude --permission-mode acceptEdits"
+  local claude_cmd="claude --permission-mode acceptEdits"
   tmux new-window -n "$name" -c "$dir" "$claude_cmd"
   tmux split-window -h -c "$dir" "$claude_cmd"
   tmux select-pane -L

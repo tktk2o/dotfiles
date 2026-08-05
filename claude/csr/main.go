@@ -212,22 +212,16 @@ func resume(sessionID, cwd string) error {
 		cwd = home
 	}
 
-	// caffeinate -i so a resumed session is not cut short by idle sleep. It
-	// exits with claude, so there is no assertion left to release.
 	if os.Getenv("TMUX") != "" {
 		return exec.Command("tmux", "new-window", "-c", cwd,
-			"caffeinate -i claude --resume "+sessionID).Run()
+			"claude --resume "+sessionID).Run()
 	}
 
-	if err := os.Chdir(cwd); err != nil {
-		return err
-	}
-	// Prefer caffeinate, but a machine without it should still resume.
-	if caff, err := exec.LookPath("caffeinate"); err == nil {
-		return syscallExec(caff, []string{"caffeinate", "-i", "claude", "--resume", sessionID})
-	}
 	claude, err := exec.LookPath("claude")
 	if err != nil {
+		return err
+	}
+	if err := os.Chdir(cwd); err != nil {
 		return err
 	}
 	return syscallExec(claude, []string{"claude", "--resume", sessionID})

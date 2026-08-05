@@ -156,10 +156,6 @@ reconstruct() {
             done
             if [ "$n" -gt 1 ]; then launch="claude --resume"; else launch="claude --continue"; fi
         fi
-        # caffeinate execs itself into claude, so resurrect only ever saved the
-        # bare `claude ...` args - the wrapper is never in $cmd and has to be put
-        # back on every relaunch, verbatim replay included.
-        case "$launch" in caffeinate\ *) ;; *) launch="caffeinate -i $launch" ;; esac
         tmux send-keys -t "${pane_ids[$idx]}" "$launch" C-m
     done
 

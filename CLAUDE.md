@@ -177,44 +177,38 @@ Double-clicking a text-ish file in Finder, or opening one a browser just downloa
 - Internal shell helpers named `_foo` are skipped, so they never need annotating.
 - Built by `setup.sh` → `setup_keys` (needs `go`, same as `csr`).
 
-### Keeping the Mac awake while Claude runs (`caffeinate -i`)
+### Sleep prevention is Claude Code's job, not this repo's
 
-A long agent run should not be cut short by idle sleep, so **every entry point that
-starts `claude` wraps it in `caffeinate -i`**. There is no hook and no daemon: the
-assertion is tied to the process, so it disappears when claude exits and needs no
-reference counting when several panes run at once.
+**Do not add `caffeinate` to any entry point that starts `claude`.** Claude Code
+already spawns `caffeinate -i -t 300` itself and respawns it as the 300s timer
+expires, so the Mac stays awake for the whole session. Measured on 2.1.222: the
+`caffeinate` process's parent is the `claude` process, and every active session had
+one. This was tried in this repo (wrapping the `c` alias, `dev`, gh-dash `R`, `twr`
+and `csr`) and reverted as redundant.
 
-The five entry points — change all of them together, or one path silently loses the
-assertion:
+- **There is no way to turn it off** — no `settings.json` key, no env var.
+  [anthropics/claude-code#21432](https://github.com/anthropics/claude-code/issues/21432)
+  is an open request for a `disableCaffeinate` setting, which is the evidence that
+  none exists. `killall caffeinate` does not stick: it is respawned, and the binary
+  logs "Restarting sleep inhibitor to maintain prevention"
+  ([#64522](https://github.com/anthropics/claude-code/issues/64522)).
+- **A wrapper is worse than nothing here**: `caffeinate -i claude` holds the
+  assertion for as long as the process lives, so a pane left open for days never lets
+  the machine sleep. The built-in inhibitor was not observed on long-idle panes.
+- Related known bug: caffeinate processes leaking by the thousand
+  ([#28046](https://github.com/anthropics/claude-code/issues/28046), closed as not
+  planned). If the Mac refuses to sleep, count them with `pgrep -x caffeinate`
+  before suspecting anything in this repo.
 
-| Entry point | Where |
-|-------------|-------|
-| `c` alias | `zsh/.zshrc:11` |
-| `dev` (two tmux panes) | `zsh/plugins/dev.zsh` |
-| gh-dash `R` (AI review) | `gh-dash/config.yml.example` **and** the untracked `config.local.yml` |
-| `twr` relaunch | `tmux/scripts/tmux-window-restore.sh` |
-| `csr` resume | `claude/csr/main.go` → `resume()` (rebuild after editing) |
+Two measurement traps, both hit while investigating this:
 
-**`caffeinate -i cmd` does not nest cmd under caffeinate.** It execs *itself* into
-cmd and forks a child to hold the assertion, so the parent keeps the pid and
-`ps -o args=` still reads `claude ...`:
-
-```
-17930 17900 sleep       sleep 45          # the shell's child, args = the command
-17932 17930 caffeinate  caffeinate -i …   # its child, holds the assertion
-```
-
-Two consequences that are easy to get backwards:
-
-- `fcl`'s `^claude` match and `pgrep -P <pane_pid> -x claude` are **unaffected** —
-  don't "fix" them to walk a caffeinate hop, there isn't one.
-- tmux-resurrect saves the foreground args, i.e. the bare `claude ...`. The wrapper
-  is **never** in a saved command, so `twr` has to prepend it on every relaunch,
-  including the verbatim `--resume <id>` replay.
-
-Scope: `-i` only (idle system sleep). The display still dims and locks on its own
-schedule, and **closing the lid still sleeps** — `caffeinate` cannot hold that off.
-There is deliberately no manual `nosleep` alias; the wrappers cover it.
+- **`caffeinate -i cmd` does not nest cmd underneath it.** It execs *itself* into
+  cmd and forks a child to hold the assertion, so the parent keeps the pid and
+  `ps -o args=` reads `cmd`, never `caffeinate …`. Process-tree reasoning that
+  assumes the opposite is wrong (this is also why `fcl`'s `^claude` match and
+  `pgrep -P <pane_pid> -x claude` are correct as written).
+- **Use `pgrep -x caffeinate`, not `pgrep -f`.** `-f` matches the watcher script's
+  own command line and reports phantom processes that look like a steady assertion.
 
 ## Adding New Configurations
 

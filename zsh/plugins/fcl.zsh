@@ -13,9 +13,6 @@
 function _fcl_list() {
   tmux list-panes -a -F '#{pane_id} #{pane_pid}' \
   | while read -r pane_id pid; do
-      # `caffeinate -i claude` does not nest claude under caffeinate: caffeinate
-      # execs itself into claude and forks a child to hold the assertion, so the
-      # pane's foreground args stay `claude ...` and this lookup is unaffected.
       local claude_pid=""
       if ps -o args= -p "$pid" 2>/dev/null | command grep -q '^claude'; then
         claude_pid=$pid
