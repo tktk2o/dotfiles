@@ -17,6 +17,8 @@ or `keys <query>` to filter.
 | `c` | Claude Code を編集許可モードで起動 | `zsh/.zshrc:11` |
 | `nv` | nvim を起動 | `zsh/.zshrc:12` |
 | `ghd` | gh dash（PR ダッシュボード）を開く | `zsh/.zshrc:13` |
+| `analyze` | 履歴から使用頻度の高いコマンドを集計する（--unused で未使用の定義を列挙） | `zsh/plugins/analyze.zsh:14` |
+| `cdf` | Finder の最前面ウィンドウのパスへ cd する | `zsh/plugins/cdf.zsh:8` |
 | `dev` | ghq リポジトリを選び、Claude Code を左右ペインに並べた tmux ウィンドウを作る | `zsh/plugins/dev.zsh:3` |
 | `fcl` | 全 tmux セッションの Claude Code ペインを一覧して切り替える | `zsh/plugins/fcl.zsh:61` |
 | `fgh` | ghq 管理下のリポジトリをファジー検索して cd する | `zsh/plugins/fgh.zsh:3` |
