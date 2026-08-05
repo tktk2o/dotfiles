@@ -14,6 +14,7 @@ mkdir -p ~/src/github.com/tktk2o && cd ~/src/github.com/tktk2o
 git clone https://github.com/tktk2o/dotfiles.git && cd dotfiles
 ./setup.sh                          # Creates all symlinks
 brew bundle --file=~/.Brewfile      # Install packages
+./setup.sh --dry-run                # Preview what setup.sh would do (safe, no side effects)
 ```
 
 ## Architecture
@@ -218,15 +219,25 @@ Two measurement traps, both hit while investigating this:
 4. If installable via Homebrew, add to `brew/.Brewfile`
 5. If it adds something you type (alias, function, key binding, executable), annotate it with `#:` and run `keys --generate`
 
-Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempotent and supports `./setup.sh --no-brew` and `./setup.sh --no-file-handlers`.
+Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempotent and supports `./setup.sh --no-brew`, `./setup.sh --no-file-handlers`, and `./setup.sh --dry-run` (or `-n`).
 
 ## Verifying Changes
 
-- **Never run `./setup.sh` to "test" a change on this machine** — `create_symlink` does `rm -rf "$dest"` before linking, clobbering real files at target paths.
-- Validate shell edits statically instead:
+- **`./setup.sh --dry-run` is safe to run anytime**, including on this machine with
+  real dotfiles already in place. It performs no side effects — no `mkdir`/`rm`/`ln`,
+  no installs, no interactive prompts — and instead prints what each step would do.
+  `create_symlink`'s dry-run path distinguishes three states for each `dest`: already
+  a correct symlink (no-op), a symlink pointing elsewhere (would relink), and a real
+  file/directory (a loud `WOULD DELETE` warning — this is exactly what `rm -rf "$dest"`
+  would destroy in a real run, and the reason `--dry-run` exists).
+- **Still never run plain `./setup.sh` (without `--dry-run`) to "test" a change on
+  this machine** — `create_symlink` does `rm -rf "$dest"` before linking, clobbering
+  real files at target paths. `--dry-run` covers the "does this even do what I
+  expect" question; it does not make the real run safe to fire off casually.
+- Validate shell edits statically too:
   - `bash -n setup.sh` (syntax check; run after every edit)
   - `shellcheck setup.sh` if installed (`brew install shellcheck`)
-- To confirm a symlink line resolves, check the source path exists and inspect the target with `ls -la` — don't re-run setup.
+- To confirm a symlink line resolves, check the source path exists and inspect the target with `ls -la`, or just read the `--dry-run` output for that line.
 
 ## Commit Conventions
 

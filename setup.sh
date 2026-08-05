@@ -1,17 +1,22 @@
 #!/bin/bash
 
 # dotfiles setup script
-# Usage: ./setup.sh [--no-brew] [--no-file-handlers]
+# Usage: ./setup.sh [--no-brew] [--no-file-handlers] [--dry-run|-n]
 #
 # Options:
 #   --no-brew             Skip Homebrew installation and brew bundle
 #   --no-file-handlers    Do not offer to change macOS default file handlers
+#   --dry-run, -n         Print what would happen without touching the
+#                         filesystem, installing anything, or prompting.
+#                         Safe to run anytime, including against a machine
+#                         with real dotfiles already in place.
 
 set -e
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKIP_BREW=false
 SKIP_FILE_HANDLERS=false
+DRY_RUN=false
 
 # Parse arguments
 for arg in "$@"; do
@@ -24,8 +29,17 @@ for arg in "$@"; do
             SKIP_FILE_HANDLERS=true
             shift
             ;;
+        --dry-run|-n)
+            DRY_RUN=true
+            shift
+            ;;
     esac
 done
+
+if [ "$DRY_RUN" = true ]; then
+    echo "[dry-run] No files will be created/removed, nothing will be installed,"
+    echo "[dry-run] and no interactive prompts will run."
+fi
 
 echo "============================================"
 echo "  dotfiles setup"
@@ -45,6 +59,13 @@ install_homebrew() {
     fi
 
     echo "[Homebrew] Not found."
+
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would prompt to install Homebrew and, if confirmed, run:"
+        echo "[dry-run]   /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+        return 0
+    fi
+
     read -p "Install Homebrew? (y/N): " answer
     if [[ "$answer" != "y" && "$answer" != "Y" ]]; then
         echo "[Homebrew] Skipped. Continuing with symlink setup."
@@ -72,6 +93,29 @@ create_symlink() {
     local src="$1"
     local dest="$2"
     local dest_dir="$(dirname "$dest")"
+
+    if [ "$DRY_RUN" = true ]; then
+        if [ -L "$dest" ]; then
+            local current_target
+            current_target="$(readlink "$dest")"
+            if [ "$current_target" = "$src" ]; then
+                echo "  [dry-run] ok (already linked): $dest -> $src"
+            else
+                echo "  [dry-run] would relink: $dest currently -> $current_target"
+                echo "  [dry-run]              would become -> $src"
+            fi
+        elif [ -e "$dest" ]; then
+            # Real file or directory: this is what 'rm -rf "$dest"' would destroy.
+            echo "  [dry-run] !! WOULD DELETE existing $([ -d "$dest" ] && echo directory || echo file): $dest"
+            echo "  [dry-run] !! then link -> $src"
+        else
+            if [ ! -d "$dest_dir" ]; then
+                echo "  [dry-run] would mkdir -p $dest_dir"
+            fi
+            echo "  [dry-run] would create: $dest -> $src"
+        fi
+        return 0
+    fi
 
     # Create destination directory if it doesn't exist
     if [ ! -d "$dest_dir" ]; then
@@ -112,8 +156,12 @@ create_symlinks() {
     # gh-dash: the live config is machine-local (company-specific repo/org names,
     # kept untracked). Seed it from the tracked template on first run, then symlink.
     if [ ! -f "$DOTFILES_DIR/gh-dash/config.local.yml" ]; then
-        cp "$DOTFILES_DIR/gh-dash/config.yml.example" "$DOTFILES_DIR/gh-dash/config.local.yml"
-        echo "[gh-dash] Seeded config.local.yml from template — add company-specific sections there."
+        if [ "$DRY_RUN" = true ]; then
+            echo "[dry-run] Would seed gh-dash/config.local.yml from config.yml.example."
+        else
+            cp "$DOTFILES_DIR/gh-dash/config.yml.example" "$DOTFILES_DIR/gh-dash/config.local.yml"
+            echo "[gh-dash] Seeded config.local.yml from template — add company-specific sections there."
+        fi
     fi
     create_symlink "$DOTFILES_DIR/gh-dash/config.local.yml" "$HOME/.config/gh-dash/config.yml"
     create_symlink "$DOTFILES_DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
@@ -146,6 +194,10 @@ run_brew_bundle() {
     fi
 
     echo ""
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would run: brew bundle --file=\"$HOME/.Brewfile\""
+        return 0
+    fi
     echo "[Brew Bundle] Installing packages from ~/.Brewfile..."
     brew bundle --file="$HOME/.Brewfile"
     echo "[Brew Bundle] Done."
@@ -162,6 +214,10 @@ setup_sheldon() {
     fi
 
     echo ""
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would run: sheldon lock --update"
+        return 0
+    fi
     echo "[sheldon] Cloning plugins..."
     sheldon lock --update
     echo "[sheldon] Done."
@@ -169,11 +225,17 @@ setup_sheldon() {
 
 setup_git_hooks() {
     echo ""
-    echo "[git hooks] Enabling pre-commit hook for the dotfiles repo (repo-local)..."
-    # Repo-local so it never runs on work repos (which legitimately contain
-    # company names and would false-positive).
-    git -C "$DOTFILES_DIR" config --local core.hooksPath "$DOTFILES_DIR/git/hooks"
-    chmod +x "$DOTFILES_DIR/git/hooks/pre-commit" 2>/dev/null || true
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would run:"
+        echo "[dry-run]   git -C \"$DOTFILES_DIR\" config --local core.hooksPath \"$DOTFILES_DIR/git/hooks\""
+        echo "[dry-run]   chmod +x \"$DOTFILES_DIR/git/hooks/pre-commit\""
+    else
+        echo "[git hooks] Enabling pre-commit hook for the dotfiles repo (repo-local)..."
+        # Repo-local so it never runs on work repos (which legitimately contain
+        # company names and would false-positive).
+        git -C "$DOTFILES_DIR" config --local core.hooksPath "$DOTFILES_DIR/git/hooks"
+        chmod +x "$DOTFILES_DIR/git/hooks/pre-commit" 2>/dev/null || true
+    fi
 
     local denylist="$HOME/.config/git/denylist.txt"
     if [ -f "$denylist" ]; then
@@ -195,6 +257,16 @@ setup_tmux_plugins() {
 
     local tpm_dir="$HOME/.tmux/plugins/tpm"
     echo ""
+    if [ "$DRY_RUN" = true ]; then
+        if [ ! -d "$tpm_dir" ]; then
+            echo "[dry-run] Would run: git clone https://github.com/tmux-plugins/tpm \"$tpm_dir\""
+        else
+            echo "[dry-run] TPM already present at $tpm_dir."
+        fi
+        echo "[dry-run] Would run: \"$tpm_dir/bin/install_plugins\""
+        return 0
+    fi
+
     if [ ! -d "$tpm_dir" ]; then
         echo "[tmux plugins] Cloning TPM..."
         git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
@@ -219,8 +291,12 @@ setup_gh_extensions() {
     echo "[gh extensions] Setting up..."
 
     if ! gh extension list 2>/dev/null | grep -q "dlvhdr/gh-dash"; then
-        gh extension install dlvhdr/gh-dash
-        echo "[gh extensions] Installed gh-dash."
+        if [ "$DRY_RUN" = true ]; then
+            echo "[dry-run] Would run: gh extension install dlvhdr/gh-dash"
+        else
+            gh extension install dlvhdr/gh-dash
+            echo "[gh extensions] Installed gh-dash."
+        fi
     else
         echo "[gh extensions] gh-dash already installed."
     fi
@@ -243,12 +319,21 @@ setup_rtk() {
     fi
 
     echo ""
-    echo "[rtk] Running 'rtk init -g --no-patch' (installs ~/.claude/RTK.md)..."
-    rtk init -g --no-patch
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would run: rtk init -g --no-patch"
+    else
+        echo "[rtk] Running 'rtk init -g --no-patch' (installs ~/.claude/RTK.md)..."
+        rtk init -g --no-patch
+    fi
 
     local filters_path="$DOTFILES_DIR/.rtk/filters.toml"
     if [ ! -f "$filters_path" ]; then
         echo "[rtk] Skipped trust check (no $filters_path)."
+        return 0
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would check: rtk trust --list | grep -qF \"$filters_path\""
         return 0
     fi
 
@@ -273,6 +358,11 @@ setup_csr() {
     fi
 
     echo ""
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would run: mkdir -p \"$HOME/.local/bin\""
+        echo "[dry-run] Would run: (cd \"$DOTFILES_DIR/claude/csr\" && go build -o \"$HOME/.local/bin/csr\" .)"
+        return 0
+    fi
     echo "[csr] Building claude/csr -> ~/.local/bin/csr..."
     mkdir -p "$HOME/.local/bin"
     #: 過去の Claude セッションを自分の発言で検索して再開する（fzf）
@@ -289,6 +379,11 @@ setup_keys() {
     fi
 
     echo ""
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would run: mkdir -p \"$HOME/.local/bin\""
+        echo "[dry-run] Would run: (cd \"$DOTFILES_DIR/tools/cheatsheet\" && go build -o \"$HOME/.local/bin/keys\" .)"
+        return 0
+    fi
     echo "[keys] Building tools/cheatsheet -> ~/.local/bin/keys..."
     mkdir -p "$HOME/.local/bin"
     #: この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf）
@@ -317,6 +412,26 @@ setup_macos_handlers() {
     local bundle_id="com.tktk2o.open-in-neovim"
 
     echo ""
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry-run] Would build nvim-open + '$app':"
+        echo "[dry-run]   mkdir -p \"$HOME/.local/bin\" \"$app/Contents/MacOS\""
+        echo "[dry-run]   rm -f \"$HOME/.local/bin/nvim-open\""
+        echo "[dry-run]   swiftc -O \"$src\" -o \"$HOME/.local/bin/nvim-open\""
+        echo "[dry-run]   cp \"$HOME/.local/bin/nvim-open\" \"$app/Contents/MacOS/nvim-open\""
+        echo "[dry-run]   write $app/Contents/Info.plist (bundle id $bundle_id)"
+        echo "[dry-run]   lsregister -f \"$app\""
+        if ! command -v duti &> /dev/null; then
+            echo "[dry-run] duti not installed — would print instructions to run register-file-handlers.sh manually."
+            return 0
+        fi
+        if [ "$SKIP_FILE_HANDLERS" = true ]; then
+            echo "[dry-run] --no-file-handlers set — would skip file-handler registration prompt."
+        else
+            echo "[dry-run] Would prompt: \"Register supported text files (csv, md, json, etc.) with Neovim? (y/N)\""
+            echo "[dry-run] If confirmed, would run: $DOTFILES_DIR/macos/scripts/register-file-handlers.sh"
+        fi
+        return 0
+    fi
     echo "[macOS] Building nvim-open + 'Open in Neovim.app'..."
     mkdir -p "$HOME/.local/bin" "$app/Contents/MacOS"
 
