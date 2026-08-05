@@ -177,6 +177,37 @@ Double-clicking a text-ish file in Finder, or opening one a browser just downloa
 - Internal shell helpers named `_foo` are skipped, so they never need annotating.
 - Built by `setup.sh` → `setup_keys` (needs `go`, same as `csr`).
 
+### Measuring zsh startup time (`zshtime`)
+
+atusy/dotfiles justifies deferring `compinit` with a measured startup-time
+script; this repo already does most of the same optimizations (`zsh-defer` for
+`zsh-autosuggestions` / `zsh-syntax-highlighting` / `zsh-completions` / local
+plugins, cached `sheldon source`, cached `starship init` / `zoxide init`,
+deferred `mise activate`) but had no measurement tool of its own. `zshtime`
+(`zsh/plugins/zshtime.zsh`) fills that gap — **measure before optimizing**,
+not the reverse.
+
+- **Modes**: `zshtime [n]` runs `zsh -i -c exit` `n` times (default 10) and
+  prints average/min/max in ms — a single run has too much variance to act
+  on. `zshtime --profile` runs once with `zmodload zsh/zprof` wrapped around
+  the real `.zshrc` (via a throwaway `ZDOTDIR`, so `~/.zshrc` and
+  `~/.zcompdump` are never touched) and prints the `zprof` breakdown.
+- **Measured on this machine**: 10 runs → **avg 96ms, min 66ms, max 203ms** —
+  well under the ~200ms threshold that would justify further deferral, so
+  **no optimization was made**. `--profile` shows `compinit`/`compdef` as the
+  dominant relative cost (zprof's own per-call instrumentation inflates the
+  absolute numbers, especially with `compdef`'s ~820 calls, so its ms figures
+  read much higher than the real wall-clock average — only the ranking is
+  meaningful). `compinit` must stay ahead of `fzf-tab` per the comment in
+  `sheldon/plugins.toml`, so deferring it like atusy does would risk breaking
+  `fzf-tab` and was intentionally not attempted here.
+- **Known gap, out of scope for this measurement**: `zsh/.zshrc` sets no
+  `HISTSIZE` / `SAVEHIST` / `HISTFILE` / history `setopt`s. The effective
+  values (`echo $HISTSIZE $SAVEHIST` in an interactive shell) come from
+  outside this repo, and `~/.zsh_history` has only ~1200 lines — shallow
+  compared to other dotfiles setups. Left unfixed pending a decision on
+  desired history size.
+
 ### Sleep prevention is Claude Code's job, not this repo's
 
 **Do not add `caffeinate` to any entry point that starts `claude`.** Claude Code
