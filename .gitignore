@@ -1,2 +1,6 @@
 # 会社固有の skill はローカル限定（このリポジトリは public）
 claude/skills/datadog/
+
+# プロジェクトローカルな Claude 設定と、Agent tool が作る worktree。
+# どちらもマシン固有で追跡しない（worktree は gitlink として混入しやすい）
+/.claude/

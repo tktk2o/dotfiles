@@ -280,6 +280,8 @@ Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempote
   - `bash -n setup.sh` (syntax check; run after every edit)
   - `shellcheck setup.sh` if installed (`brew install shellcheck`)
 - To confirm a symlink line resolves, check the source path exists and inspect the target with `ls -la`, or just read the `--dry-run` output for that line.
+- **Formatting**: `treefmt.toml` registers shfmt (`*.sh`), stylua (`*.lua`, excluding `nvim/` — see the comment in `treefmt.toml` for why LazyVim's tree is out of scope) and gofmt (`*.go`). Run `treefmt --no-cache --fail-on-change` to check without writing, or drop `--fail-on-change` to apply. Not wired into `setup.sh` or the pre-commit hook — it is opt-in so an unrelated commit never carries a giant reformat diff.
+- **Invariant tests**: `tests/run.sh` runs everything in `tests/*_test.sh` and reports a pass/fail tally. These test things that fail *silently* rather than loudly — a dangling `create_symlink` src, a CLAUDE.md `@` import that resolves to nothing, a dropped `rtk hook claude`, a caffeinate wrapper reintroduced after it was deliberately reverted (see "Sleep prevention is Claude Code's job, not this repo's" above) — so by the time a human would notice, the damage (a broken symlink on a fresh machine, a session missing personal instructions, more expensive Bash calls) has already happened. The tests read only repo files, never `~/`, so they behave the same on any machine. Wired into `git/hooks/pre-commit` as layer 4, and unlike layer 3 (cheatsheet drift, warn-only) it **blocks** the commit — these are all things that already broke silently once, not just untidy.
 
 ### Guarded operations (`claude/hooks/guard-dotfiles.sh`)
 

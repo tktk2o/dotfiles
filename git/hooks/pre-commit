@@ -70,6 +70,26 @@ if command -v keys > /dev/null 2>&1; then
     fi
 fi
 
+# --- layer 4: invariant tests (tests/run.sh) ---
+# Unlike layer 3 (cheatsheet drift), this BLOCKS. The invariants under test
+# are things that were each already tried and reverted once in this repo's
+# history (the caffeinate wrappers) or that break silently with no error at
+# the point of failure (a dangling create_symlink src, a silently-ignored
+# CLAUDE.md @ import, a dropped rtk hook) — by the time you'd notice, you've
+# already lost the RTK.md/local.md context for a session, or shipped a
+# broken symlink to a fresh machine. That is real breakage, not untidiness,
+# so it gets the same treatment as layer 1/2 rather than layer 3's warn-only.
+#
+# Tested with `-f` + an explicit `bash`, not `-x`: a lost executable bit would
+# make an `-x` guard skip the whole layer in silence, which is the exact
+# failure mode this layer exists to catch.
+if [ -f "tests/run.sh" ]; then
+    if ! bash tests/run.sh > /tmp/dotfiles-pre-commit-tests.$$ 2>&1; then
+        report "invariant test failure (tests/run.sh)" "$(cat /tmp/dotfiles-pre-commit-tests.$$)"
+    fi
+    rm -f /tmp/dotfiles-pre-commit-tests.$$
+fi
+
 if [ "$fail" -ne 0 ]; then
     printf '\nCommit aborted. Remove the flagged content, or use --no-verify if this is a verified false positive.\n' >&2
     exit 1

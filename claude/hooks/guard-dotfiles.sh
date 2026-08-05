@@ -113,6 +113,9 @@ Write | Edit | MultiEdit)
     "$home/.Brewfile")
         deny "~/.Brewfile は dotfiles/brew/.Brewfile への symlink です。dotfiles/brew/.Brewfile を直接編集してください。"
         ;;
+    "$home/.local/bin/twr")
+        deny "~/.local/bin/twr は dotfiles/tmux/scripts/tmux-window-restore.sh への symlink です。dotfiles/tmux/scripts/tmux-window-restore.sh を直接編集してください。"
+        ;;
     "$home/.claude/CLAUDE.md")
         deny "~/.claude/CLAUDE.md は dotfiles/claude/CLAUDE.md への symlink です。この経路への書き込みは symlink を上書き（drift）させる恐れがあります。dotfiles/claude/CLAUDE.md を直接編集してください。"
         ;;
