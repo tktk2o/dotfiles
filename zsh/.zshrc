@@ -1,11 +1,11 @@
 # fpath (completions)
-fpath=("/Users/takuto_kato/.zsh/completions" /opt/homebrew/share/zsh/site-functions $fpath)
+fpath=("$HOME/.zsh/completions" /opt/homebrew/share/zsh/site-functions $fpath)
 
 export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache
 
 # PATH (consolidated)
-export PATH="$HOME/.local/bin:/Users/takuto_kato/.rd/bin:/opt/homebrew/opt/mysql@8.4/bin:$PATH"
+export PATH="$HOME/.local/bin:/opt/homebrew/opt/mysql@8.4/bin:$PATH"
 
 # aliases
 alias c='claude --permission-mode acceptEdits' #: Claude Code を編集許可モードで起動
@@ -45,11 +45,11 @@ if command -v mise &>/dev/null; then
 fi
 
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/takuto_kato/.rd/bin:$PATH"
+export PATH="$HOME/.rd/bin:$PATH"
 ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
 
 # pnpm
-export PNPM_HOME="/Users/takuto_kato/Library/pnpm"
+export PNPM_HOME="$HOME/Library/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;

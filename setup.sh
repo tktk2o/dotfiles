@@ -47,8 +47,8 @@ install_homebrew() {
     echo "[Homebrew] Not found."
     read -p "Install Homebrew? (y/N): " answer
     if [[ "$answer" != "y" && "$answer" != "Y" ]]; then
-        echo "[Homebrew] Skipped. Some features may not work."
-        return 1
+        echo "[Homebrew] Skipped. Continuing with symlink setup."
+        return 0
     fi
 
     echo "[Homebrew] Installing..."
