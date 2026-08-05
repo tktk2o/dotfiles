@@ -177,6 +177,45 @@ Double-clicking a text-ish file in Finder, or opening one a browser just downloa
 - Internal shell helpers named `_foo` are skipped, so they never need annotating.
 - Built by `setup.sh` → `setup_keys` (needs `go`, same as `csr`).
 
+### Keeping the Mac awake while Claude runs (`caffeinate -i`)
+
+A long agent run should not be cut short by idle sleep, so **every entry point that
+starts `claude` wraps it in `caffeinate -i`**. There is no hook and no daemon: the
+assertion is tied to the process, so it disappears when claude exits and needs no
+reference counting when several panes run at once.
+
+The five entry points — change all of them together, or one path silently loses the
+assertion:
+
+| Entry point | Where |
+|-------------|-------|
+| `c` alias | `zsh/.zshrc:11` |
+| `dev` (two tmux panes) | `zsh/plugins/dev.zsh` |
+| gh-dash `R` (AI review) | `gh-dash/config.yml.example` **and** the untracked `config.local.yml` |
+| `twr` relaunch | `tmux/scripts/tmux-window-restore.sh` |
+| `csr` resume | `claude/csr/main.go` → `resume()` (rebuild after editing) |
+
+**`caffeinate -i cmd` does not nest cmd under caffeinate.** It execs *itself* into
+cmd and forks a child to hold the assertion, so the parent keeps the pid and
+`ps -o args=` still reads `claude ...`:
+
+```
+17930 17900 sleep       sleep 45          # the shell's child, args = the command
+17932 17930 caffeinate  caffeinate -i …   # its child, holds the assertion
+```
+
+Two consequences that are easy to get backwards:
+
+- `fcl`'s `^claude` match and `pgrep -P <pane_pid> -x claude` are **unaffected** —
+  don't "fix" them to walk a caffeinate hop, there isn't one.
+- tmux-resurrect saves the foreground args, i.e. the bare `claude ...`. The wrapper
+  is **never** in a saved command, so `twr` has to prepend it on every relaunch,
+  including the verbatim `--resume <id>` replay.
+
+Scope: `-i` only (idle system sleep). The display still dims and locks on its own
+schedule, and **closing the lid still sleeps** — `caffeinate` cannot hold that off.
+There is deliberately no manual `nosleep` alias; the wrappers cover it.
+
 ## Adding New Configurations
 
 1. Create subdirectory: `mkdir toolname/`

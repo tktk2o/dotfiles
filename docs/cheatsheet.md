@@ -10,15 +10,15 @@ or `keys <query>` to filter.
 
 | Press / type | Does | Defined in |
 |---|---|---|
-| `twr` | 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf） | `setup.sh:117` |
-| `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:273` |
-| `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:289` |
-| `nvim-open` | ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口 | `setup.sh:324` |
-| `c` | Claude Code を編集許可モードで起動 | `zsh/.zshrc:11` |
+| `twr` | 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf） | `setup.sh:123` |
+| `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:279` |
+| `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:295` |
+| `nvim-open` | ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口 | `setup.sh:330` |
+| `c` | Claude Code を編集許可モードで起動（稼働中は idle sleep を抑止） | `zsh/.zshrc:11` |
 | `nv` | nvim を起動 | `zsh/.zshrc:12` |
 | `ghd` | gh dash（PR ダッシュボード）を開く | `zsh/.zshrc:13` |
 | `dev` | ghq リポジトリを選び、Claude Code を左右ペインに並べた tmux ウィンドウを作る | `zsh/plugins/dev.zsh:3` |
-| `fcl` | 全 tmux セッションの Claude Code ペインを一覧して切り替える | `zsh/plugins/fcl.zsh:61` |
+| `fcl` | 全 tmux セッションの Claude Code ペインを一覧して切り替える | `zsh/plugins/fcl.zsh:64` |
 | `fgh` | ghq 管理下のリポジトリをファジー検索して cd する | `zsh/plugins/fgh.zsh:3` |
 | `g` | git | `zsh/plugins/git.zsh:4` |
 | `ga` | カレントディレクトリ以下を stage する | `zsh/plugins/git.zsh:5` |
@@ -105,6 +105,7 @@ or `keys <query>` to filter.
 | Press / type | Does | Defined in |
 |---|---|---|
 | `/calendar` | Google Calendarから予定を取得して日報に追加する。 | `claude/skills/calendar/SKILL.md:3` |
+| `/datadog` | Datadog を MCP 経由ではなく REST API 直叩きで参照する。 | `claude/skills/datadog/SKILL.md:3` |
 | `/pr-review` | PR を根拠ベースで厳密にレビューし、重大度分類したコメントと承認判断を出す。 | `claude/skills/pr-review/SKILL.md:3` |
 | `/root-cause` | 本番障害・データ不整合・通知/配信の不具合などを、実データとログに照らして 根拠ベースで根本原因まで追い、影響を定量化して修正 Draft PR まで持っていく。 | `claude/skills/root-cause/SKILL.md:3` |
 

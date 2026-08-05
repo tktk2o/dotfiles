@@ -51,7 +51,7 @@ keybindings:
     - key: R
       command: >-
         tmux new-window -n "review #{{.PrNumber}}" -c {{.RepoPath}}
-        'claude --permission-mode auto "/review https://github.com/{{.RepoName}}/pull/{{.PrNumber}}"'
+        'caffeinate -i claude --permission-mode auto "/review https://github.com/{{.RepoName}}/pull/{{.PrNumber}}"'
         \; split-window -h -d -c {{.RepoPath}}
         'gh pr diff {{.PrNumber}} -R {{.RepoName}} | hunk patch'
     #: PR をブラウザで開く
