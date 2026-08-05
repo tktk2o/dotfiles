@@ -281,6 +281,37 @@ Shell scripts are **bash** (`#!/bin/bash`) with `set -e`. `setup.sh` is idempote
   - `shellcheck setup.sh` if installed (`brew install shellcheck`)
 - To confirm a symlink line resolves, check the source path exists and inspect the target with `ls -la`, or just read the `--dry-run` output for that line.
 
+### Guarded operations (`claude/hooks/guard-dotfiles.sh`)
+
+Prose rules only work if they get read every time, so the riskiest ones above are
+also enforced mechanically by a `PreToolUse` hook — `claude/hooks/guard-dotfiles.sh`,
+wired in `claude/settings.json` ahead of the `rtk hook claude` entry (a cheap deny
+check should short-circuit before rtk does any work on a command that is about to
+be blocked anyway). It denies or warns on, in order of the rules above:
+
+- `./setup.sh` without `--dry-run`/`-n`, run from a `dotfiles` checkout — **denied**.
+  Use `./setup.sh --dry-run` or `bash -n setup.sh` instead.
+- `Write`/`Edit`/`MultiEdit` to the individually-symlinked files under `~/.claude/`
+  or `~/.config/` (the single-file symlinks in the tables above — `CLAUDE.md`,
+  `settings.json`, `starship.toml`, `karabiner.json`, etc.) — **denied**, because a
+  tool that replaces-via-rename unlinks the symlink and leaves an orphan real file
+  at the target, silently dropping the edit out of the repo. Edit the `dotfiles/…`
+  source path instead (whole-directory symlinks like `nvim/`, `claude/hooks/`,
+  `claude/skills/` are exempt — writing through those lands inside the repo
+  directly, so there is no drift risk). The untracked files in the *Local-only*
+  table (`settings.local.json`, `local.md`, `local/`, `RTK.md`) are excluded on
+  purpose — they are meant to be edited at their `~/.claude/` path.
+- `git commit --no-verify` / `git push --force` (not `--force-with-lease`) —
+  **warned, not denied**: both are sometimes the right call (a confirmed
+  pre-commit false positive, a solo-maintainer force-push after rebase), so the
+  hook injects a reminder via `additionalContext` instead of blocking.
+
+Legitimate bypass: the hook only inspects the literal command string / `file_path`,
+so there is no override flag by design — if a denial is wrong, do the equivalent
+operation through a path the hook does not recognize as risky (e.g. edit the
+`dotfiles/…` source file directly instead of the `~/.claude/…` symlink target) or
+ask the user to run the command themselves outside Claude Code.
+
 ## Commit Conventions
 
 Single-maintainer personal repo — commit directly to `main`, no feature branches or PRs for routine changes. Use worktrees only for the cases in `claude/worktree.md` (PoC / upstream-dependent / parallel work).
