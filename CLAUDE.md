@@ -291,8 +291,9 @@ be blocked anyway). It denies or warns on, in order of the rules above:
 
 - `./setup.sh` without `--dry-run`/`-n`, run from a `dotfiles` checkout — **denied**.
   Use `./setup.sh --dry-run` or `bash -n setup.sh` instead.
-- `Write`/`Edit`/`MultiEdit` to the individually-symlinked files under `~/.claude/`
-  or `~/.config/` (the single-file symlinks in the tables above — `CLAUDE.md`,
+- `Write`/`Edit`/`MultiEdit` to the individually-symlinked files under `~/`,
+  `~/.claude/` or `~/.config/` (the single-file symlinks in the tables above —
+  `.zshrc`, `.tmux.conf`, `.gitconfig`, `.Brewfile`, `CLAUDE.md`,
   `settings.json`, `starship.toml`, `karabiner.json`, etc.) — **denied**, because a
   tool that replaces-via-rename unlinks the symlink and leaves an orphan real file
   at the target, silently dropping the edit out of the repo. Edit the `dotfiles/…`

@@ -59,9 +59,18 @@ Bash)
     # containing "dotfiles" so an unrelated project's own setup.sh is not
     # caught, and to a command that actually *invokes* the script (not a
     # mention inside `echo`/a string).
-    if printf '%s' "$cmd" | grep -qE '(^|[;&|]\s*)((\.\/)?setup\.sh|(bash|sh|zsh)\s+(\.\/)?setup\.sh)(\s|$)' \
+    # The dry-run flag must be tested against setup.sh's OWN arguments, not the
+    # whole command line: `./setup.sh; echo -n done` contains `-n` and would
+    # otherwise be waved through, which is a false negative on the dangerous
+    # side. `sed` extracts the invocation up to the next separator and the flag
+    # check runs on that segment alone.
+    # The trailing class must accept a separator, not just whitespace/end:
+    # `./setup.sh; echo x` put a `;` immediately after the script name and
+    # slipped past a `(\s|$)` anchor entirely.
+    if printf '%s' "$cmd" | grep -qE '(^|[;&|]\s*)((\.\/)?setup\.sh|(bash|sh|zsh)\s+(\.\/)?setup\.sh)([[:space:];&|)]|$)' \
         && printf '%s' "$cwd" | grep -qi 'dotfiles'; then
-        if ! printf '%s' "$cmd" | grep -qE -- '(--dry-run|(^|\s)-n(\s|$))'; then
+        segment=$(printf '%s' "$cmd" | sed -E 's/.*((^|[;&|])[[:space:]]*)((\.\/)?setup\.sh|(bash|sh|zsh)[[:space:]]+(\.\/)?setup\.sh)/\3/' | sed -E 's/[;&|].*//')
+        if ! printf '%s' "$segment" | grep -qE -- '(--dry-run|(^|[[:space:]])-n([[:space:]]|$))'; then
             deny "./setup.sh は create_symlink が実行前に 'rm -rf \$dest' するため、実ファイルを破壊する可能性があります（CLAUDE.md の Verifying Changes 参照）。'./setup.sh --dry-run' で確認するか、'bash -n setup.sh' で静的検証してください。"
         fi
     fi
@@ -84,10 +93,26 @@ Write | Edit | MultiEdit)
 
     home="${HOME:-/Users/$(whoami)}"
 
-    # --- Rule 2: individually-symlinked files under ~/.claude/ ---
-    # (whole-directory symlinks — hooks/, skills/ — are NOT here: writing
-    # through them lands inside the repo directly, no drift risk.)
+    # --- Rule 2: individually-symlinked files under ~/.claude/ and ~/ ---
+    # (whole-directory symlinks — hooks/, skills/, rules/, nvim/, zsh/plugins/ —
+    # are NOT here: writing through them lands inside the repo directly, no
+    # drift risk.)
     case "$file" in
+    "$home/.zshrc")
+        deny "~/.zshrc は dotfiles/zsh/.zshrc への symlink です。dotfiles/zsh/.zshrc を直接編集してください。"
+        ;;
+    "$home/.tmux.conf")
+        deny "~/.tmux.conf は dotfiles/tmux/.tmux.conf への symlink です。dotfiles/tmux/.tmux.conf を直接編集してください。"
+        ;;
+    "$home/.gitconfig")
+        deny "~/.gitconfig は dotfiles/git/.gitconfig への symlink です。dotfiles/git/.gitconfig を直接編集してください。"
+        ;;
+    "$home/.gitignore_global")
+        deny "~/.gitignore_global は dotfiles/git/.gitignore_global への symlink です。dotfiles/git/.gitignore_global を直接編集してください。"
+        ;;
+    "$home/.Brewfile")
+        deny "~/.Brewfile は dotfiles/brew/.Brewfile への symlink です。dotfiles/brew/.Brewfile を直接編集してください。"
+        ;;
     "$home/.claude/CLAUDE.md")
         deny "~/.claude/CLAUDE.md は dotfiles/claude/CLAUDE.md への symlink です。この経路への書き込みは symlink を上書き（drift）させる恐れがあります。dotfiles/claude/CLAUDE.md を直接編集してください。"
         ;;
