@@ -25,9 +25,12 @@ brew "mysql@8.4"
 brew "ripgrep"
 brew "rtk"
 brew "sheldon"
+brew "shfmt" # shell formatter, run via treefmt (treefmt.toml)
 brew "starship"
+brew "stylua" # lua formatter, run via treefmt (treefmt.toml)
 brew "tig"
 brew "tmux"
+brew "treefmt" # runs shfmt/stylua/gofmt from treefmt.toml
 brew "uv"
 brew "zoxide"
 
