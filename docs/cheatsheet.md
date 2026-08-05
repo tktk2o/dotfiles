@@ -14,9 +14,9 @@ or `keys <query>` to filter.
 | `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:372` |
 | `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:393` |
 | `nvim-open` | ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口 | `setup.sh:448` |
-| `c` | Claude Code を編集許可モードで起動 | `zsh/.zshrc:11` |
-| `nv` | nvim を起動 | `zsh/.zshrc:12` |
-| `ghd` | gh dash（PR ダッシュボード）を開く | `zsh/.zshrc:13` |
+| `c` | Claude Code を編集許可モードで起動 | `zsh/.zshrc:50` |
+| `nv` | nvim を起動 | `zsh/.zshrc:51` |
+| `ghd` | gh dash（PR ダッシュボード）を開く | `zsh/.zshrc:52` |
 | `analyze` | 履歴から使用頻度の高いコマンドを集計する（--unused で未使用の定義を列挙） | `zsh/plugins/analyze.zsh:14` |
 | `cdf` | Finder の最前面ウィンドウのパスへ cd する | `zsh/plugins/cdf.zsh:8` |
 | `dev` | ghq リポジトリを選び、Claude Code を左右ペインに並べた tmux ウィンドウを作る | `zsh/plugins/dev.zsh:3` |

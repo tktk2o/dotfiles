@@ -23,7 +23,8 @@ cd dotfiles
 このスクリプトは以下を自動で行います:
 
 1. **Homebrew**: 未インストールの場合、インストールを提案（見送ってもシンボリックリンク作成は継続）
-2. **シンボリックリンク**: 設定ファイルをホームディレクトリにリンク
+2. **シンボリックリンク**: 設定ファイルをホームディレクトリにリンク（既存の実ファイルは
+   削除されるので、初回以外は `--dry-run` で確認してから）
 3. **Brewパッケージ**: `~/.Brewfile`からすべてのパッケージをインストール
 4. **git hooks**: このリポジトリ用に `core.hooksPath` を設定（pre-commitリーク検査）
 5. **sheldon**: zshプラグインのキャッシュを生成
@@ -35,12 +36,26 @@ cd dotfiles
 ### オプション
 
 ```bash
+# 何が起きるか表示するだけ。ファイルの作成/削除・インストール・対話プロンプトを
+# 一切行わないので、既に設定済みのマシンでも安全に実行できる
+./setup.sh --dry-run          # -n でも同じ
+
 # Homebrew関連の処理をスキップ（シンボリックリンクのみ作成）
 ./setup.sh --no-brew
 
 # macOSの既定アプリを変更する確認を出さない
 ./setup.sh --no-file-handlers
 ```
+
+`--dry-run` は各リンク先を3状態に分けて表示する:
+
+- 既に正しいリンク → `ok (already linked)`（何もしない）
+- 別の場所を指すリンク → 貼り替える旨
+- **実ファイル / 実ディレクトリ → `!! WOULD DELETE`**
+
+`create_symlink` はリンク前に `rm -rf` するため、3番目は実行すると失われる。
+設定済みのマシンで変更を確かめたいときは、素の `./setup.sh` ではなく必ず
+`--dry-run` を使う。
 
 ### 3. ターミナルを再起動
 
@@ -55,6 +70,8 @@ cd dotfiles
 | `gh-dash/config.local.yml` | gh-dashの実設定（会社固有のリポ名を含む） | `setup.sh`が`gh-dash/config.yml.example`から自動生成。会社固有の`prSections`を追記 |
 | `~/.config/git/denylist.txt` | pre-commitリーク検査の会社固有ワード（1行1正規表現） | 手動で作成。無い場合は汎用シークレット検査のみ動作 |
 | `~/.claude/RTK.md` | Claude Codeが読むrtkのグローバル指示 | `rtk init -g`で導入 |
+| `~/.claude/local.md` + `~/.claude/local/*.md` | マシン固有のClaude指示。`local.md`は各トピック数行の薄いハブ（常時import）、詳細は`local/*.md`に置いてimportしない（必要なときだけ読む） | 手動で作成。社内の名称を含むためpublicなこのリポジトリには入れない |
+| `~/.claude/settings.local.json` | マシン固有のClaude設定（追加の`permissions`、`deny`、会社プラグイン/マーケットプレイス） | 手動で作成。Claude Codeも権限付与時に書き込む。symlinkしない（追跡側は`claude/settings.json`） |
 
 また、rtkのプロジェクトフィルタは1台につき1回信頼登録が必要です:
 
@@ -102,6 +119,7 @@ cd ~/src/github.com/tktk2o/dotfiles && rtk trust
 | `~/.claude/worktree.md` | `claude/worktree.md` |
 | `~/.claude/model-policy.md` | `claude/model-policy.md` |
 | `~/.claude/persona-github.md` | `claude/persona-github.md`（gh のコメント文体） |
+| `~/.claude/rules` | `claude/rules/`（必要なときだけ読む方針ドキュメント。importしない） |
 
 ## ディレクトリ構成
 
@@ -123,7 +141,11 @@ dotfiles/
 ├── sheldon/         # zshプラグインマネージャ
 ├── starship/        # シェルプロンプト
 ├── tmux/            # ターミナルマルチプレクサ + scripts/ (twr)
+├── tools/           # cheatsheet/ (keys のソース)
+├── tests/           # 不変条件テスト (run.sh)
+├── docs/            # cheatsheet.md（自動生成）
 ├── zsh/             # シェル設定 + plugins/
+├── treefmt.toml     # フォーマッタ登録 (shfmt / stylua / gofmt)
 └── setup.sh         # セットアップスクリプト
 ```
 
@@ -139,7 +161,31 @@ dotfiles/
 - **過去ウィンドウ復元**: `twr` (`prefix + W`)
 - **Finderから開く**: [`nvim-open`](./macos/nvim-open/README.md) — テキスト系ファイルをtmux新ウィンドウのnvimで開く
 - **過去セッション検索**: `csr` (`prefix + F`) — 過去の Claude Code セッションを自分の発言で全文検索して再開
+- **履歴の棚卸し**: `analyze`（使用頻度）/ `analyze --unused`（定義したのに使っていないもの）
+- **起動時間計測**: `zshtime`（現状 平均96ms）/ `zshtime --profile` で内訳
 - **AI**: Claude Code (+ rtk: Bash出力フィルタ)
+
+## 変更を検証する
+
+```bash
+./setup.sh --dry-run                    # setup.sh の変更を副作用なしで確認
+bash tests/run.sh                       # 不変条件テスト
+bash -n setup.sh                        # シェル構文チェック
+treefmt --no-cache --fail-on-change     # 整形漏れの確認（付けずに実行すると整形する）
+```
+
+`tests/` は**黙って壊れるもの**だけをテストする — 壊れた `create_symlink` の参照元、
+解決されない `@` import、消えた `rtk hook claude`、意図的に revert した
+`caffeinate` ラッパーの再導入、そして `claude/hooks/guard-dotfiles.sh` の
+ガード対象と `setup.sh` のリンク一覧のズレ。いずれも失敗した時点では何も
+エラーにならず、気づくのは壊れた後になる。`git/hooks/pre-commit` の layer 4
+としてコミットを**ブロック**する。
+
+`treefmt` は `setup.sh` にも pre-commit にも組み込んでいない（無関係な
+コミットに巨大な整形差分が混ざるのを避けるため、実行は任意）。
+
+Claude Code 側は `claude/hooks/guard-dotfiles.sh` が `PreToolUse` で
+`--dry-run` なしの `./setup.sh` と、symlink 実体への直接書き込みを拒否する。
 
 ## コマンド一覧
 
