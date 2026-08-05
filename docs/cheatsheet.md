@@ -40,26 +40,27 @@ or `keys <query>` to filter.
 | `prefix + C-b` | prefix キー自体を送る（ネストした tmux 用） | `tmux/.tmux.conf:30` |
 | `prefix + \|` | ペインを縦分割する（cwd を維持） | `tmux/.tmux.conf:33` |
 | `prefix + -` | ペインを横分割する（cwd を維持） | `tmux/.tmux.conf:36` |
-| `C-h` | 左のペインへ移動（nvim をまたいでシームレス） | `tmux/.tmux.conf:41` |
-| `C-j` | 下のペインへ移動（nvim をまたいでシームレス） | `tmux/.tmux.conf:43` |
-| `C-k` | 上のペインへ移動（nvim をまたいでシームレス） | `tmux/.tmux.conf:45` |
-| `C-l` | 右のペインへ移動（nvim をまたいでシームレス） | `tmux/.tmux.conf:47` |
-| `prefix + h` | 左のペインへ移動 | `tmux/.tmux.conf:51` |
-| `prefix + j` | 下のペインへ移動 | `tmux/.tmux.conf:53` |
-| `prefix + k` | 上のペインへ移動 | `tmux/.tmux.conf:55` |
-| `prefix + l` | 右のペインへ移動 | `tmux/.tmux.conf:57` |
-| `prefix + C-h` | 前のウィンドウへ | `tmux/.tmux.conf:59` |
-| `prefix + C-l` | 次のウィンドウへ | `tmux/.tmux.conf:61` |
-| `prefix + H` | ペインを左に 5 広げる（連打可） | `tmux/.tmux.conf:65` |
-| `prefix + J` | ペインを下に 5 広げる（連打可） | `tmux/.tmux.conf:67` |
-| `prefix + K` | ペインを上に 5 広げる（連打可） | `tmux/.tmux.conf:69` |
-| `prefix + L` | ペインを右に 5 広げる（連打可） | `tmux/.tmux.conf:71` |
-| `prefix + v` | コピーモードに入る | `tmux/.tmux.conf:137` |
-| `copy-mode-vi: y` | 選択範囲をクリップボードにコピーして抜ける | `tmux/.tmux.conf:140` |
-| `copy-mode-vi: Enter` | 選択範囲をクリップボードにコピーして抜ける | `tmux/.tmux.conf:142` |
-| `prefix + W` | 過去のウィンドウを resurrect 履歴から復元する（twr, popup） | `tmux/.tmux.conf:147` |
-| `prefix + F` | 過去の Claude セッションを検索して再開する（csr, popup） | `tmux/.tmux.conf:154` |
-| `prefix + g` | コマンド一覧（cheatsheet）を読む（keys --doc, popup） | `tmux/.tmux.conf:160` |
+| `prefix + x` | 現在のペインを閉じる（何が動いているか確認してから） | `tmux/.tmux.conf:42` |
+| `C-h` | 左のペインへ移動（nvim をまたいでシームレス） | `tmux/.tmux.conf:47` |
+| `C-j` | 下のペインへ移動（nvim をまたいでシームレス） | `tmux/.tmux.conf:49` |
+| `C-k` | 上のペインへ移動（nvim をまたいでシームレス） | `tmux/.tmux.conf:51` |
+| `C-l` | 右のペインへ移動（nvim をまたいでシームレス） | `tmux/.tmux.conf:53` |
+| `prefix + h` | 左のペインへ移動 | `tmux/.tmux.conf:57` |
+| `prefix + j` | 下のペインへ移動 | `tmux/.tmux.conf:59` |
+| `prefix + k` | 上のペインへ移動 | `tmux/.tmux.conf:61` |
+| `prefix + l` | 右のペインへ移動 | `tmux/.tmux.conf:63` |
+| `prefix + C-h` | 前のウィンドウへ | `tmux/.tmux.conf:65` |
+| `prefix + C-l` | 次のウィンドウへ | `tmux/.tmux.conf:67` |
+| `prefix + H` | ペインを左に 5 広げる（連打可） | `tmux/.tmux.conf:71` |
+| `prefix + J` | ペインを下に 5 広げる（連打可） | `tmux/.tmux.conf:73` |
+| `prefix + K` | ペインを上に 5 広げる（連打可） | `tmux/.tmux.conf:75` |
+| `prefix + L` | ペインを右に 5 広げる（連打可） | `tmux/.tmux.conf:77` |
+| `prefix + v` | コピーモードに入る | `tmux/.tmux.conf:143` |
+| `copy-mode-vi: y` | 選択範囲をクリップボードにコピーして抜ける | `tmux/.tmux.conf:146` |
+| `copy-mode-vi: Enter` | 選択範囲をクリップボードにコピーして抜ける | `tmux/.tmux.conf:148` |
+| `prefix + W` | 過去のウィンドウを resurrect 履歴から復元する（twr, popup） | `tmux/.tmux.conf:153` |
+| `prefix + F` | 過去の Claude セッションを検索して再開する（csr, popup） | `tmux/.tmux.conf:160` |
+| `prefix + g` | コマンド一覧（cheatsheet）を読む（keys --doc, popup） | `tmux/.tmux.conf:166` |
 
 ## Neovim
 
