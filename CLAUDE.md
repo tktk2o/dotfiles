@@ -104,6 +104,16 @@ them. After `./setup.sh` on a new machine, recreate each one:
 | `~/.claude/local.md` + `~/.claude/local/*.md` | Machine-local Claude instructions. `local.md` is a **thin hub** imported via `@~/.claude/local.md` (a few lines per topic, always in context); the detail sits in `local/*.md` (e.g. `local/slack.md`: use `slack-cli` over the Slack MCP, the `all` / `ext` profiles, the Slack writing persona) and is **not** imported, so it is read on demand and costs nothing in unrelated sessions. Add topics as new `local/<topic>.md` + one hub line. | Recreate manually — contents name internal workspaces/colleagues, so they stay out of this public repo. Missing on a fresh machine: the `@~/.claude/local.md` import simply resolves to nothing. |
 | `~/.claude/settings.local.json` | Machine-local Claude settings: extra `permissions`, `deny` rules (Slack MCP is blocked here), enabled company plugins/marketplaces. | Recreate manually; Claude Code also writes to it as permissions are granted. Not symlinked — `claude/settings.json` is the tracked half. |
 
+> **Enabling a plugin writes to the wrong half.** Turning on a company plugin via
+> `/plugin` added `<name>@<company>-marketplace` to `enabledPlugins` in the
+> **tracked** `claude/settings.json`, even though the same entry (and the
+> marketplace definition) already existed in `settings.local.json`. The
+> pre-commit denylist caught it, which is what that scanner is for — but the
+> tracked file is where it lands by default, so check `git diff
+> claude/settings.json` after any `/plugin` change and move company entries to
+> `settings.local.json`. The duplicate in the tracked file is safe to simply
+> delete; the local half is what actually enables the plugin.
+
 ### Neovim (LazyVim)
 
 Located in `nvim/`, using LazyVim framework:
