@@ -43,6 +43,7 @@ brew bundle --file=~/.Brewfile      # Install packages
 | `claude/worktree.md` | `~/.claude/worktree.md` |
 | `claude/model-policy.md` | `~/.claude/model-policy.md` |
 | `claude/persona-github.md` | `~/.claude/persona-github.md` |
+| `claude/rules/` | `~/.claude/rules` |
 
 > `~/.claude/CLAUDE.md` is a symlink to `claude/CLAUDE.md`, which holds the
 > `@~/.claude/RTK.md` / `@worktree.md` / `@model-policy.md` / `@~/.claude/local.md`
