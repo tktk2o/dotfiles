@@ -65,6 +65,16 @@ brew bundle --file=~/.Brewfile      # Install packages
 > `~/.claude/` is the documented way to keep personal instructions out of a
 > tracked CLAUDE.md ([memory docs](https://code.claude.com/docs/en/memory.md)).
 
+### Deciding where a new Claude instruction goes
+
+`claude/rules/config-maintenance.md` is the judgment-call reference for
+"settings.json hook vs. global CLAUDE.md import vs. project CLAUDE.md vs.
+skill vs. on-demand `*.md`" — read it before adding a new instruction anywhere
+in `~/.claude/` or this repo's `claude/` tree. It also carries a standing audit
+of the four files `claude/CLAUDE.md` currently imports (including a
+recommendation on `worktree.md`) and the `wc -l` one-liner used to measure the
+always-on context cost.
+
 ### Posting personas (GitHub is tracked, Slack is not)
 
 `gh pr review` / `gh pr comment` の本文は `claude/persona-github.md` の文体で書く
