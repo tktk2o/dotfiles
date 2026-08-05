@@ -171,11 +171,16 @@ struct Opener {
 
 // MARK: - Process helpers
 
-/// LaunchServices starts apps with a minimal PATH. Check both Homebrew prefixes
-/// so the wrapper works on Apple Silicon (/opt/homebrew) and Intel (/usr/local).
+/// The inherited PATH first, so a tmux outside Homebrew (MacPorts, nix, mise) is
+/// still found when invoked as a CLI. LaunchServices starts apps with a minimal
+/// PATH, so both Homebrew prefixes follow as a fallback — Apple Silicon
+/// (/opt/homebrew) and Intel (/usr/local).
 func executable(named name: String) -> String? {
     let home = FileManager.default.homeDirectoryForCurrentUser.path
-    let directories = [
+    let inherited = (ProcessInfo.processInfo.environment["PATH"] ?? "")
+        .split(separator: ":")
+        .map(String.init)
+    let directories = inherited + [
         "/opt/homebrew/bin",
         "/usr/local/bin",
         "\(home)/.local/bin",
