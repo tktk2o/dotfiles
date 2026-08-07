@@ -145,14 +145,27 @@ func readDoc(path string) error {
 		{"cat", path},
 	}
 
+	var lastErr error
+	tried := false
 	for _, argv := range pagers {
 		bin, err := exec.LookPath(argv[0])
 		if err != nil {
 			continue
 		}
+		tried = true
 		cmd := exec.Command(bin, argv[1:]...)
 		cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-		return cmd.Run()
+		if err := cmd.Run(); err != nil {
+			// This pager is present but failed (e.g. glow choking on the
+			// file, or a broken terminal for less) — fall back to the next
+			// one instead of giving up on the whole command.
+			lastErr = err
+			continue
+		}
+		return nil
+	}
+	if tried {
+		return fmt.Errorf("no pager succeeded (tried glow, less, cat): %w", lastErr)
 	}
 	return fmt.Errorf("no pager available (tried glow, less, cat)")
 }

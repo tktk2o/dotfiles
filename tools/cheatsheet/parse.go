@@ -309,6 +309,7 @@ func parseKarabiner(root string) []Entry {
 	var cfg struct {
 		Profiles []struct {
 			Name                 string `json:"name"`
+			Selected             bool   `json:"selected"`
 			ComplexModifications struct {
 				Rules []struct {
 					Description string `json:"description"`
@@ -319,26 +320,36 @@ func parseKarabiner(root string) []Entry {
 	if json.Unmarshal(data, &cfg) != nil {
 		return nil
 	}
+	if len(cfg.Profiles) == 0 {
+		return nil
+	}
+
+	// Only the active profile matters; the rest are leftovers. Karabiner
+	// marks it with "selected": true; fall back to the first profile if
+	// none is marked (or the config predates that field).
+	active := cfg.Profiles[0]
+	for _, p := range cfg.Profiles {
+		if p.Selected {
+			active = p
+			break
+		}
+	}
 
 	var out []Entry
-	for _, p := range cfg.Profiles {
-		for _, r := range p.ComplexModifications.Rules {
-			if r.Description == "" {
-				continue
-			}
-			// The description is "Map X to Y"; the key is the useful half.
-			key, desc := r.Description, r.Description
-			if _, rest, ok := strings.Cut(r.Description, "Map "); ok {
-				if k, target, ok := strings.Cut(rest, " to "); ok {
-					key, desc = k, "→ "+target
-				}
-			}
-			out = append(out, Entry{
-				Category: "macOS", Key: key, Desc: desc, File: rel,
-			})
+	for _, r := range active.ComplexModifications.Rules {
+		if r.Description == "" {
+			continue
 		}
-		// Only the active profile matters; the rest are leftovers.
-		break
+		// The description is "Map X to Y"; the key is the useful half.
+		key, desc := r.Description, r.Description
+		if _, rest, ok := strings.Cut(r.Description, "Map "); ok {
+			if k, target, ok := strings.Cut(rest, " to "); ok {
+				key, desc = k, "→ "+target
+			}
+		}
+		out = append(out, Entry{
+			Category: "macOS", Key: key, Desc: desc, File: rel,
+		})
 	}
 	return out
 }

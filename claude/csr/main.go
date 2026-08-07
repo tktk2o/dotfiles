@@ -96,6 +96,13 @@ func run(args []string) error {
 	return resume(picked.SessionID, picked.Cwd)
 }
 
+// shellQuote wraps s in single quotes so it can be safely interpolated into
+// a shell command string (e.g. a tmux new-window command, or an fzf
+// --preview command), even if it contains spaces or shell metacharacters.
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
 func projectsDir() string {
 	if dir := os.Getenv("CLAUDE_PROJECTS_DIR"); dir != "" {
 		return dir
@@ -138,7 +145,7 @@ func pick(records []Record, query string) (*Record, error) {
 		"--query="+query,
 		"--prompt=claude session > ",
 		"--header=enter: resume in a new window",
-		"--preview", self+" --preview {1} {4}",
+		"--preview", shellQuote(self)+" --preview {1} {4}",
 		"--preview-window=down,60%,wrap",
 	)
 	cmd.Stdin = strings.NewReader(input.String())
@@ -214,7 +221,7 @@ func resume(sessionID, cwd string) error {
 
 	if os.Getenv("TMUX") != "" {
 		return exec.Command("tmux", "new-window", "-c", cwd,
-			"claude --resume "+sessionID).Run()
+			"claude --resume "+shellQuote(sessionID)).Run()
 	}
 
 	claude, err := exec.LookPath("claude")
