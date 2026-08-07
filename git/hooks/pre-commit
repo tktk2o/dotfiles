@@ -83,11 +83,29 @@ fi
 # Tested with `-f` + an explicit `bash`, not `-x`: a lost executable bit would
 # make an `-x` guard skip the whole layer in silence, which is the exact
 # failure mode this layer exists to catch.
+#
+# The output file is created with mktemp rather than a predictable
+# /tmp/…-$$ path: a fixed, guessable name in a world-writable directory lets
+# another local process race to create it first (e.g. as a symlink to a file
+# this hook then unwittingly overwrites or reads).
 if [ -f "tests/run.sh" ]; then
-    if ! bash tests/run.sh > /tmp/dotfiles-pre-commit-tests.$$ 2>&1; then
-        report "invariant test failure (tests/run.sh)" "$(cat /tmp/dotfiles-pre-commit-tests.$$)"
+    test_output="$(mktemp)"
+    if ! bash tests/run.sh > "$test_output" 2>&1; then
+        report "invariant test failure (tests/run.sh)" "$(cat "$test_output")"
     fi
-    rm -f /tmp/dotfiles-pre-commit-tests.$$
+    rm -f "$test_output"
+fi
+
+# --- layer 5: sensitive binary file extensions ---
+# Certificates/keystores/VPN configs are binary or semi-binary, so layer 1's
+# text-pattern secret scan over `git diff` added-lines cannot see inside them
+# (a diff of a binary file has no "+" content lines at all). Block by staged
+# file extension instead, regardless of diff content.
+sensitive_ext_pattern='\.(p12|pfx|pem|key|der|jks|keystore|ovpn)$'
+staged_files="$(git diff --cached --name-only --diff-filter=ACM)"
+if [ -n "$staged_files" ]; then
+    sensitive_files="$(printf '%s\n' "$staged_files" | grep -iE "$sensitive_ext_pattern")" || true
+    [ -n "$sensitive_files" ] && report "staged file with a sensitive extension (cert/key/keystore/VPN config)" "$sensitive_files"
 fi
 
 if [ "$fail" -ne 0 ]; then
