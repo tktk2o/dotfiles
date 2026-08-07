@@ -42,12 +42,12 @@ die() {
     exit 1
 }
 
-command -v duti > /dev/null 2>&1 || die "duti is required (brew install duti)"
+command -v duti >/dev/null 2>&1 || die "duti is required (brew install duti)"
 
 case "${1:-}" in
     --list)
         for ext in "${EXTENSIONS[@]}"; do
-            printf '%-10s %s\n' "$ext" "$(duti -x "$ext" 2> /dev/null | tail -1 || echo '(none)')"
+            printf '%-10s %s\n' "$ext" "$(duti -x "$ext" 2>/dev/null | tail -1 || echo '(none)')"
         done
         exit 0
         ;;

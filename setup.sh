@@ -31,7 +31,7 @@ for arg in "$@"; do
         --no-file-handlers)
             SKIP_FILE_HANDLERS=true
             ;;
-        --dry-run|-n)
+        --dry-run | -n)
             DRY_RUN=true
             ;;
         *)
@@ -59,7 +59,7 @@ echo ""
 # ===========================================
 
 install_homebrew() {
-    if command -v brew &> /dev/null; then
+    if command -v brew &>/dev/null; then
         echo "[Homebrew] Already installed: $(brew --version | head -1)"
         return 0
     fi
@@ -224,7 +224,7 @@ create_symlinks() {
 # ===========================================
 
 run_brew_bundle() {
-    if ! command -v brew &> /dev/null; then
+    if ! command -v brew &>/dev/null; then
         echo "[Brew Bundle] Skipped (Homebrew not available)."
         return 0
     fi
@@ -244,7 +244,7 @@ run_brew_bundle() {
 # ===========================================
 
 setup_sheldon() {
-    if ! command -v sheldon &> /dev/null; then
+    if ! command -v sheldon &>/dev/null; then
         echo "[sheldon] Skipped (sheldon not installed)."
         return 0
     fi
@@ -286,7 +286,7 @@ setup_git_hooks() {
 }
 
 setup_tmux_plugins() {
-    if ! command -v tmux &> /dev/null; then
+    if ! command -v tmux &>/dev/null; then
         echo "[tmux plugins] Skipped (tmux not installed)."
         return 0
     fi
@@ -318,7 +318,7 @@ setup_tmux_plugins() {
 }
 
 setup_gh_extensions() {
-    if ! command -v gh &> /dev/null; then
+    if ! command -v gh &>/dev/null; then
         echo "[gh extensions] Skipped (gh not installed)."
         return 0
     fi
@@ -349,7 +349,7 @@ setup_gh_extensions() {
 #   2. Verifies project-local filters in .rtk/filters.toml are trusted.
 #      Trusting must be done interactively by the user (`rtk trust`).
 setup_rtk() {
-    if ! command -v rtk &> /dev/null; then
+    if ! command -v rtk &>/dev/null; then
         echo "[rtk] Skipped (rtk not installed)."
         return 0
     fi
@@ -388,7 +388,7 @@ setup_rtk() {
 # csr is compiled rather than symlinked: it scans ~270MB of session logs and has
 # to stay interactive, which a shell/jq pipeline cannot do (see claude/csr/).
 setup_csr() {
-    if ! command -v go &> /dev/null; then
+    if ! command -v go &>/dev/null; then
         echo "[csr] Skipped (go not installed — 'brew bundle' installs it)."
         return 0
     fi
@@ -409,7 +409,7 @@ setup_csr() {
 # keys is the inventory of everything this repo lets you type; it reads the
 # configs directly, so it lives with them rather than being generated once.
 setup_keys() {
-    if ! command -v go &> /dev/null; then
+    if ! command -v go &>/dev/null; then
         echo "[keys] Skipped (go not installed — 'brew bundle' installs it)."
         return 0
     fi
@@ -438,7 +438,7 @@ setup_keys() {
 setup_macos_handlers() {
     [ "$(uname)" = "Darwin" ] || return 0
 
-    if ! command -v swiftc &> /dev/null; then
+    if ! command -v swiftc &>/dev/null; then
         echo "[macOS] Skipped (swiftc not found — install Xcode Command Line Tools)."
         return 0
     fi
@@ -456,7 +456,7 @@ setup_macos_handlers() {
         echo "[dry-run]   cp \"$HOME/.local/bin/nvim-open\" \"$app/Contents/MacOS/nvim-open\""
         echo "[dry-run]   write $app/Contents/Info.plist (bundle id $bundle_id)"
         echo "[dry-run]   lsregister -f \"$app\""
-        if ! command -v duti &> /dev/null; then
+        if ! command -v duti &>/dev/null; then
             echo "[dry-run] duti not installed — would print instructions to run register-file-handlers.sh manually."
             return 0
         fi
@@ -485,7 +485,7 @@ setup_macos_handlers() {
     # document type before Finder will offer it as a default app, and
     # LSUIElement so opening a file does not bounce a dock icon. Written from
     # scratch each time, so re-running is a no-op.
-    python3 - "$app/Contents/Info.plist" "$bundle_id" << 'PY'
+    python3 - "$app/Contents/Info.plist" "$bundle_id" <<'PY'
 import plistlib, sys
 
 path, bundle_id = sys.argv[1], sys.argv[2]
@@ -515,7 +515,7 @@ PY
     [ -x "$lsregister" ] && "$lsregister" -f "$app"
 
     echo "[macOS] Built: $app"
-    if ! command -v duti &> /dev/null; then
+    if ! command -v duti &>/dev/null; then
         echo "        Install duti first ('brew bundle'), then run:"
         echo "            $DOTFILES_DIR/macos/scripts/register-file-handlers.sh"
         return 0
@@ -552,7 +552,7 @@ print_summary() {
     echo ""
 
     # Raycast
-    if [ -d "$DOTFILES_DIR/raycast" ] && ls "$DOTFILES_DIR/raycast/"*.rayconfig &> /dev/null; then
+    if [ -d "$DOTFILES_DIR/raycast" ] && ls "$DOTFILES_DIR/raycast/"*.rayconfig &>/dev/null; then
         echo "Raycast: Import settings manually:"
         echo "  1. Open Raycast"
         echo "  2. Run 'Import Settings & Data' command"
@@ -560,7 +560,7 @@ print_summary() {
         echo ""
     fi
 
-    if ! command -v brew &> /dev/null; then
+    if ! command -v brew &>/dev/null; then
         echo "Note: Homebrew was not installed."
         echo "  Run this script again after installing Homebrew manually:"
         echo "  /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""

@@ -38,9 +38,12 @@ case "$file" in
     *.json)
         err=$(jq empty "$file" 2>&1) || add "JSON syntax error in $(basename "$file"): $err"
         ;;
-    *.sh|*.bash)
+    *.sh | *.bash)
         err=$(bash -n "$file" 2>&1) || add "Shell syntax error: $err"
-        command -v shellcheck >/dev/null 2>&1 && { out=$(shellcheck -f gcc "$file" 2>/dev/null); add "$out"; }
+        command -v shellcheck >/dev/null 2>&1 && {
+            out=$(shellcheck -f gcc "$file" 2>/dev/null)
+            add "$out"
+        }
         ;;
     *.zsh)
         err=$(zsh -n "$file" 2>&1) || add "zsh syntax error: $err"
@@ -54,9 +57,12 @@ case "$file" in
         ;;
     *.py)
         bin=$(command -v ruff || true)
-        [ -n "$bin" ] && { out=$("$bin" check --quiet "$file" 2>&1); add "$out"; }
+        [ -n "$bin" ] && {
+            out=$("$bin" check --quiet "$file" 2>&1)
+            add "$out"
+        }
         ;;
-    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs)
+    *.ts | *.tsx | *.js | *.jsx | *.mjs | *.cjs)
         if bin=$(find_local_bin biome); then
             out=$("$bin" lint "$file" 2>&1 | head -20)
             printf '%s' "$out" | grep -qiE 'error|warn' && add "$out"

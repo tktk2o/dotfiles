@@ -36,40 +36,40 @@ window="$(tmux display-message -p -t "$TMUX_PANE" '#{window_id}' 2>/dev/null)" |
 set_state() { tmux set-option -w -t "$window" @agent_state "$1" 2>/dev/null || true; }
 set_count() { tmux set-option -w -t "$window" @agent_running "$1" 2>/dev/null || true; }
 get_count() {
-  local c
-  c="$(tmux show-options -w -v -t "$window" @agent_running 2>/dev/null)" || c=""
-  case "$c" in
-    '' | *[!0-9]*) echo 0 ;;
-    *) echo "$c" ;;
-  esac
+    local c
+    c="$(tmux show-options -w -v -t "$window" @agent_running 2>/dev/null)" || c=""
+    case "$c" in
+        '' | *[!0-9]*) echo 0 ;;
+        *) echo "$c" ;;
+    esac
 }
 
 case "$event" in
-  start) # UserPromptSubmit: fresh main turn, clear any stale subagent count
-    set_count 0
-    set_state working
-    ;;
-  subagent-start)
-    set_count "$(($(get_count) + 1))"
-    set_state working
-    ;;
-  subagent-stop)
-    n="$(($(get_count) - 1))"
-    if [ "$n" -lt 0 ]; then n=0; fi
-    set_count "$n"
-    # Leave @agent_state as-is; the main Stop finalizes it to done.
-    ;;
-  blocked)
-    set_state blocked
-    ;;
-  stop) # Stop (main agent): keep working while subagents are still running
-    if [ "$(get_count)" -gt 0 ]; then
-      set_state working
-    else
-      set_state done
-    fi
-    ;;
-  working) set_state working ;;
-  done) set_state done ;;
-  *) exit 0 ;;
+    start) # UserPromptSubmit: fresh main turn, clear any stale subagent count
+        set_count 0
+        set_state working
+        ;;
+    subagent-start)
+        set_count "$(($(get_count) + 1))"
+        set_state working
+        ;;
+    subagent-stop)
+        n="$(($(get_count) - 1))"
+        if [ "$n" -lt 0 ]; then n=0; fi
+        set_count "$n"
+        # Leave @agent_state as-is; the main Stop finalizes it to done.
+        ;;
+    blocked)
+        set_state blocked
+        ;;
+    stop) # Stop (main agent): keep working while subagents are still running
+        if [ "$(get_count)" -gt 0 ]; then
+            set_state working
+        else
+            set_state done
+        fi
+        ;;
+    working) set_state working ;;
+    done) set_state done ;;
+    *) exit 0 ;;
 esac

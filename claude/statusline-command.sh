@@ -27,7 +27,7 @@ model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
 cwd=$(echo "$input" | jq -r '.workspace.current_dir')
 dir_name=$(basename "$cwd")
 
-if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
+if git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1; then
     branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)
     git_dir=$(git -C "$cwd" rev-parse --git-dir 2>/dev/null)
     case "$git_dir" in
@@ -60,11 +60,11 @@ fi
 # Resolve ccusage without spawning npx on every render (slow): prefer a global
 # binary, then the mise shim (works without `mise activate`), else fall back to
 # npx. ccusage is declared in dotfiles/mise/config.toml as npm:ccusage.
-if command -v ccusage > /dev/null 2>&1; then
+if command -v ccusage >/dev/null 2>&1; then
     ccusage_cmd=(ccusage)
 elif [ -x "$HOME/.local/share/mise/shims/ccusage" ]; then
     ccusage_cmd=("$HOME/.local/share/mise/shims/ccusage")
-elif command -v npx > /dev/null 2>&1; then
+elif command -v npx >/dev/null 2>&1; then
     ccusage_cmd=(npx -y ccusage)
 fi
 if [ -n "${ccusage_cmd:-}" ]; then

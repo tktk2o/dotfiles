@@ -46,14 +46,14 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "Clear search highl
 
 -- Reopen the current file in the full config, in this same window.
 vim.api.nvim_create_user_command("Full", function()
-  local file = vim.fn.expand("%:p")
-  if file == "" then
-    vim.notify("Full: no file in this buffer", vim.log.levels.WARN)
-    return
-  end
-  -- exec replaces the peek rather than nesting an editor inside it.
-  vim.cmd("silent! write")
-  vim.fn.jobstart({ "tmux", "respawn-window", "-k", "-c", vim.fn.expand("%:p:h"), "nvim", file })
+	local file = vim.fn.expand("%:p")
+	if file == "" then
+		vim.notify("Full: no file in this buffer", vim.log.levels.WARN)
+		return
+	end
+	-- exec replaces the peek rather than nesting an editor inside it.
+	vim.cmd("silent! write")
+	vim.fn.jobstart({ "tmux", "respawn-window", "-k", "-c", vim.fn.expand("%:p:h"), "nvim", file })
 end, { desc = "Reopen this file with the full Neovim config" })
 
 vim.keymap.set("n", "<leader>f", "<cmd>Full<cr>", { desc = "Reopen with the full config" })

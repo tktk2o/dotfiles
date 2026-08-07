@@ -33,7 +33,7 @@ if [ "${1:-}" = "--__preview" ]; then
     packed="$(printf '%s' "$line" | cut -f4)"
     printf 'window: %s\n\n' "$name"
     i=0
-    IFS="$RS" read -r -a _panes <<< "$packed"
+    IFS="$RS" read -r -a _panes <<<"$packed"
     for seg in "${_panes[@]}"; do
         i=$((i + 1))
         printf '  pane %d\n    cwd: %s\n    cmd: %s\n' "$i" "${seg%%"$US"*}" "${seg#*"$US"}"
@@ -49,7 +49,8 @@ if [ "${#snaps[@]}" -eq 0 ]; then
     echo "twr: no resurrect snapshots in $RESURRECT_DIR" >&2
     exit 1
 fi
-IFS=$'\n' snaps=($(printf '%s\n' "${snaps[@]}" | sort -r)); unset IFS # newest first
+IFS=$'\n' snaps=($(printf '%s\n' "${snaps[@]}" | sort -r))
+unset IFS # newest first
 
 # ---- build the candidate list ----------------------------------------------
 # Emits, per unique window (newest kept): DISPLAY \t name \t layout \t packedpanes
@@ -104,12 +105,15 @@ reconstruct() {
     name="$(printf '%s' "$line" | cut -f2)"
     layout="$(printf '%s' "$line" | cut -f3)"
     packed="$(printf '%s' "$line" | cut -f4)"
-    [ -n "$packed" ] || { echo "twr: empty selection" >&2; return 1; }
+    [ -n "$packed" ] || {
+        echo "twr: empty selection" >&2
+        return 1
+    }
 
     local -a pane_ids=() pane_cmds=() pane_cwds=() segs=()
     local first=1 anchor="" pid cwd seg idx
 
-    IFS="$RS" read -r -a segs <<< "$packed"
+    IFS="$RS" read -r -a segs <<<"$packed"
     for seg in "${segs[@]}"; do
         pane_cwds+=("${seg%%"$US"*}")
         pane_cmds+=("${seg#*"$US"}")

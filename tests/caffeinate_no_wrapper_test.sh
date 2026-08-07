@@ -39,7 +39,7 @@ check_no_caffeinate() { # <path>
 check_no_caffeinate "zsh/.zshrc"
 check_no_caffeinate "zsh/plugins/dev.zsh"
 check_no_caffeinate "gh-dash/config.yml.example"
-check_no_caffeinate "gh-dash/config.local.yml"   # untracked; skipped if absent
+check_no_caffeinate "gh-dash/config.local.yml" # untracked; skipped if absent
 check_no_caffeinate "tmux/scripts/tmux-window-restore.sh"
 check_no_caffeinate "claude/csr/main.go"
 
