@@ -66,8 +66,12 @@ jobs:
           curl -fsSL -o /tmp/stylua.zip \
             https://github.com/JohnnyMorganz/StyLua/releases/latest/download/stylua-linux-x86_64.zip
           unzip -o /tmp/stylua.zip -d /usr/local/bin
+          # Asset names embed the version (treefmt_X.Y.Z_linux_amd64.tar.gz),
+          # so resolve it from the latest-release redirect first.
+          version=$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+            https://github.com/numtide/treefmt/releases/latest | sed 's|.*/v||')
           curl -fsSL -o /tmp/treefmt.tar.gz \
-            https://github.com/numtide/treefmt/releases/latest/download/treefmt_Linux_x86_64.tar.gz
+            "https://github.com/numtide/treefmt/releases/download/v${version}/treefmt_${version}_linux_amd64.tar.gz"
           tar -xzf /tmp/treefmt.tar.gz -C /usr/local/bin treefmt
       - run: treefmt --no-cache --fail-on-change
 

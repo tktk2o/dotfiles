@@ -109,7 +109,6 @@ or `keys <query>` to filter.
 | Press / type | Does | Defined in |
 |---|---|---|
 | `/calendar` | Google Calendarから予定を取得して日報に追加する。 | `claude/skills/calendar/SKILL.md:3` |
-| `/datadog` | Datadog を MCP 経由ではなく REST API 直叩きで参照する。 | `claude/skills/datadog/SKILL.md:3` |
 | `/pr-review` | PR を根拠ベースで厳密にレビューし、重大度分類したコメントと承認判断を出す。 | `claude/skills/pr-review/SKILL.md:3` |
 | `/root-cause` | 本番障害・データ不整合・通知/配信の不具合などを、実データとログに照らして 根拠ベースで根本原因まで追い、影響を定量化して修正 Draft PR まで持っていく。 | `claude/skills/root-cause/SKILL.md:3` |
 

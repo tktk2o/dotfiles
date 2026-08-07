@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -257,6 +258,13 @@ func parseSkills(root string) []Entry {
 			continue
 		}
 		rel := filepath.Join("claude", "skills", n.Name(), "SKILL.md")
+		// Skills is the one directory scanned for unknown entries, so it can
+		// pick up git-ignored, machine-local skills (e.g. company-specific
+		// ones). Those must not leak into the committed cheatsheet, which has
+		// to be reproducible from a clean clone.
+		if gitIgnored(root, rel) {
+			continue
+		}
 		s, err := readSource(root, rel)
 		if err != nil {
 			continue
@@ -278,6 +286,13 @@ func parseSkills(root string) []Entry {
 		}
 	}
 	return out
+}
+
+// gitIgnored reports whether rel is ignored by git. check-ignore exits 0 only
+// when the path is ignored; 1 (not ignored) and 128 (no git / not a repo)
+// both fall through to including the entry.
+func gitIgnored(root, rel string) bool {
+	return exec.Command("git", "-C", root, "check-ignore", "-q", rel).Run() == nil
 }
 
 // foldedValue resolves a YAML scalar that may be folded onto the following

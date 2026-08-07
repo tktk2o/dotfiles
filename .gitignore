@@ -11,3 +11,5 @@ claude/skills/datadog/
 .DS_Store
 karabiner/automatic_backups/
 raycast/*.rayconfig
+claude/csr/csr
+tools/cheatsheet/cheatsheet
