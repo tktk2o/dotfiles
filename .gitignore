@@ -4,3 +4,10 @@ claude/skills/datadog/
 # プロジェクトローカルな Claude 設定と、Agent tool が作る worktree。
 # どちらもマシン固有で追跡しない（worktree は gitlink として混入しやすい）
 /.claude/
+
+# macOS Finder metadata / Karabiner auto-generated backups / Raycast exports
+# (machine-specific noise, and rayconfig is a binary blob that can't be
+# reviewed for leaked secrets before commit)
+.DS_Store
+karabiner/automatic_backups/
+raycast/*.rayconfig
