@@ -1,0 +1,101 @@
+# Tier 1 CI — the local checks (pre-commit / opt-in treefmt / warn-only
+# keys --check) re-run as a hard gate, since --no-verify can skip them all.
+# Runs on push to main (single-maintainer repo, no PR gate needed).
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  invariants:
+    name: invariant tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # tests/*_test.sh read only repo files, never ~/ — safe on any runner
+      - run: tests/run.sh
+
+  shell:
+    name: bash -n + shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: syntax-check all bash scripts
+        run: |
+          find . -name '*.sh' -not -path './.worktrees/*' -print0 \
+            | xargs -0 -n1 bash -n
+      # severity=error only: the warning tier is dominated by deliberate
+      # patterns here (literal `~/` in user-facing deny messages, `case done)`
+      # labels), which would make the job cry wolf.
+      - name: shellcheck
+        run: |
+          find . -name '*.sh' -not -path './.worktrees/*' -print0 \
+            | xargs -0 shellcheck --severity=error
+
+  go:
+    name: go build + test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: [claude/csr, tools/cheatsheet]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache: false # zero-dependency modules; there is no go.sum to key on
+      - run: go build ./...
+        working-directory: ${{ matrix.module }}
+      - run: go test ./...
+        working-directory: ${{ matrix.module }}
+
+  format:
+    name: treefmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: false
+      - name: install formatters (shfmt / stylua / gofmt)
+        run: |
+          go install mvdan.cc/sh/v3/cmd/shfmt@latest
+          curl -fsSL -o /tmp/stylua.zip \
+            https://github.com/JohnnyMorganz/StyLua/releases/latest/download/stylua-linux-x86_64.zip
+          unzip -o /tmp/stylua.zip -d /usr/local/bin
+          curl -fsSL -o /tmp/treefmt.tar.gz \
+            https://github.com/numtide/treefmt/releases/latest/download/treefmt_Linux_x86_64.tar.gz
+          tar -xzf /tmp/treefmt.tar.gz -C /usr/local/bin treefmt
+      - run: treefmt --no-cache --fail-on-change
+
+  cheatsheet:
+    # Warn-only in pre-commit (layer 3); promoted to a hard failure here.
+    name: keys --check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/cheatsheet/go.mod
+          cache: false
+      - run: go build -o /usr/local/bin/keys .
+        working-directory: tools/cheatsheet
+      - run: keys --check
+        env:
+          DOTFILES_DIR: ${{ github.workspace }}
+
+  secrets:
+    # Generic-secret layer only — the company denylist is untracked by design
+    # and cannot (must not) run in CI.
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

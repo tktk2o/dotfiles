@@ -10,10 +10,10 @@ or `keys <query>` to filter.
 
 | Press / type | Does | Defined in |
 |---|---|---|
-| `twr` | 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf） | `setup.sh:171` |
-| `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:372` |
-| `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:393` |
-| `nvim-open` | ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口 | `setup.sh:448` |
+| `twr` | 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf） | `setup.sh:204` |
+| `csr` | 過去の Claude セッションを自分の発言で検索して再開する（fzf） | `setup.sh:405` |
+| `keys` | この dotfiles が提供するコマンド / キーバインドを一覧・検索する（fzf） | `setup.sh:426` |
+| `nvim-open` | ファイルを nvim（peek プロファイル）で開く。Finder / ブラウザからの入口 | `setup.sh:481` |
 | `c` | Claude Code を編集許可モードで起動 | `zsh/.zshrc:50` |
 | `nv` | nvim を起動 | `zsh/.zshrc:51` |
 | `ghd` | gh dash（PR ダッシュボード）を開く | `zsh/.zshrc:52` |
