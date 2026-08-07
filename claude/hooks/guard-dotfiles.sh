@@ -8,6 +8,9 @@
 #
 #   1. `./setup.sh` without --dry-run/-n — create_symlink does `rm -rf
 #      "$dest"` before linking, so a live run clobbers real files. Deny.
+#      Also catches the same call hidden behind `cd .../dotfiles && ./setup.sh`
+#      — cwd alone can't be trusted to reflect that once the command chains
+#      a `cd` into a dotfiles checkout before invoking the script.
 #   2. Direct writes to the individually-symlinked files under ~/.claude/ —
 #      Write/Edit that replace-via-rename unlink the symlink and leave an
 #      orphan real file at the target, silently dropping it out of the repo.
@@ -23,6 +26,11 @@
 #      necessary (a confirmed pre-commit false positive, a solo-maintainer
 #      force-push after rebase). Warn via additionalContext instead of
 #      denying, so the operation still proceeds.
+#   5. Bash equivalents of rule 2/3's Write/Edit drift risk — a shell
+#      redirect (`>`/`>>`), `tee`, or `sed -i` targeting the same protected
+#      symlink paths unlinks the symlink exactly like a Write/Edit would, but
+#      the earlier rules only ever inspected `tool_input.file_path`, which a
+#      Bash tool call never sets. Deny, same path list as rule 2/3.
 #
 # Design constraints (this runs on EVERY Bash/Write/Edit/MultiEdit call, in
 # every project — settings.json is a global, not project-local, hook):
@@ -54,6 +62,8 @@ Bash)
     cwd=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null)
     [ -z "$cmd" ] && exit 0
 
+    home="${HOME:-/Users/$(whoami)}"
+
     # --- Rule 1: ./setup.sh (or `bash setup.sh` / `sh setup.sh`) without
     # --dry-run/-n, run from inside this dotfiles repo. Scoped to `cwd`
     # containing "dotfiles" so an unrelated project's own setup.sh is not
@@ -67,8 +77,13 @@ Bash)
     # The trailing class must accept a separator, not just whitespace/end:
     # `./setup.sh; echo x` put a `;` immediately after the script name and
     # slipped past a `(\s|$)` anchor entirely.
+    # `cwd` alone misses the common bypass of `cd .../dotfiles && ./setup.sh`
+    # run from an unrelated starting directory, so also treat a `cd` segment
+    # that targets a dotfiles path anywhere earlier in the command as scoping
+    # the call, without depending on `cwd` at all.
     if printf '%s' "$cmd" | grep -qE '(^|[;&|]\s*)((\.\/)?setup\.sh|(bash|sh|zsh)\s+(\.\/)?setup\.sh)([[:space:];&|)]|$)' \
-        && printf '%s' "$cwd" | grep -qi 'dotfiles'; then
+        && { printf '%s' "$cwd" | grep -qi 'dotfiles' \
+             || printf '%s' "$cmd" | grep -qiE '(^|[;&|]\s*)cd\s+[^;&|]*dotfiles'; }; then
         segment=$(printf '%s' "$cmd" | sed -E 's/.*((^|[;&|])[[:space:]]*)((\.\/)?setup\.sh|(bash|sh|zsh)[[:space:]]+(\.\/)?setup\.sh)/\3/' | sed -E 's/[;&|].*//')
         if ! printf '%s' "$segment" | grep -qE -- '(--dry-run|(^|[[:space:]])-n([[:space:]]|$))'; then
             deny "./setup.sh は create_symlink が実行前に 'rm -rf \$dest' するため、実ファイルを破壊する可能性があります（CLAUDE.md の Verifying Changes 参照）。'./setup.sh --dry-run' で確認するか、'bash -n setup.sh' で静的検証してください。"
@@ -84,6 +99,102 @@ Bash)
         && printf '%s' "$cmd" | grep -qE -- '(--force(\s|$)|(^|\s)-f(\s|$))' \
         && ! printf '%s' "$cmd" | grep -q -- '--force-with-lease'; then
         warn "git push --force は他者/自分の以降の push を含め履歴を書き換えます。単独メンテナのリポジトリでも '--force-with-lease' で意図しない上書きを防げるか確認してください。"
+    fi
+
+    # --- Rule 5: shell redirect / tee / sed -i onto the protected symlink
+    # paths (same list as rule 2/3, and the same literal-path matching style
+    # — no realpath resolution). A Write/Edit tool call never reaches this
+    # branch when the same drift is done via `echo x > ~/.zshrc`, `cmd | tee
+    # ~/.claude/settings.json`, or `sed -i '' ... ~/.gitconfig`, so those need
+    # their own check here rather than relying on rule 2/3's file_path check.
+    #
+    # Performance: this hook runs on every Bash call in every project, so the
+    # cost has to stay near-zero for the overwhelming majority of calls that
+    # touch none of this. Two things keep it cheap:
+    #   - A single cheap `grep` gates the whole rule: no `>`/tee/sed token at
+    #     all means zero further work, not just zero denials.
+    #   - The 20-path alternation and its "~"-shorthand twin are built once
+    #     with pure bash parameter-expansion string substitution (no `sed`,
+    #     no subshell per path — `${var//pattern/repl}` never forks), then
+    #     tested with exactly one `grep` per operator (redirect/tee/sed-i).
+    #     The earlier version forked `sed` twice and `grep` up to three times
+    #     PER PATH (~100 extra forks per Bash call); this version forks at
+    #     most 4 times total (the gate, plus one per operator) and only when
+    #     the gate actually matches.
+    if printf '%s' "$cmd" | grep -qE '>|\btee\b|\bsed\b'; then
+        protected_paths=(
+            "$home/.zshrc"
+            "$home/.tmux.conf"
+            "$home/.gitconfig"
+            "$home/.gitignore_global"
+            "$home/.Brewfile"
+            "$home/.local/bin/twr"
+            "$home/.claude/CLAUDE.md"
+            "$home/.claude/settings.json"
+            "$home/.claude/statusline-command.sh"
+            "$home/.claude/worktree.md"
+            "$home/.claude/model-policy.md"
+            "$home/.claude/persona-github.md"
+            "$home/.config/ghostty/config"
+            "$home/.config/starship.toml"
+            "$home/.config/sheldon/plugins.toml"
+            "$home/.config/mise/config.toml"
+            "$home/.config/karabiner/karabiner.json"
+            "$home/.config/gh/config.yml"
+            "$home/.config/gh-dash/config.yml"
+            "$home/.config/herdr/config.toml"
+        )
+
+        alt=""
+        for p in "${protected_paths[@]}"; do
+            # A Bash command's raw text still has "~/..." unexpanded (bash
+            # itself expands "~" at execution time, after this hook already
+            # inspected it), so both the absolute-path and "~"-shorthand
+            # forms need to be in the alternation — matching only $home would
+            # miss the common `> ~/.zshrc` form entirely.
+            tilde_p="~${p#"$home"}"
+
+            esc="$p"
+            esc="${esc//\\/\\\\}"
+            esc="${esc//./\\.}"
+            esc="${esc//\[/\\[}"
+            esc="${esc//\*/\\*}"
+            esc="${esc//^/\\^}"
+            esc="${esc//\$/\\$}"
+            esc="${esc//\//\\/}"
+
+            esc_tilde="$tilde_p"
+            esc_tilde="${esc_tilde//\\/\\\\}"
+            esc_tilde="${esc_tilde//./\\.}"
+            esc_tilde="${esc_tilde//\[/\\[}"
+            esc_tilde="${esc_tilde//\*/\\*}"
+            esc_tilde="${esc_tilde//^/\\^}"
+            esc_tilde="${esc_tilde//\$/\\$}"
+            esc_tilde="${esc_tilde//\//\\/}"
+
+            if [ -z "$alt" ]; then
+                alt="$esc|$esc_tilde"
+            else
+                alt="$alt|$esc|$esc_tilde"
+            fi
+        done
+        alt="($alt)"
+
+        # Redirect: the path must sit right after > / >> (optionally quoted),
+        # so `echo "> some/unrelated/path" | mail` (the operator present but
+        # aimed elsewhere) is not caught.
+        if printf '%s' "$cmd" | grep -qE ">{1,2}[[:space:]]*[\"']?$alt([\"']|[[:space:];&|]|\$)"; then
+            deny "Bash によるリダイレクトが dotfiles の symlink 対象ファイルに書き込もうとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
+        fi
+        # tee / sed -i: looser — the path just needs to follow the command
+        # name/flag somewhere on the same line, since tee/sed take it as a
+        # plain trailing argument.
+        if printf '%s' "$cmd" | grep -qE "\\btee\\b.*$alt"; then
+            deny "Bash の tee が dotfiles の symlink 対象ファイルに書き込もうとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
+        fi
+        if printf '%s' "$cmd" | grep -qE "\\bsed\\b.*-i.*$alt"; then
+            deny "Bash の sed -i が dotfiles の symlink 対象ファイルを書き換えようとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
+        fi
     fi
     ;;
 

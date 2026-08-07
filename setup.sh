@@ -18,20 +18,26 @@ SKIP_BREW=false
 SKIP_FILE_HANDLERS=false
 DRY_RUN=false
 
+usage() {
+    echo "Usage: $0 [--no-brew] [--no-file-handlers] [--dry-run|-n]"
+}
+
 # Parse arguments
 for arg in "$@"; do
     case $arg in
         --no-brew)
             SKIP_BREW=true
-            shift
             ;;
         --no-file-handlers)
             SKIP_FILE_HANDLERS=true
-            shift
             ;;
         --dry-run|-n)
             DRY_RUN=true
-            shift
+            ;;
+        *)
+            echo "Unknown option: $arg" >&2
+            usage >&2
+            exit 1
             ;;
     esac
 done
@@ -66,14 +72,22 @@ install_homebrew() {
         return 0
     fi
 
-    read -p "Install Homebrew? (y/N): " answer
+    local answer=""
+    if ! read -r -p "Install Homebrew? (y/N): " answer; then
+        echo ""
+    fi
     if [[ "$answer" != "y" && "$answer" != "Y" ]]; then
         echo "[Homebrew] Skipped. Continuing with symlink setup."
         return 0
     fi
 
     echo "[Homebrew] Installing..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    local install_script
+    if ! install_script="$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
+        echo "[Homebrew] ERROR: failed to download the Homebrew install script (curl failed)." >&2
+        return 1
+    fi
+    /bin/bash -c "$install_script"
 
     # Add Homebrew to PATH for this session
     if [[ -f "/opt/homebrew/bin/brew" ]]; then
@@ -92,7 +106,8 @@ install_homebrew() {
 create_symlink() {
     local src="$1"
     local dest="$2"
-    local dest_dir="$(dirname "$dest")"
+    local dest_dir
+    dest_dir="$(dirname "$dest")"
 
     if [ "$DRY_RUN" = true ]; then
         if [ -L "$dest" ]; then
@@ -122,12 +137,30 @@ create_symlink() {
         mkdir -p "$dest_dir"
     fi
 
-    # Remove existing file/symlink if exists
-    if [ -e "$dest" ] || [ -L "$dest" ]; then
-        rm -rf "$dest"
-    fi
+    # Atomically replace dest with the new symlink where possible: create the
+    # link at a temp path next to dest, then `mv -f` it into place. A plain
+    # `rm -rf "$dest"; ln -s ...` (the old approach) leaves a window where
+    # dest does not exist at all if the script is interrupted between the two.
+    #
+    # macOS has no `mv -fT` (GNU-only), and `mv src dest` moves src *inside*
+    # dest instead of replacing it whenever dest resolves (following
+    # symlinks) to a directory. That covers two cases here: a real directory
+    # at dest, and a symlink at dest that itself points at a directory (e.g.
+    # an existing nvim/ or claude/hooks/ link). Both must be removed first;
+    # only then is the swap non-atomic. Everything else (a symlink to a file,
+    # a plain file, or nothing at dest) is safe to swap atomically via mv.
+    local tmp="$dest.tmp.$$"
+    ln -s "$src" "$tmp"
 
-    ln -s "$src" "$dest"
+    if [ -d "$dest" ] && [ ! -L "$dest" ]; then
+        rm -rf "$dest"
+        mv -f "$tmp" "$dest"
+    elif [ -d "$dest" ] && [ -L "$dest" ]; then
+        rm -f "$dest"
+        mv -f "$tmp" "$dest"
+    else
+        mv -f "$tmp" "$dest"
+    fi
     echo "  $dest -> $src"
 }
 
