@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -137,17 +138,60 @@ func scanLines(path string, fn func(line []byte)) error {
 	}
 	defer f.Close()
 
-	sc := bufio.NewScanner(f)
-	sc.Buffer(make([]byte, 0, 64*1024), maxLineBytes)
-	for sc.Scan() {
-		fn(sc.Bytes())
+	r := bufio.NewReaderSize(f, 64*1024)
+	for {
+		line, _, err := readLine(r)
+		if len(line) > 0 {
+			fn(line)
+		}
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
 	}
-	// A truncated final line (session still being written) is not worth
-	// failing the whole scan over.
-	if err := sc.Err(); err != nil && err != bufio.ErrTooLong {
-		return err
+}
+
+// readLine reads the next line from r, up to the next '\n' or EOF. Unlike
+// bufio.Scanner, an oversized line (> maxLineBytes — pasted files, big tool
+// results) does not abort the whole read: its bytes are still consumed but
+// discarded, oversized is reported true, and the caller continues with the
+// next line instead of silently losing every line after it.
+//
+// A truncated final line (session still being written) is returned as-is
+// rather than treated as an error, matching the previous scanner behavior.
+func readLine(r *bufio.Reader) (line []byte, oversized bool, err error) {
+	var buf []byte
+	total := 0
+	for {
+		chunk, e := r.ReadSlice('\n')
+		total += len(chunk)
+		if !oversized {
+			if total <= maxLineBytes {
+				buf = append(buf, chunk...)
+			} else {
+				oversized = true
+				buf = nil
+			}
+		}
+		switch e {
+		case bufio.ErrBufferFull:
+			continue
+		case nil:
+			if oversized {
+				return nil, true, nil
+			}
+			return bytes.TrimRight(buf, "\r\n"), false, nil
+		case io.EOF:
+			if oversized || len(buf) == 0 {
+				return nil, oversized, io.EOF
+			}
+			return buf, false, io.EOF
+		default:
+			return nil, false, e
+		}
 	}
-	return nil
 }
 
 // RecordsFromFile pulls every human prompt out of one session log. The session

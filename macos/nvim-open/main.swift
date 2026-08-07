@@ -230,8 +230,18 @@ func run(_ launchPath: String, _ arguments: [String]) -> String? {
 
 /// Started from Finder there is no terminal to print to, so a silent failure
 /// would just look like a broken double-click.
+/// Escapes a string for safe embedding inside a double-quoted AppleScript
+/// string literal. Without this, a message containing `"` or `\` (e.g. a
+/// file path or error text quoted by the caller) breaks out of the literal
+/// and can corrupt or hijack the script osascript runs.
+func appleScriptStringEscape(_ s: String) -> String {
+    return s
+        .replacingOccurrences(of: "\\", with: "\\\\")
+        .replacingOccurrences(of: "\"", with: "\\\"")
+}
+
 func notify(_ message: String) {
-    let script = "display notification \"\(message)\" with title \"nvim-open\""
+    let script = "display notification \"\(appleScriptStringEscape(message))\" with title \"nvim-open\""
     let process = Process()
     process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
     process.arguments = ["-e", script]
