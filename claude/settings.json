@@ -156,6 +156,7 @@
       "Bash(chgrp:*)"
     ]
   },
+  "model": "opus[1m]",
   "fallbackModel": [
     "claude-sonnet-5"
   ],

@@ -1,9 +1,39 @@
 # Model Policy (for Claude)
 
-Keep the main thread on opus (where the user's value is: fact-checking and
-hard reasoning) and fan out grunt work to subagents on cheaper models. The goal
-is to preserve the subscription budget (5h / week) and avoid hitting
-token/session limits on long, multi-stage tasks.
+Keep the main thread on **opus (Opus 5)** — where the user's value is:
+fact-checking and hard reasoning — and fan out grunt work to subagents on
+cheaper models. The goal is to preserve the subscription budget (5h / week)
+and avoid hitting token/session limits on long, multi-stage tasks.
+
+## fable (Fable 5) — the top rung, not the default
+
+Fable 5 is available on this plan but is **not** the main-thread default.
+It costs 2× Opus 5 ($10/$50 vs $5/$25 per MTok), draws from a capped share
+of the subscription quota (Max plans limit Fable to ~50% of usage), and runs
+thinking always-on with turns that can take many minutes — used on routine
+work it is just slower and more expensive, directly against this policy's
+budget goal. Anthropic's own framing: Opus 5 is the daily driver; Fable 5 is
+for the most ambitious, multi-day autonomous work.
+
+Use fable **only** when one of these holds, via a manual `/model` switch on
+the main thread:
+
+- Hours-to-days scale autonomous runs (overnight agentic work with the full
+  spec given up front)
+- A root-cause investigation that survived 2+ opus attempts — this extends
+  the existing "/clear and restart" rule: if a fresh-context opus restart
+  also fails, escalate once to fable
+- Genuinely frontier-hard architectural judgment
+
+**Never specify `model: fable` on a subagent.** The delegation ladder tops
+out at opus ("genuinely hard root-cause reasoning"); anything above that
+belongs on the main thread, deliberately.
+
+Operational caveats: Fable's safety classifiers can refuse benign
+security-adjacent work (`stop_reason: refusal`) — if a root-cause /
+log-forensics session gets refused, drop back to opus rather than rephrasing
+around it. Don't use fable for interactive back-and-forth; give it the whole
+task and walk away.
 
 ## Default model when launching a subagent
 
