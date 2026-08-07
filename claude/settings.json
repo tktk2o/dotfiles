@@ -44,7 +44,6 @@
       "Bash(gh api:*)",
       "Bash(ls:*)",
       "Bash(/bin/ls:*)",
-      "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(cat:*)",
       "Bash(sort:*)",
@@ -78,9 +77,6 @@
       "Bash(uniq:*)",
       "Bash(xargs:*)",
       "Bash(tee:*)",
-      "Bash(bash:*)",
-      "Bash(zsh:*)",
-      "Bash(sh:*)",
       "Bash(nvim:*)",
       "Bash(vim:*)",
       "Bash(code:*)",
@@ -299,6 +295,5 @@
     "enabled": true,
     "mode": "hold"
   },
-  "theme": "dark-ansi",
-  "voiceEnabled": true
+  "theme": "dark-ansi"
 }
