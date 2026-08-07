@@ -107,53 +107,95 @@ Bash)
     # branch when the same drift is done via `echo x > ~/.zshrc`, `cmd | tee
     # ~/.claude/settings.json`, or `sed -i '' ... ~/.gitconfig`, so those need
     # their own check here rather than relying on rule 2/3's file_path check.
-    protected_paths=(
-        "$home/.zshrc"
-        "$home/.tmux.conf"
-        "$home/.gitconfig"
-        "$home/.gitignore_global"
-        "$home/.Brewfile"
-        "$home/.local/bin/twr"
-        "$home/.claude/CLAUDE.md"
-        "$home/.claude/settings.json"
-        "$home/.claude/statusline-command.sh"
-        "$home/.claude/worktree.md"
-        "$home/.claude/model-policy.md"
-        "$home/.claude/persona-github.md"
-        "$home/.config/ghostty/config"
-        "$home/.config/starship.toml"
-        "$home/.config/sheldon/plugins.toml"
-        "$home/.config/mise/config.toml"
-        "$home/.config/karabiner/karabiner.json"
-        "$home/.config/gh/config.yml"
-        "$home/.config/gh-dash/config.yml"
-        "$home/.config/herdr/config.toml"
-    )
-    for p in "${protected_paths[@]}"; do
-        # A Bash command's raw text still has "~/..." unexpanded (bash itself
-        # expands "~" at execution time, after this hook already inspected
-        # it), so both the absolute-path and "~"-shorthand forms need to be
-        # checked — matching only $home would miss the common `> ~/.zshrc`
-        # form entirely.
-        tilde_p="~${p#"$home"}"
-        esc=$(printf '%s' "$p" | sed -E 's/[.[\*^$/]/\\&/g')
-        esc_tilde=$(printf '%s' "$tilde_p" | sed -E 's/[.[\*^$/]/\\&/g')
-        alt="($esc|$esc_tilde)"
+    #
+    # Performance: this hook runs on every Bash call in every project, so the
+    # cost has to stay near-zero for the overwhelming majority of calls that
+    # touch none of this. Two things keep it cheap:
+    #   - A single cheap `grep` gates the whole rule: no `>`/tee/sed token at
+    #     all means zero further work, not just zero denials.
+    #   - The 20-path alternation and its "~"-shorthand twin are built once
+    #     with pure bash parameter-expansion string substitution (no `sed`,
+    #     no subshell per path — `${var//pattern/repl}` never forks), then
+    #     tested with exactly one `grep` per operator (redirect/tee/sed-i).
+    #     The earlier version forked `sed` twice and `grep` up to three times
+    #     PER PATH (~100 extra forks per Bash call); this version forks at
+    #     most 4 times total (the gate, plus one per operator) and only when
+    #     the gate actually matches.
+    if printf '%s' "$cmd" | grep -qE '>|\btee\b|\bsed\b'; then
+        protected_paths=(
+            "$home/.zshrc"
+            "$home/.tmux.conf"
+            "$home/.gitconfig"
+            "$home/.gitignore_global"
+            "$home/.Brewfile"
+            "$home/.local/bin/twr"
+            "$home/.claude/CLAUDE.md"
+            "$home/.claude/settings.json"
+            "$home/.claude/statusline-command.sh"
+            "$home/.claude/worktree.md"
+            "$home/.claude/model-policy.md"
+            "$home/.claude/persona-github.md"
+            "$home/.config/ghostty/config"
+            "$home/.config/starship.toml"
+            "$home/.config/sheldon/plugins.toml"
+            "$home/.config/mise/config.toml"
+            "$home/.config/karabiner/karabiner.json"
+            "$home/.config/gh/config.yml"
+            "$home/.config/gh-dash/config.yml"
+            "$home/.config/herdr/config.toml"
+        )
+
+        alt=""
+        for p in "${protected_paths[@]}"; do
+            # A Bash command's raw text still has "~/..." unexpanded (bash
+            # itself expands "~" at execution time, after this hook already
+            # inspected it), so both the absolute-path and "~"-shorthand
+            # forms need to be in the alternation — matching only $home would
+            # miss the common `> ~/.zshrc` form entirely.
+            tilde_p="~${p#"$home"}"
+
+            esc="$p"
+            esc="${esc//\\/\\\\}"
+            esc="${esc//./\\.}"
+            esc="${esc//\[/\\[}"
+            esc="${esc//\*/\\*}"
+            esc="${esc//^/\\^}"
+            esc="${esc//\$/\\$}"
+            esc="${esc//\//\\/}"
+
+            esc_tilde="$tilde_p"
+            esc_tilde="${esc_tilde//\\/\\\\}"
+            esc_tilde="${esc_tilde//./\\.}"
+            esc_tilde="${esc_tilde//\[/\\[}"
+            esc_tilde="${esc_tilde//\*/\\*}"
+            esc_tilde="${esc_tilde//^/\\^}"
+            esc_tilde="${esc_tilde//\$/\\$}"
+            esc_tilde="${esc_tilde//\//\\/}"
+
+            if [ -z "$alt" ]; then
+                alt="$esc|$esc_tilde"
+            else
+                alt="$alt|$esc|$esc_tilde"
+            fi
+        done
+        alt="($alt)"
+
         # Redirect: the path must sit right after > / >> (optionally quoted),
-        # so `echo "> $p" | mail` (the path merely mentioned) is not caught.
+        # so `echo "> some/unrelated/path" | mail` (the operator present but
+        # aimed elsewhere) is not caught.
         if printf '%s' "$cmd" | grep -qE ">{1,2}[[:space:]]*[\"']?$alt([\"']|[[:space:];&|]|\$)"; then
-            deny "Bash によるリダイレクトが dotfiles の symlink 対象 ($p) に書き込もうとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
+            deny "Bash によるリダイレクトが dotfiles の symlink 対象ファイルに書き込もうとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
         fi
-        # tee / sed -i: looser — the path just needs to co-occur with the
-        # command name, since tee/sed take the path as a plain argument that
-        # can appear anywhere after the flags.
-        if printf '%s' "$cmd" | grep -qE '\btee\b' && printf '%s' "$cmd" | grep -qE -- "$alt"; then
-            deny "Bash の tee が dotfiles の symlink 対象 ($p) に書き込もうとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
+        # tee / sed -i: looser — the path just needs to follow the command
+        # name/flag somewhere on the same line, since tee/sed take it as a
+        # plain trailing argument.
+        if printf '%s' "$cmd" | grep -qE "\\btee\\b.*$alt"; then
+            deny "Bash の tee が dotfiles の symlink 対象ファイルに書き込もうとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
         fi
-        if printf '%s' "$cmd" | grep -qE '\bsed\b.*-i' && printf '%s' "$cmd" | grep -qE -- "$alt"; then
-            deny "Bash の sed -i が dotfiles の symlink 対象 ($p) を書き換えようとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
+        if printf '%s' "$cmd" | grep -qE "\\bsed\\b.*-i.*$alt"; then
+            deny "Bash の sed -i が dotfiles の symlink 対象ファイルを書き換えようとしています。dotfiles リポジトリ内の実体ファイルを直接編集してください。"
         fi
-    done
+    fi
     ;;
 
 Write | Edit | MultiEdit)
