@@ -81,10 +81,15 @@ decision point is Claude's own next tool call, not a phrase the user typed.
 An on-demand file only helps when something in the conversation prompts
 Claude to go read it; a model-selection policy needs to be already in mind
 *before* that trigger exists. This argues for leaving it imported despite the
-line count, but it is the file most worth trimming if it grows further (e.g.
-the `databricks-investigator` subsection is one specific caller's rule bolted
-onto a general policy — a candidate to hoist into that skill's own doc if this
-file needs to shrink again).
+line count, but it is the file most worth trimming if it grows further.
+
+The `databricks-investigator` subsection — one specific caller's rule bolted onto
+a general policy — has since been hoisted out, into that agent's own
+`description` frontmatter in `~/.claude/agents/` (untracked, company-local). That
+is the pattern for any future per-agent model rule: the description is always in
+the parent's context, so it is loaded exactly where the model choice is made,
+without adding a line to this repo's always-on set. `model-policy.md` keeps only
+the general retrieval → haiku / judgment → sonnet rule.
 
 ## Detecting bloat
 

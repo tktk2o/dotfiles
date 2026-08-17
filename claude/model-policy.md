@@ -29,6 +29,17 @@ the main thread:
 out at opus ("genuinely hard root-cause reasoning"); anything above that
 belongs on the main thread, deliberately.
 
+**Escalate only after `/clear`, never mid-conversation.** Prompt caching is
+scoped per model, so a `/model` switch partway through a session invalidates the
+whole conversation's cache (tools + system + messages) and rewrites the entire
+prefix — at fable's 2× Opus input rate. The "2+ opus attempts" rule already
+implies a fresh-context restart; do the `/clear` first, then `/model fable`.
+Subagents on cheaper models cost nothing here — a child runs its own prefix in
+its own context, so the opus main thread's cache is untouched. That asymmetry is
+why this policy fans out to subagents instead of switching the main thread's
+model. (`fallbackModel` on rate-limit takes the same cache hit, but stalling on
+a rate limit is worse — leave it.)
+
 Operational caveats: Fable's safety classifiers can refuse benign
 security-adjacent work (`stop_reason: refusal`) — if a root-cause /
 log-forensics session gets refused, drop back to opus rather than rephrasing
@@ -89,14 +100,13 @@ retrieval by their own description**. Both leaks have a mechanical fix:
   sonnet **only when haiku flags something** and the call is whether the flag is
   real. The audit had 14 such calls on sonnet.
 
-### databricks-investigator
+### Per-agent overrides live with the agent, not here
 
-Branch on whether the child has to *design* the query:
-
-- **haiku**: running a query whose shape is already decided — row counts, pulling
-  ids, tallying a known table (`吸入クエリの行数を実測`, `3薬局のorg_id等を検出`).
-- **sonnet**: choosing tables, working out JOIN/dedup/NULL handling, or deciding
-  what would even answer the question.
+An agent whose model choice needs a rule of its own puts that rule in its own
+`description` frontmatter (`~/.claude/agents/*.md`) — the description is always
+in the parent's context, so it is visible at exactly the moment the parent picks
+a model, and a company-local agent's rule stays out of this public repo. This
+file stays general: retrieval → haiku, judgment → sonnet.
 
 ## Delegation triggers (when to spawn a subagent)
 
