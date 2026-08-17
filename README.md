@@ -109,7 +109,6 @@ cd ~/src/github.com/tktk2o/dotfiles && rtk trust
 | `~/.config/karabiner/karabiner.json` | `karabiner/karabiner.json` |
 | `~/.config/gh/config.yml` | `gh/config.yml` |
 | `~/.config/gh-dash/config.yml` | `gh-dash/config.local.yml`（untracked。`gh-dash/config.yml.example`から生成） |
-| `~/.config/herdr/config.toml` | `herdr/config.toml` |
 | `~/.local/bin/twr` | `tmux/scripts/tmux-window-restore.sh` |
 | `~/.claude/CLAUDE.md` | `claude/CLAUDE.md` |
 | `~/.claude/settings.json` | `claude/settings.json` |
@@ -131,7 +130,6 @@ dotfiles/
 ├── gh-dash/         # gh-dash設定 (config.yml.example / config.local.yml)
 ├── ghostty/         # ターミナルエミュレータ設定
 ├── git/             # Git設定 + hooks
-├── herdr/           # herdr設定
 ├── karabiner/       # キーボードカスタマイズ
 ├── macos/           # Finder連携 (nvim-open / 既定アプリ登録)
 ├── mise/            # ランタイムバージョン管理

@@ -37,7 +37,6 @@ brew bundle --file=~/.Brewfile      # Install packages
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` |
 | `gh/config.yml` | `~/.config/gh/config.yml` |
 | `gh-dash/config.local.yml` (untracked; seeded from `config.yml.example`) | `~/.config/gh-dash/config.yml` |
-| `herdr/config.toml` | `~/.config/herdr/config.toml` |
 | `claude/CLAUDE.md` | `~/.claude/CLAUDE.md` |
 | `claude/settings.json` | `~/.claude/settings.json` |
 | `claude/worktree.md` | `~/.claude/worktree.md` |

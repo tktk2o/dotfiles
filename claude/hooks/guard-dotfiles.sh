@@ -142,7 +142,6 @@ case "$tool" in
                 "$home/.config/karabiner/karabiner.json"
                 "$home/.config/gh/config.yml"
                 "$home/.config/gh-dash/config.yml"
-                "$home/.config/herdr/config.toml"
             )
 
             alt=""
@@ -265,9 +264,6 @@ case "$tool" in
                 ;;
             "$home/.config/gh-dash/config.yml")
                 deny "~/.config/gh-dash/config.yml は dotfiles/gh-dash/config.local.yml（untracked）への symlink です。dotfiles/gh-dash/config.local.yml を直接編集してください。"
-                ;;
-            "$home/.config/herdr/config.toml")
-                deny "~/.config/herdr/config.toml は dotfiles/herdr/config.toml への symlink です。dotfiles/herdr/config.toml を直接編集してください。"
                 ;;
         esac
         ;;

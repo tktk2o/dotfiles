@@ -197,7 +197,6 @@ create_symlinks() {
         fi
     fi
     create_symlink "$DOTFILES_DIR/gh-dash/config.local.yml" "$HOME/.config/gh-dash/config.yml"
-    create_symlink "$DOTFILES_DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 
     # Executables (~/.local/bin — already on PATH via zsh/.zshrc)
     #: 過去の tmux ウィンドウを resurrect 履歴から復元する（fzf）

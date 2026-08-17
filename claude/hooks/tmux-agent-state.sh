@@ -18,7 +18,7 @@
 #   stop           Stop (main)      -> counter>0 ? working : done
 #   working|done   legacy aliases (set state directly)
 #
-# No-op when not running inside tmux (safe outside tmux / inside Herdr panes).
+# No-op when not running inside tmux (safe outside tmux).
 
 set -eu
 
