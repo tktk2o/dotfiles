@@ -157,6 +157,7 @@
     ]
   },
   "model": "opus[1m]",
+  "advisorModel": "fable",
   "fallbackModel": [
     "claude-sonnet-5"
   ],
@@ -258,14 +259,15 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "chrome-devtools-mcp@claude-plugins-official": true,
+    "chrome-devtools-mcp@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": true,
-    "datadog@claude-plugins-official": true,
+    "datadog@claude-plugins-official": false,
     "frontend-design@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true
+    "swift-lsp@claude-plugins-official": true,
+    "figma@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {

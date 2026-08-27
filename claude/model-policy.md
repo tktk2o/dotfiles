@@ -27,7 +27,9 @@ the main thread:
 
 **Never specify `model: fable` on a subagent.** The delegation ladder tops
 out at opus ("genuinely hard root-cause reasoning"); anything above that
-belongs on the main thread, deliberately.
+belongs on the main thread, deliberately. (This is about a child's *execution*
+model. A child inheriting the fable **advisor** is a different thing and is
+fine — see *Advisor* below.)
 
 **Escalate only after `/clear`, never mid-conversation.** Prompt caching is
 scoped per model, so a `/model` switch partway through a session invalidates the
@@ -45,6 +47,23 @@ security-adjacent work (`stop_reason: refusal`) — if a root-cause /
 log-forensics session gets refused, drop back to opus rather than rephrasing
 around it. Don't use fable for interactive back-and-forth; give it the whole
 task and walk away.
+
+### Advisor: fable at the decision points
+
+`advisorModel: fable` in `claude/settings.json` — fable judgment at the moments
+that decide the outcome, without fable's 2× rate on every turn. Two clarifications
+against the rules above, since it looks like it breaks both:
+
+- **`/advisor` does not invalidate the prompt cache** (unlike `/model`), so it is
+  safe to toggle mid-session. The advisor's own read of the transcript is never
+  cached — that is where its cost sits.
+- **Subagents inherit it.** A haiku child consulting the fable advisor is intended;
+  running a child *on* fable stays banned.
+
+Tokens bill at fable's rate against the subscription limit. If budget gets tight,
+`/advisor opus` / `off` is the dial to turn before the main model. Ask for a
+consult explicitly when you want one ("advisor に相談してから進めて"); there is no
+setting to cap or force calls.
 
 ## Default model when launching a subagent
 
