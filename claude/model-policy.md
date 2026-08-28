@@ -152,6 +152,43 @@ directly on the main thread:
 Conversely, references that finish within 1–2 files, and hard reasoning itself,
 should be done directly on the main opus (the delegation overhead wins otherwise).
 
+### Decide before the first tool call — the window is one shot
+
+The triggers above only bite if they are evaluated at the right moment. **Decide
+whether to delegate *before* the first investigative tool call** (`Read` / `Grep`
+/ `Glob` / a grep-ish `Bash` / a log search).
+
+- Once the main thread has read even once, that investigation is no longer
+  delegable — the file body is already in opus context and the cache-read cost is
+  already paid every subsequent turn. Handing it to a child afterwards pays twice.
+- **"Let me look once and then decide" is banned.** That one look *is* the missed
+  decision.
+- If a trigger applies and you still read on the main thread, **state in one line
+  why you are not delegating** before starting. Not delegating must be a choice
+  that was made out loud, not one that happened by default.
+
+The 14-day audit's 3,246 main-thread Bash calls are this failure mode, not a
+missing trigger: the conditions were already written down, but nothing forced the
+judgment to happen before the first read.
+
+### What the child must hand back
+
+Delegation fails just as badly when the child returns a wall of text — the main
+thread ends up carrying the same tokens with extra latency. So specify the shape
+of the answer in the request:
+
+- Ask for **conclusion + evidence as `file:line`**. Explicitly forbid pasting raw
+  logs / whole file bodies.
+- The main thread then opens **only the few lines that decide the conclusion**.
+  Re-reading the child's whole range is a division-of-labour violation — it
+  reproduces exactly the context bloat the delegation was meant to avoid.
+- "I need to verify the primary source myself" is therefore **not** a reason to
+  skip delegation. The child finds and collects; the main thread confirms and
+  decides. Splitting those is the point.
+
+This pairs with the haiku default: a retrieval child is cheap precisely because
+its output is a pointer, not a transcript.
+
 ## Context hygiene (directly cuts real opus consumption)
 
 - `/clear` when moving to an unrelated task. Dragging a long single session is
