@@ -154,40 +154,22 @@ should be done directly on the main opus (the delegation overhead wins otherwise
 
 ### Decide before the first tool call — the window is one shot
 
-The triggers above only bite if they are evaluated at the right moment. **Decide
-whether to delegate *before* the first investigative tool call** (`Read` / `Grep`
-/ `Glob` / a grep-ish `Bash` / a log search).
-
-- Once the main thread has read even once, that investigation is no longer
-  delegable — the file body is already in opus context and the cache-read cost is
-  already paid every subsequent turn. Handing it to a child afterwards pays twice.
-- **"Let me look once and then decide" is banned.** That one look *is* the missed
-  decision.
-- If a trigger applies and you still read on the main thread, **state in one line
-  why you are not delegating** before starting. Not delegating must be a choice
-  that was made out loud, not one that happened by default.
-
-The 14-day audit's 3,246 main-thread Bash calls are this failure mode, not a
-missing trigger: the conditions were already written down, but nothing forced the
-judgment to happen before the first read.
+**Decide whether to delegate *before* the first investigative tool call** (`Read`
+/ `Grep` / `Glob` / a grep-ish `Bash` / a log search). After one read the file
+body is already in opus context and its cache-read cost is paid every turn, so
+handing it to a child then pays twice. "Let me look once and then decide" is
+banned — that look *is* the missed decision. The 3,246 main-thread Bash calls
+above are this failure mode, not a missing trigger. If a trigger applies and you
+read anyway, **say in one line why** first.
 
 ### What the child must hand back
 
-Delegation fails just as badly when the child returns a wall of text — the main
-thread ends up carrying the same tokens with extra latency. So specify the shape
-of the answer in the request:
-
-- Ask for **conclusion + evidence as `file:line`**. Explicitly forbid pasting raw
-  logs / whole file bodies.
-- The main thread then opens **only the few lines that decide the conclusion**.
-  Re-reading the child's whole range is a division-of-labour violation — it
-  reproduces exactly the context bloat the delegation was meant to avoid.
-- "I need to verify the primary source myself" is therefore **not** a reason to
-  skip delegation. The child finds and collects; the main thread confirms and
-  decides. Splitting those is the point.
-
-This pairs with the haiku default: a retrieval child is cheap precisely because
-its output is a pointer, not a transcript.
+Ask for **conclusion + evidence as `file:line`**, and forbid raw logs / whole
+file bodies — a child that returns a wall of text puts the same tokens on the
+main thread with extra latency. Then open only the few lines that decide the
+conclusion; re-reading the child's whole range defeats the delegation. So
+"I need to verify the primary source myself" is not a reason to skip it: the
+child finds, the main thread confirms and decides.
 
 ## Context hygiene (directly cuts real opus consumption)
 
