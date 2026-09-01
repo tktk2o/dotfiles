@@ -76,6 +76,15 @@ of the four files `claude/CLAUDE.md` currently imports (including a
 recommendation on `worktree.md`) and the `wc -l` one-liner used to measure the
 always-on context cost.
 
+`claude/rules/coding-style.md` holds language-agnostic coding preferences
+(separating pure logic from side effects, injecting non-deterministic values such
+as the clock as arguments, immutable result types). It is **not** `@`-imported —
+`claude/CLAUDE.md` carries a three-line pointer to it instead, because the
+detail is only needed once code is actually being written, but the pointer has to
+live in the always-on set to be visible from sessions in other repos (this
+repo's own `CLAUDE.md` is never loaded there). Keep the pointer short and the
+detail in the rules file.
+
 ### Posting personas (GitHub is tracked, Slack is not)
 
 `gh pr review` / `gh pr comment` の本文は `claude/persona-github.md` の文体で書く
