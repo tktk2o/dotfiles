@@ -144,23 +144,58 @@ directly on the main thread:
   tallying git history, one-off python/jq to produce a statistic → haiku, take back
   only the numbers. The same audit found **3,246 Bash calls sitting on the opus
   main thread** — much of it script output that never needed to be in opus context.
+- **Routine implementation** → sonnet, once the approach is decided. The trigger
+  is mechanical: **more than one file, or more than ~3 edits, or a task you would
+  describe as "implement / add / rewrite / migrate / refactor"** → hand the decided
+  approach to a sonnet child and take back a diff summary. Deciding *what* to build
+  stays on opus; typing it out does not.
 - **2+ independent pieces of work** → parallel subagents (up to 3–5, choosing
   models per this policy).
 - **Post-implementation review / verification** → route to a separate subagent
   (fresh context). Avoid bias by not having the author grade their own work.
 
-Conversely, references that finish within 1–2 files, and hard reasoning itself,
-should be done directly on the main opus (the delegation overhead wins otherwise).
+Conversely, **a single file and no more than ~3 edits**, and hard reasoning
+itself, should be done directly on the main opus (the delegation overhead wins
+otherwise). This is a size limit, not a difficulty limit — "this part needs
+judgment" is not a reason to keep a ten-file change on opus; put the judgment in
+the child's instructions instead.
 
 ### Decide before the first tool call — the window is one shot
 
 **Decide whether to delegate *before* the first investigative tool call** (`Read`
-/ `Grep` / `Glob` / a grep-ish `Bash` / a log search). After one read the file
-body is already in opus context and its cache-read cost is paid every turn, so
-handing it to a child then pays twice. "Let me look once and then decide" is
-banned — that look *is* the missed decision. The 3,246 main-thread Bash calls
+/ `Grep` / `Glob` / a grep-ish `Bash` / a log search) **and before the first
+`Edit` / `Write` / `MultiEdit`**. After one read the file body is already in opus
+context and its cache-read cost is paid every turn, so handing it to a child then
+pays twice. "Let me look once and then decide" is banned — that look *is* the
+missed decision. The same applies to the first edit: once you have started
+editing, the whole file is in context and the session reliably continues to
+completion on opus — the measured shape below is not many small direct edits but
+long main-thread sessions that never delegated. The 3,246 main-thread Bash calls
 above are this failure mode, not a missing trigger. If a trigger applies and you
-read anyway, **say in one line why** first.
+read or edit anyway, **say in one line why** first.
+
+### Measured: implementation delegation collapsed (2026-09-04)
+
+The one place both hard rules above held and the *trigger* did not. Editing tool
+calls (`Edit`/`Write`/`MultiEdit`), main thread vs subagent:
+
+| | all-time | last 14 days |
+|---|---|---|
+| main-thread opus | 1,180 | 1,118 |
+| subagent (sonnet 704/50 + haiku 35/11) | 739 | 61 |
+| **main-thread share** | **60%** | **94%** |
+
+This is a regression, not a standing habit: sonnet children did 704 edits
+all-time but only 50 in the last two weeks. And **59% of the main-thread editing
+sessions ran 11+ edits** — far outside the "1–2 files" escape hatch that was
+being invoked to justify them, which is why that hatch is now a hard ~3-edit
+limit. Sonnet children handled 4+ edits in 58 of 70 cases, so the threshold is
+not aspirational.
+
+By contrast `model` was specified on **all 263** Agent calls and every `Explore`
+ran on haiku — the model-*selection* rules work. Prose that merely records a
+number does not: main-thread `Bash` measured 3,153, essentially unchanged from
+the 3,246 written above.
 
 ### What the child must hand back
 

@@ -56,7 +56,7 @@ unconditionally, into **every** session on this machine:
 |------|-------|---------------------------|---------|
 | `~/.claude/RTK.md` | 29 | Every session (rtk rewrites every Bash call) | Keep. Genuinely universal — step 2 is correctly satisfied. |
 | `claude/worktree.md` | 94 | Only sessions that create or manage a git worktree | **Reconsider.** See below. |
-| `claude/model-policy.md` | 111 | Only sessions that spawn a subagent via the Agent tool | Borderline; see below. |
+| `claude/model-policy.md` | 224 | Only sessions that spawn a subagent via the Agent tool | Borderline and now the largest import; see below. |
 | `~/.claude/local.md` | 31 | Every session (it is itself the thin hub, not the detail) | Keep as-is — this is the pattern step 5 is modeled on. |
 
 **`worktree.md` (94 lines): recommend converting to on-demand read, not a
@@ -73,7 +73,7 @@ thin hub — "before creating a git worktree, read `claude/worktree.md`" — and
 drop the `@` import. This is a **recommendation only**; the import line itself
 is left untouched per this task's scope.
 
-**`model-policy.md` (111 lines): keep imported, weaker case for moving.**
+**`model-policy.md` (224 lines): keep imported, weaker case for moving.**
 Unlike worktree creation, "should I spawn a subagent, and on what model" is a
 judgment call Claude has to make silently and continuously — there is no
 lexical trigger to hang a skill or a "read this first" pointer on, because the
@@ -100,10 +100,17 @@ Measure the actual always-on cost rather than guessing:
 wc -l ~/.claude/RTK.md claude/worktree.md claude/model-policy.md ~/.claude/local.md
 ```
 
-Measured on this machine (2026-08-05): `29 + 94 + 111 + 31 = 265` lines of
-global always-on context, plus this project's own `CLAUDE.md` (303 lines,
-project-scoped — only paid for in `dotfiles` sessions) and `claude/CLAUDE.md`
-itself (4 lines, just the import list).
+Measured on this machine (2026-09-04): `29 + 94 + 224 + 31 = 378` lines of
+global always-on context, plus this project's own `CLAUDE.md` (project-scoped —
+only paid for in `dotfiles` sessions) and `claude/CLAUDE.md` itself (7 lines,
+the import list plus the coding-style pointer).
+
+Up from 265 on 2026-08-05, entirely in `model-policy.md` — the audit above
+already named it the file most worth trimming if it grew, and it has since
+roughly doubled. Its measured-evidence sections are what earn their keep; the
+prose around them is the trimming target next time. **Before adding to it,
+check whether the addition is a rule (belongs there) or a measurement (could be
+a dated one-liner instead of a table).**
 
 - `/memory` inside a session shows the resolved, fully-expanded set of
   instructions actually loaded — use it to confirm an edit here took effect,
