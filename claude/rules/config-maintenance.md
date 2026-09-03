@@ -47,6 +47,55 @@ file already in front of you. Steps 1, 4 and 5 are cheaper and more precise
 whenever the instruction is mechanical, task-shaped, or topic-shaped rather
 than universal.
 
+### `~/.claude/rules/` is a real mechanism — and it is not free
+
+`~/.claude/rules/*.md` is loaded by Claude Code automatically, for **every
+project on the machine**, at the same priority as `CLAUDE.md`
+([memory docs](https://code.claude.com/docs/en/memory.md), *User-level rules*).
+No `@` import and no `settings.json` key is involved. `<project>/.claude/rules/`
+works the same way for one project, and project rules are loaded *after* user
+rules, so they win on conflict.
+
+**A file in `rules/` with no frontmatter is always-on.** This was misread here
+for a month: `coding-style.md` and this file were both described as costing
+nothing until the topic came up, while in fact both were in every session's
+context — 197 lines believed to be free. A pointer in `CLAUDE.md` telling
+Claude to *read* a file that lives in `rules/` is therefore **redundant**, not
+a lazy-loading trick.
+
+What makes the tier cheap is `paths:` frontmatter, which turns the file into a
+lazily-loaded rule:
+
+```yaml
+---
+paths:
+  - "src/**/*.{ts,tsx}"
+---
+```
+
+Docs state these "trigger when Claude **reads** files matching the pattern",
+and that they reload after compaction as matching files are read. Whether
+`Write` on a not-yet-existing file fires them is undocumented, so it was
+measured with a sentinel rule (`paths: ["**/*.pathsprobe"]`, a unique string in
+the body, `/memory` as the oracle):
+
+- **Gating works** — in a session that touched no matching file, the sentinel
+  was absent. So `paths` genuinely keeps a rule out of context.
+- **`Write` on a new matching file does NOT load the rule** (measured
+  2026-09-04). Creating `new.pathsprobe` from scratch left the sentinel absent.
+- Firing on `Read` of an existing matching file was **not** verified.
+
+The consequence: **do not gate a rule whose job is to shape code Claude is
+about to write.** The moment it is needed most — a new source file — is exactly
+when it does not load, and the failure is silent. `coding-style.md` therefore
+stays always-on; 61 lines is the price of the rule actually being present. Gate
+only where the trigger file is certain to be read first, and even then weigh it
+against the fact that a rule that fails to load leaves no trace anywhere.
+Trimming a rule's content is the safer lever than gating it.
+
+`claudeMdExcludes` can drop a specific rule file by glob; there is no key that
+disables the mechanism wholesale.
+
 ## Current imports: audit
 
 `claude/CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`) imports four files,
@@ -58,6 +107,14 @@ unconditionally, into **every** session on this machine:
 | `claude/worktree.md` | 94 | Only sessions that create or manage a git worktree | **Reconsider.** See below. |
 | `claude/model-policy.md` | 224 | Only sessions that spawn a subagent via the Agent tool | Borderline and now the largest import; see below. |
 | `~/.claude/local.md` | 31 | Every session (it is itself the thin hub, not the detail) | Keep as-is — this is the pattern step 5 is modeled on. |
+
+Plus two files that are **not** in that import list but are loaded anyway, via
+the `~/.claude/rules/` mechanism described above:
+
+| File | Lines | Scope of actual relevance | Verdict |
+|------|-------|---------------------------|---------|
+| `claude/rules/coding-style.md` | 61 | Only sessions that write or review code | **Keep always-on.** `paths` was measured not to fire on new-file `Write` (above), which is precisely when a coding rule is needed — gating it would silently drop it. 61 lines is the price of it being there. |
+| `claude/rules/config-maintenance.md` | 201 | Only sessions that edit a config/instruction file | Keep always-on for now, but it is the **largest always-on entry while being the least universally relevant** — its own worst offender. Gating waits on `Read`-firing being verified; until then, trim content rather than gate. |
 
 **`worktree.md` (94 lines): recommend converting to on-demand read, not a
 skill.** The condition for even opening a worktree is narrow and explicit
@@ -96,21 +153,29 @@ the general retrieval → haiku / judgment → sonnet rule.
 Measure the actual always-on cost rather than guessing:
 
 ```bash
-# global imports pulled into every session on this machine
-wc -l ~/.claude/RTK.md claude/worktree.md claude/model-policy.md ~/.claude/local.md
+# everything pulled into every session on this machine:
+# the @ imports, claude/CLAUDE.md itself, and the auto-loaded rules/ files
+wc -l ~/.claude/RTK.md claude/worktree.md claude/model-policy.md \
+      ~/.claude/local.md claude/CLAUDE.md claude/rules/*.md
 ```
 
-Measured on this machine (2026-09-04): `29 + 94 + 224 + 31 = 378` lines of
-global always-on context, plus this project's own `CLAUDE.md` (project-scoped —
-only paid for in `dotfiles` sessions) and `claude/CLAUDE.md` itself (7 lines,
-the import list plus the coding-style pointer).
+**The `rules/*.md` glob is the part that was missing** — without it this
+measurement under-reports by ~200 lines, which is exactly how the two rules
+files went a month believed to be free.
 
-Up from 265 on 2026-08-05, entirely in `model-policy.md` — the audit above
-already named it the file most worth trimming if it grew, and it has since
-roughly doubled. Its measured-evidence sections are what earn their keep; the
-prose around them is the trimming target next time. **Before adding to it,
-check whether the addition is a rule (belongs there) or a measurement (could be
-a dated one-liner instead of a table).**
+Measured on this machine (2026-09-04): **647 lines** of global always-on
+context (`29 + 94 + 224 + 31 + 7 + 61 + 201`), plus this project's own
+`CLAUDE.md` (408 lines, project-scoped — only paid for in `dotfiles` sessions).
+`tests/claude_rules_test.sh` recomputes that figure from disk and fails when it
+drifts, so keep the bolded number on one line and in that exact form.
+
+Up from a **claimed** 265 on 2026-08-05 — but that figure was already wrong,
+since it omitted `rules/`. The real growth since then is `model-policy.md`
+(111 → 224): the audit above named it the file most worth trimming if it grew,
+and it has since roughly doubled. Its measured-evidence sections are what earn
+their keep; the prose around them is the trimming target next time. **Before
+adding to it, check whether the addition is a rule (belongs there) or a
+measurement (could be a dated one-liner instead of a table).**
 
 - `/memory` inside a session shows the resolved, fully-expanded set of
   instructions actually loaded — use it to confirm an edit here took effect,
