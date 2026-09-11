@@ -112,7 +112,7 @@ unconditionally, into **every** session on this machine:
 |------|-------|---------------------------|---------|
 | `~/.claude/RTK.md` | 29 | Every session (rtk rewrites every Bash call) | Keep. Genuinely universal — step 2 is correctly satisfied. |
 | `claude/worktree.md` | 94 | Only sessions that create or manage a git worktree | **Reconsider.** See below. |
-| `claude/model-policy.md` | 238 | Only sessions that spawn a subagent via the Agent tool | Borderline and now the largest import; see below. |
+| `claude/model-policy.md` | 243 | Only sessions that spawn a subagent via the Agent tool | Borderline and now the largest import; see below. |
 | `~/.claude/local.md` | 31 | Every session (it is itself the thin hub, not the detail) | Keep as-is — this is the pattern step 5 is modeled on. |
 
 Plus two files that are **not** in that import list but are loaded anyway, via
@@ -137,7 +137,7 @@ thin hub — "before creating a git worktree, read `claude/worktree.md`" — and
 drop the `@` import. This is a **recommendation only**; the import line itself
 is left untouched per this task's scope.
 
-**`model-policy.md` (238 lines): keep imported, weaker case for moving.**
+**`model-policy.md` (243 lines): keep imported, weaker case for moving.**
 Unlike worktree creation, "should I spawn a subagent, and on what model" is a
 judgment call Claude has to make silently and continuously — there is no
 lexical trigger to hang a skill or a "read this first" pointer on, because the
@@ -170,15 +170,15 @@ wc -l ~/.claude/RTK.md claude/worktree.md claude/model-policy.md \
 measurement under-reports by ~200 lines, which is exactly how the two rules
 files went a month believed to be free.
 
-Measured on this machine (2026-09-11): **679 lines** of global always-on
-context (`29 + 94 + 238 + 31 + 7 + 72 + 208`), plus this project's own
+Measured on this machine (2026-09-11): **684 lines** of global always-on
+context (`29 + 94 + 243 + 31 + 7 + 72 + 208`), plus this project's own
 `CLAUDE.md` (408 lines, project-scoped — only paid for in `dotfiles` sessions).
 `tests/claude_rules_test.sh` recomputes that figure from disk and fails when it
 drifts, so keep the bolded number on one line and in that exact form.
 
 Up from a **claimed** 265 on 2026-08-05 — but that figure was already wrong,
 since it omitted `rules/`. The real growth since then is `model-policy.md`
-(111 → 238): the audit above named it the file most worth trimming if it grew,
+(111 → 243): the audit above named it the file most worth trimming if it grew,
 and it has since roughly doubled. Its measured-evidence sections are what earn
 their keep; the prose around them is the trimming target next time. **Before
 adding to it, check whether the addition is a rule (belongs there) or a

@@ -201,6 +201,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash ~/.claude/hooks/scan-budget.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "rtk hook claude"
           }
         ]

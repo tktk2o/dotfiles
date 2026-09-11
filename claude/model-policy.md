@@ -152,6 +152,11 @@ apply, spawn a subagent rather than doing it directly on the main thread:
   tallying git history, one-off python/jq to produce a statistic → haiku, take back
   only the numbers. The same audit found **3,246 Bash calls sitting on the
   main thread** — much of it script output that never needed to be there.
+  This is now enforced mechanically by `claude/hooks/scan-budget.sh` (default
+  threshold 12, nudge only, never deny). Separately: fact-checking against web
+  documentation is sonnet, not haiku — a haiku child returned two unverifiable
+  claims on 2026-09-11 and the main thread had to re-read the primary sources
+  itself.
 - **Routine implementation** → sonnet, once the approach is decided. The trigger
   is mechanical: **more than one file, or more than ~3 edits, or a task you would
   describe as "implement / add / rewrite / migrate / refactor"** → hand the decided

@@ -334,6 +334,14 @@ be blocked anyway). It denies or warns on, in order of the rules above:
   **warned, not denied**: both are sometimes the right call (a confirmed
   pre-commit false positive, a solo-maintainer force-push after rebase), so the
   hook injects a reminder via `additionalContext` instead of blocking.
+- A separate hook, `claude/hooks/scan-budget.sh`, counts main-thread scan-style
+  Bash commands (grep/rg/find/jq/cat/python3/etc.) per session, distinguishing
+  main-thread calls from subagent calls via `agent_id`. It only ever nudges via
+  `additionalContext` when the count crosses a threshold (default 12, override
+  with `CLAUDE_SCAN_BUDGET`) — never denies. Added because model-policy.md's
+  prose alone didn't stop the main thread running hundreds of these itself
+  (measured 518 of 658 main-thread Bash calls across 5 sessions, one session
+  454).
 
 Legitimate bypass: the hook only inspects the literal command string / `file_path`,
 so there is no override flag by design — if a denial is wrong, do the equivalent
