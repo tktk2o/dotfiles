@@ -342,6 +342,14 @@ be blocked anyway). It denies or warns on, in order of the rules above:
   prose alone didn't stop the main thread running hundreds of these itself
   (measured 518 of 658 main-thread Bash calls across 5 sessions, one session
   454).
+- A third hook, `claude/hooks/context-guard.sh`, reports the current context
+  size (from the transcript's last main-thread assistant `usage`) on
+  `UserPromptSubmit`, nudging once per band above `CLAUDE_CONTEXT_WARN_TOKENS`
+  (default 200000, step `CLAUDE_CONTEXT_WARN_STEP` default 100000) toward
+  `/clear` or delegating further reads to a subagent. Nudge-only, never
+  denies. Ported from `iwasa-kosui/dotfiles`' `context-guard.ts` (bun) to
+  bash+jq; thresholds raised well past its 50k because auto-compact stays on
+  here and the main model's large context window makes growth otherwise silent.
 
 Legitimate bypass: the hook only inspects the literal command string / `file_path`,
 so there is no override flag by design — if a denial is wrong, do the equivalent

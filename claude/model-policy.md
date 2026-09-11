@@ -234,6 +234,8 @@ child finds, the main thread confirms and decides.
 - The above are user actions, but Claude should also proactively propose
   delegating to a subagent when it's about to start broad exploration on the
   main thread.
+- `claude/hooks/context-guard.sh` surfaces the token count at each prompt once
+  it passes 200k, so `/clear` becomes a measured call, not a feeling.
 
 ## Notes
 
