@@ -45,11 +45,14 @@ switch partway through a session invalidates the whole cache (tools + system
 opus mid-session pays the same cache-rewrite cost as escalating did before.
 `/clear` first, then `/model opus` (or `/model fable` to return).
 
-Operational caveats, unchanged: fable's safety classifiers can refuse benign
-security-adjacent work (`stop_reason: refusal`) — `/clear` and run that task
-on `/model opus` rather than rephrasing around it. A stuck investigation is
-still `/clear` and restart with the learnings baked in, not a model switch.
-Don't use fable interactively; give it the whole task and walk away.
+Operational caveats: fable's safety classifiers flag benign security-adjacent
+work. Claude Code then **re-runs the request on opus automatically** and the
+session stays on opus (`switchModelsOnFlag`, default on); watch for the notice
+in the transcript and run `/model fable` to come back once that task is done.
+Don't rephrase around a flag. It can fire on the very first request, on
+CLAUDE.md content alone — `claude --safe-mode` isolates that. A stuck
+investigation is still `/clear` and restart with the learnings baked in, not
+a model switch.
 
 ### Advisor: a second opinion, not an escalation
 
