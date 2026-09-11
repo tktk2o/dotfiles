@@ -46,9 +46,9 @@ for src in claude/CLAUDE.md CLAUDE.md "$RULES_DIR"/*.md; do
         #   - CLAUDE.local.md, named only to say the mechanism does not exist
         case "$ref" in
             '~/.claude/RTK.md' | '~/.claude/local.md' | '~/.claude/local/'* | \
-            '~/.claude/settings.local.json' | '~/.claude/agents/'* | \
-            '~/.claude/projects' | '~/.claude/projects/'* | \
-            '~/.claude/CLAUDE.local.md')
+                '~/.claude/settings.local.json' | '~/.claude/agents/'* | \
+                '~/.claude/projects' | '~/.claude/projects/'* | \
+                '~/.claude/CLAUDE.local.md')
                 continue
                 ;;
         esac
