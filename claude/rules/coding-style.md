@@ -59,3 +59,14 @@ becomes a lie the moment the code changes without it. Write **why**, and
 prefer **why not**: the option rejected, the constraint forcing this shape, the
 approach that was tried and failed. That is the only information the code
 cannot hold. When a comment exists only to explain a name, fix the name.
+
+"Why" is not a license for length. Two hard limits:
+
+- **An inline comment is one or two lines.** If the why needs more, it goes in
+  the commit message or an existing doc, and the comment only points there
+  (`see config-maintenance.md`). Do not open a file with a multi-paragraph
+  header retelling history the docs already hold — that is a second copy of the
+  doc, and it rots the same way a "what" comment does.
+- **No step-heading comments** (`# 1. check the paths`, `# 2. compare totals`).
+  They are "what". If a block needs a label, extract a function and let its name
+  carry it.

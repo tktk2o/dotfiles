@@ -1,77 +1,82 @@
 # Model Policy (for Claude)
 
-Keep the main thread on **opus (Opus 5)** — where the user's value is:
-fact-checking and hard reasoning — and fan out grunt work to subagents on
-cheaper models. The goal is to preserve the subscription budget (5h / week)
-and avoid hitting token/session limits on long, multi-stage tasks.
+Keep the main thread on **fable (Fable 5.1)**, since 2026-09-11, and fan out
+grunt work to subagents on cheaper models. The goal is to preserve the
+subscription budget (5h / week) and avoid token/session limits on long,
+multi-stage tasks. The switch is conditional: revert to opus if the Max-plan
+fable cap (~50% of usage) starts binding, or the delegation share below
+regresses toward opus's.
 
-## fable (Fable 5) — the top rung, not the default
+## fable — the main-thread default (since 2026-09-11)
 
-Fable 5 is available on this plan but is **not** the main-thread default.
-It costs 2× Opus 5 ($10/$50 vs $5/$25 per MTok), draws from a capped share
-of the subscription quota (Max plans limit Fable to ~50% of usage), and runs
-thinking always-on with turns that can take many minutes — used on routine
-work it is just slower and more expensive, directly against this policy's
-budget goal. Anthropic's own framing: Opus 5 is the daily driver; Fable 5 is
-for the most ambitious, multi-day autonomous work.
+Fable 5.1 costs 2× Opus 5 ($10/$50 vs $5/$25 per MTok), draws from a capped
+share of the subscription quota (Max plans limit Fable to ~50% of usage), and
+runs thinking always-on with turns that can take many minutes. Those facts
+didn't change; what changed is the measured delegation effect. A 21-day log
+audit (2026-09-11), main thread only:
 
-Use fable **only** when one of these holds, via a manual `/model` switch on
-the main thread:
+| | fable (n=5, last week) | opus (n=37) |
+|---|---|---|
+| median assistant turns / session | 112 | 47 |
+| Edit/Write/MultiEdit run on main thread (vs. subagents) | 1.9% | 89.6% |
+| median Agent calls / session | 4 | 1 |
+| median cache-read tokens / session | 13.1M | 2.6M |
 
-- Hours-to-days scale autonomous runs (overnight agentic work with the full
-  spec given up front)
-- A root-cause investigation that survived 2+ opus attempts — this extends
-  the existing "/clear and restart" rule: if a fresh-context opus restart
-  also fails, escalate once to fable
-- Genuinely frontier-hard architectural judgment
+The "implement → sonnet child" trigger below is the trigger opus was already
+supposed to follow (see "Measured: implementation delegation collapsed") and
+routinely didn't (94% main-thread edits). Fable does (98% delegated);
+redo-keyword prompts and refusals were both zero across both models. Caveat:
+n=5 over one week, and per-session cache read runs ~5× opus's (turns are
+2.4× longer, so ~2× per turn) at fable's 2× rate — the budget guard now
+rests entirely on delegation happening, not on the model being cheap per
+token.
 
-**Never specify `model: fable` on a subagent.** The delegation ladder tops
-out at opus ("genuinely hard root-cause reasoning"); anything above that
-belongs on the main thread, deliberately. (This is about a child's *execution*
-model. A child inheriting the fable **advisor** is a different thing and is
-fine — see *Advisor* below.)
+**Never specify `model: fable` on a subagent.** The main thread already *is*
+fable; a fable child buys nothing and doubles the cost. Worth repeating: the
+prior opus main thread launched `model: fable` children 5 times, which this
+policy forbids. The child ladder is unchanged, topping out at opus
+("genuinely hard root-cause reasoning"). Because the default is now fable,
+**omitting `model` on an Agent call inherits fable** — a policy violation,
+not just waste — so `model` is mandatory on every Agent call, no exceptions.
 
-**Escalate only after `/clear`, never mid-conversation.** Prompt caching is
-scoped per model, so a `/model` switch partway through a session invalidates the
-whole conversation's cache (tools + system + messages) and rewrites the entire
-prefix — at fable's 2× Opus input rate. The "2+ opus attempts" rule already
-implies a fresh-context restart; do the `/clear` first, then `/model fable`.
-Subagents on cheaper models cost nothing here — a child runs its own prefix in
-its own context, so the opus main thread's cache is untouched. That asymmetry is
-why this policy fans out to subagents instead of switching the main thread's
-model. (`fallbackModel` on rate-limit takes the same cache hit, but stalling on
-a rate limit is worse — leave it.)
+**Switch models only after `/clear`, never mid-conversation.** A `/model`
+switch partway through a session invalidates the whole cache (tools + system
++ messages) at fable's 2× input rate — now symmetric: dropping from fable to
+opus mid-session pays the same cache-rewrite cost as escalating did before.
+`/clear` first, then `/model opus` (or `/model fable` to return).
 
-Operational caveats: Fable's safety classifiers can refuse benign
-security-adjacent work (`stop_reason: refusal`) — if a root-cause /
-log-forensics session gets refused, drop back to opus rather than rephrasing
-around it. Don't use fable for interactive back-and-forth; give it the whole
-task and walk away.
+Operational caveats, unchanged: fable's safety classifiers can refuse benign
+security-adjacent work (`stop_reason: refusal`) — `/clear` and run that task
+on `/model opus` rather than rephrasing around it. A stuck investigation is
+still `/clear` and restart with the learnings baked in, not a model switch.
+Don't use fable interactively; give it the whole task and walk away.
 
-### Advisor: fable at the decision points
+### Advisor: a second opinion, not an escalation
 
-`advisorModel: fable` in `claude/settings.json` — fable judgment at the moments
-that decide the outcome, without fable's 2× rate on every turn. Two clarifications
-against the rules above, since it looks like it breaks both:
+`advisorModel: fable` in `claude/settings.json` is unchanged. With the main
+thread itself on fable, the advisor is the same model in a fresh context — a
+second opinion, not an escalation path. It still earns its keep: an opus
+session (after a refusal-driven drop) still gets fable judgment at decision
+points without switching the whole session.
 
-- **`/advisor` does not invalidate the prompt cache** (unlike `/model`), so it is
-  safe to toggle mid-session. The advisor's own read of the transcript is never
-  cached — that is where its cost sits.
-- **Subagents inherit it.** A haiku child consulting the fable advisor is intended;
-  running a child *on* fable stays banned.
+- **`/advisor` does not invalidate the prompt cache** (unlike `/model`), so
+  it is safe to toggle mid-session — the advisor's own read is never cached.
+- **Subagents inherit it.** A haiku child consulting the fable advisor is
+  intended; running a child *on* fable stays banned.
 
-Tokens bill at fable's rate against the subscription limit. If budget gets tight,
-`/advisor opus` / `off` is the dial to turn before the main model. Ask for a
-consult explicitly when you want one ("advisor に相談してから進めて"); there is no
+Tokens bill at fable's rate against the subscription limit; `/advisor opus`
+/ `off` is the dial to turn before the main model if budget gets tight. Ask
+explicitly for a consult ("advisor に相談してから進めて"); there is no
 setting to cap or force calls.
 
 ## Default model when launching a subagent
 
-When launching a child agent with the Agent tool, **always specify both `model`
-and `subagent_type` explicitly** (omitting `model` inherits the parent's opus,
-which defeats the whole budget-saving point; omitting `subagent_type` silently
-takes the heavyweight catch-all when `Explore` would have done). Decide by
-whether the deliverable is **retrieval** or **judgment**:
+When launching a child agent with the Agent tool, **always specify both
+`model` and `subagent_type` explicitly** (omitting `model` inherits the
+parent's fable, a budget hit and a policy violation; omitting
+`subagent_type` silently takes the heavyweight catch-all when `Explore`
+would have done). Decide by whether the deliverable is **retrieval** or
+**judgment**:
 
 - **haiku** (`claude-haiku-4-5`) — *default*: work whose deliverable is a
   "conclusion / location / list". Searching, exploring, collecting files,
@@ -87,7 +92,7 @@ whether the deliverable is **retrieval** or **judgment**:
 
 **Not "when in doubt, sonnet" but "retrieval → haiku, judgment → sonnet".**
 Don't let sonnet become the safe default that sweeps up exploration.
-Never drop the main thread's opus.
+Never do delegable work on the main thread.
 
 ### The two hard rules (measured failure modes, not theory)
 
@@ -95,10 +100,10 @@ A 14-day log audit found **52% of Agent calls on sonnet, and 40% of those were
 retrieval by their own description**. Both leaks have a mechanical fix:
 
 1. **`Explore` is always haiku — no exceptions.** Its deliverable is a location
-   by definition. If a task feels too heavy for haiku-on-Explore, the task is not
-   an Explore; pick `general-purpose` and justify the model separately. Real
-   offenders from the audit: `Investigate line-api endpoint`,
-   `配信バッチフロー調査`, `4経路のエラーログ出力文字列を特定`.
+   by definition. If a task feels too heavy for haiku-on-Explore, the task is
+   not an Explore; pick `general-purpose` and justify the model separately.
+   Real offenders: `Investigate line-api endpoint`, `配信バッチフロー調査`,
+   `4経路のエラーログ出力文字列を特定`.
 2. **The description decides the model.** If the task can be written with any of
    these words, it is haiku:
 
@@ -131,9 +136,9 @@ file stays general: retrieval → haiku, judgment → sonnet.
 
 Before choosing a model, first decide "should this even be held on the main
 thread, or offloaded to a child?". The goal is not to maximize the offload rate
-but to **avoid inflating the opus main thread's context (especially cache
-read)**. If any of the following apply, spawn a subagent rather than doing it
-directly on the main thread:
+but to **avoid inflating the main thread's context (especially cache
+read)** — now doubly true at fable's per-token rate. If any of the following
+apply, spawn a subagent rather than doing it directly on the main thread:
 
 - **Exploration / investigation**: likely to read 3+ files to get the
   answer/location → hand it to an Explore-type subagent (haiku) and take back
@@ -142,37 +147,37 @@ directly on the main thread:
   → offload wholesale to haiku.
 - **Bulk aggregation / throwaway analysis scripts**: counting over JSONL logs,
   tallying git history, one-off python/jq to produce a statistic → haiku, take back
-  only the numbers. The same audit found **3,246 Bash calls sitting on the opus
-  main thread** — much of it script output that never needed to be in opus context.
+  only the numbers. The same audit found **3,246 Bash calls sitting on the
+  main thread** — much of it script output that never needed to be there.
 - **Routine implementation** → sonnet, once the approach is decided. The trigger
   is mechanical: **more than one file, or more than ~3 edits, or a task you would
   describe as "implement / add / rewrite / migrate / refactor"** → hand the decided
   approach to a sonnet child and take back a diff summary. Deciding *what* to build
-  stays on opus; typing it out does not.
+  stays on the main thread; typing it out does not.
 - **2+ independent pieces of work** → parallel subagents (up to 3–5, choosing
   models per this policy).
 - **Post-implementation review / verification** → route to a separate subagent
   (fresh context). Avoid bias by not having the author grade their own work.
 
 Conversely, **a single file and no more than ~3 edits**, and hard reasoning
-itself, should be done directly on the main opus (the delegation overhead wins
-otherwise). This is a size limit, not a difficulty limit — "this part needs
-judgment" is not a reason to keep a ten-file change on opus; put the judgment in
-the child's instructions instead.
+itself, should be done directly on the main thread (the delegation overhead
+wins otherwise). This is a size limit, not a difficulty limit — "this part
+needs judgment" is not a reason to keep a ten-file change on the main thread;
+put the judgment in the child's instructions instead.
 
 ### Decide before the first tool call — the window is one shot
 
 **Decide whether to delegate *before* the first investigative tool call** (`Read`
 / `Grep` / `Glob` / a grep-ish `Bash` / a log search) **and before the first
-`Edit` / `Write` / `MultiEdit`**. After one read the file body is already in opus
-context and its cache-read cost is paid every turn, so handing it to a child then
-pays twice. "Let me look once and then decide" is banned — that look *is* the
-missed decision. The same applies to the first edit: once you have started
-editing, the whole file is in context and the session reliably continues to
-completion on opus — the measured shape below is not many small direct edits but
-long main-thread sessions that never delegated. The 3,246 main-thread Bash calls
-above are this failure mode, not a missing trigger. If a trigger applies and you
-read or edit anyway, **say in one line why** first.
+`Edit` / `Write` / `MultiEdit`**. After one read the file body is already in the
+main thread's context and its cache-read cost is paid every turn, so handing it
+to a child then pays twice. "Let me look once and then decide" is banned — that
+look *is* the missed decision. The same applies to the first edit: once you have
+started editing, the whole file is in context and the session reliably continues
+to completion on the main thread — the measured shape below is not many small
+direct edits but long main-thread sessions that never delegated. The 3,246
+main-thread Bash calls above are this failure mode, not a missing trigger. If a
+trigger applies and you read or edit anyway, **say in one line why** first.
 
 ### Measured: implementation delegation collapsed (2026-09-04)
 
@@ -186,16 +191,22 @@ calls (`Edit`/`Write`/`MultiEdit`), main thread vs subagent:
 | **main-thread share** | **60%** | **94%** |
 
 This is a regression, not a standing habit: sonnet children did 704 edits
-all-time but only 50 in the last two weeks. And **59% of the main-thread editing
-sessions ran 11+ edits** — far outside the "1–2 files" escape hatch that was
-being invoked to justify them, which is why that hatch is now a hard ~3-edit
-limit. Sonnet children handled 4+ edits in 58 of 70 cases, so the threshold is
-not aspirational.
+all-time but only 50 in the last two weeks. **59% of the main-thread editing
+sessions ran 11+ edits** — far outside the "1–2 files" escape hatch invoked to
+justify them, which is why that hatch is now a hard ~3-edit limit. Sonnet
+children handled 4+ edits in 58 of 70 cases, so the threshold is not
+aspirational.
 
 By contrast `model` was specified on **all 263** Agent calls and every `Explore`
 ran on haiku — the model-*selection* rules work. Prose that merely records a
 number does not: main-thread `Bash` measured 3,153, essentially unchanged from
 the 3,246 written above.
+
+**Follow-up (2026-09-11): this is what justified the fable switch.** Opus
+never fixed the collapse above; fable's edit share on the same measurement
+is 1.9% (see the table in "fable — the main-thread default"), no rule change
+in between. Re-measure mid-October 2026; revert if fable's share climbs
+back toward opus's.
 
 ### What the child must hand back
 
@@ -206,7 +217,7 @@ conclusion; re-reading the child's whole range defeats the delegation. So
 "I need to verify the primary source myself" is not a reason to skip it: the
 child finds, the main thread confirms and decides.
 
-## Context hygiene (directly cuts real opus consumption)
+## Context hygiene (directly cuts real main-thread consumption)
 
 - `/clear` when moving to an unrelated task. Dragging a long single session is
   the biggest driver of bloated cache read.
@@ -220,5 +231,5 @@ child finds, the main thread confirms and decides.
 
 - The more parallel subagents you stand up, the more budget you burn. 3–5
   parallel is the everyday sweet spot.
-- `fallbackModel` automatically falls back to sonnet when opus is rate-limited
+- `fallbackModel` automatically falls back to sonnet when the main model is rate-limited
   (settings.json).

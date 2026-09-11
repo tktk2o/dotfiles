@@ -26,10 +26,17 @@ Ask, in order:
    projects?** → project `CLAUDE.md` (`dotfiles/CLAUDE.md`). Still always-on,
    but scoped — a session in another repo never pays for it.
 4. **Does it only matter when a specific, recognizable task comes up** (PR
-   review, calendar lookup, root-cause investigation)? → `claude/skills/*/SKILL.md`.
+   review, root-cause investigation)? → `claude/skills/*/SKILL.md`.
    The `description:` frontmatter is the trigger; Claude Code loads the body
    only when it matches, so the cost is zero in unrelated sessions. This repo
-   already does this correctly for `pr-review` / `root-cause` / `calendar`.
+   already does this correctly for `pr-review` / `root-cause`; machine-local
+   skills live in the same directory but stay git-ignored, and
+   `tools/cheatsheet` skips them so the committed doc rebuilds from a clean
+   clone.
+   A skill only earns its keep if the trigger actually fires: `calendar` was
+   removed on 2026-09-07 after never being invoked once — measured at 0
+   invocations against 11 for `pr-review`, by counting `"skill":"<name>"` in
+   `~/.claude/projects/**/*.jsonl`.
 5. **Does it only matter when a specific *topic* comes up, but doesn't need a
    trigger-matching skill wrapper** (a policy doc, a persona, reference
    material)? → an on-demand `*.md` that is **referenced by path in a hub**,
@@ -105,7 +112,7 @@ unconditionally, into **every** session on this machine:
 |------|-------|---------------------------|---------|
 | `~/.claude/RTK.md` | 29 | Every session (rtk rewrites every Bash call) | Keep. Genuinely universal — step 2 is correctly satisfied. |
 | `claude/worktree.md` | 94 | Only sessions that create or manage a git worktree | **Reconsider.** See below. |
-| `claude/model-policy.md` | 224 | Only sessions that spawn a subagent via the Agent tool | Borderline and now the largest import; see below. |
+| `claude/model-policy.md` | 235 | Only sessions that spawn a subagent via the Agent tool | Borderline and now the largest import; see below. |
 | `~/.claude/local.md` | 31 | Every session (it is itself the thin hub, not the detail) | Keep as-is — this is the pattern step 5 is modeled on. |
 
 Plus two files that are **not** in that import list but are loaded anyway, via
@@ -113,8 +120,8 @@ the `~/.claude/rules/` mechanism described above:
 
 | File | Lines | Scope of actual relevance | Verdict |
 |------|-------|---------------------------|---------|
-| `claude/rules/coding-style.md` | 61 | Only sessions that write or review code | **Keep always-on.** `paths` was measured not to fire on new-file `Write` (above), which is precisely when a coding rule is needed — gating it would silently drop it. 61 lines is the price of it being there. |
-| `claude/rules/config-maintenance.md` | 201 | Only sessions that edit a config/instruction file | Keep always-on for now, but it is the **largest always-on entry while being the least universally relevant** — its own worst offender. Gating waits on `Read`-firing being verified; until then, trim content rather than gate. |
+| `claude/rules/coding-style.md` | 72 | Only sessions that write or review code | **Keep always-on.** `paths` was measured not to fire on new-file `Write` (above), which is precisely when a coding rule is needed — gating it would silently drop it. 72 lines is the price of it being there. |
+| `claude/rules/config-maintenance.md` | 208 | Only sessions that edit a config/instruction file | Keep always-on for now, but it is the **largest always-on entry while being the least universally relevant** — its own worst offender. Gating waits on `Read`-firing being verified; until then, trim content rather than gate. |
 
 **`worktree.md` (94 lines): recommend converting to on-demand read, not a
 skill.** The condition for even opening a worktree is narrow and explicit
@@ -122,7 +129,7 @@ skill.** The condition for even opening a worktree is narrow and explicit
 `worktree.md`'s own "When to use" section), and most sessions on this machine
 never hit any of those four cases. A `SKILL.md` wrapper is not a good fit
 either: nothing in a typical prompt reliably names "worktree" as a trigger
-word the way "PR review" or "calendar" do, so a skill's `description:`
+word the way "PR review" or "root cause" do, so a skill's `description:`
 matching would be no more reliable than Claude simply knowing to check a
 referenced file. The cheapest fix mirrors the `local.md` pattern already used
 here: add one line to `claude/CLAUDE.md`'s **project** counterpart or to a
@@ -130,7 +137,7 @@ thin hub — "before creating a git worktree, read `claude/worktree.md`" — and
 drop the `@` import. This is a **recommendation only**; the import line itself
 is left untouched per this task's scope.
 
-**`model-policy.md` (224 lines): keep imported, weaker case for moving.**
+**`model-policy.md` (235 lines): keep imported, weaker case for moving.**
 Unlike worktree creation, "should I spawn a subagent, and on what model" is a
 judgment call Claude has to make silently and continuously — there is no
 lexical trigger to hang a skill or a "read this first" pointer on, because the
@@ -163,15 +170,15 @@ wc -l ~/.claude/RTK.md claude/worktree.md claude/model-policy.md \
 measurement under-reports by ~200 lines, which is exactly how the two rules
 files went a month believed to be free.
 
-Measured on this machine (2026-09-04): **647 lines** of global always-on
-context (`29 + 94 + 224 + 31 + 7 + 61 + 201`), plus this project's own
+Measured on this machine (2026-09-11): **676 lines** of global always-on
+context (`29 + 94 + 235 + 31 + 7 + 72 + 208`), plus this project's own
 `CLAUDE.md` (408 lines, project-scoped — only paid for in `dotfiles` sessions).
 `tests/claude_rules_test.sh` recomputes that figure from disk and fails when it
 drifts, so keep the bolded number on one line and in that exact form.
 
 Up from a **claimed** 265 on 2026-08-05 — but that figure was already wrong,
 since it omitted `rules/`. The real growth since then is `model-policy.md`
-(111 → 224): the audit above named it the file most worth trimming if it grew,
+(111 → 235): the audit above named it the file most worth trimming if it grew,
 and it has since roughly doubled. Its measured-evidence sections are what earn
 their keep; the prose around them is the trimming target next time. **Before
 adding to it, check whether the addition is a rule (belongs there) or a
