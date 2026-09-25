@@ -1,82 +1,80 @@
 # Model Policy (for Claude)
 
-Keep the main thread on **fable (Fable 5.1)**, since 2026-09-11, and fan out
-grunt work to subagents on cheaper models. The goal is to preserve the
-subscription budget (5h / week) and avoid token/session limits on long,
-multi-stage tasks. The switch is conditional: revert to opus if the Max-plan
-fable cap (~50% of usage) starts binding, or the delegation share below
-regresses toward opus's.
+Keep the main thread on **Opus 5.5** (`claude-opus-5-5`), since 2026-09-24,
+and fan out grunt work to subagents on cheaper models — preserving the
+subscription budget (5h / week) and avoiding token/session limits on long,
+multi-stage tasks. Fable held this role from 2026-09-11 for its measured
+delegation discipline; opus 5.5 trades that for cheaper tokens, no known
+Max-plan usage cap, and better agentic benchmarks (below). The switch is
+conditional: **revert to fable** if a re-measure (due ~2026-10-08) shows the
+delegation share relapsing toward opus 5's.
 
-## fable — the main-thread default (since 2026-09-11)
+## opus 5.5 — the main-thread default (since 2026-09-24)
 
-Fable 5.1 costs 2× Opus 5 ($10/$50 vs $5/$25 per MTok), draws from a capped
-share of the subscription quota (Max plans limit Fable to ~50% of usage), and
-runs thinking always-on with turns that can take many minutes. Those facts
-didn't change; what changed is the measured delegation effect. A 21-day log
-audit (2026-09-11), main thread only:
+Opus 5.5 costs $4/$20 per MTok (cache read $0.20) against Fable 5.1's
+$10/$50 (cache read $0.25) — cheaper outright, not relatively. Max plans cap
+Fable at ~50% of usage; no equivalent cap on Opus 5.5 is confirmed (no
+official Anthropic statement seen). Anthropic's own agentic benchmarks favor
+it too: Terminal-Bench 4.0 66.4% vs 55.8%, OSWorld 2.0 (strict) 48.7% vs
+41.7%, AutomationBench 40.0% vs 31.4% (GDPval-AA roughly tied, 1846 vs 1853).
+Thinking stays always-on, same as Fable; effort defaults to `medium` (Opus 5
+was `high`), so the main thread pins `high` via
+`modelSettings["claude-opus-5-5"].effortLevel` in `claude/settings.json`.
 
-| | fable (n=5, last week) | opus (n=37) |
-|---|---|---|
-| median assistant turns / session | 112 | 47 |
-| Edit/Write/MultiEdit run on main thread (vs. subagents) | 1.9% | 89.6% |
-| median Agent calls / session | 4 | 1 |
-| median cache-read tokens / session | 13.1M | 2.6M |
+None of that is why Fable held this slot, though: a 21-day audit (2026-09-11)
+found Fable's main-thread edit/write share at 1.9% against opus 5's 89.6%
+(full table dropped 2026-09-24 as it ages; see git history). **Whether opus
+5.5 relapses toward opus 5's share or holds Fable's is unmeasured** — that
+is the entire risk of this switch, and the reason for the revert condition
+above.
 
-The "implement → sonnet child" trigger below is the trigger opus was already
-supposed to follow (see "Measured: implementation delegation collapsed") and
-routinely didn't (94% main-thread edits). Fable does (98% delegated);
-redo-keyword prompts and refusals were both zero across both models. Caveat:
-n=5 over one week, and per-session cache read runs ~5× opus's (turns are
-2.4× longer, so ~2× per turn) at fable's 2× rate — the budget guard now
-rests entirely on delegation happening, not on the model being cheap per
-token.
-
-**Never specify `model: fable` on a subagent.** The main thread already *is*
-fable; a fable child buys nothing and doubles the cost. Worth repeating: the
-prior opus main thread launched `model: fable` children 5 times, which this
-policy forbids. The child ladder is unchanged, topping out at opus
-("genuinely hard root-cause reasoning"). Because the default is now fable,
-**omitting `model` on an Agent call inherits fable** — a policy violation,
-not just waste — so `model` is mandatory on every Agent call, no exceptions.
+**Never specify `model: fable` on a subagent.** Fable now costs *more* than
+the main thread's own opus 5.5 ($10/$50 vs $4/$20) and buys nothing. The
+child ladder is otherwise unchanged, topping out at the `opus` alias — same
+tier as the main thread, for genuinely hard root-cause reasoning needing a
+fresh context. **Omitting `model` on an Agent call inherits the main
+thread's Opus 5.5** — a policy violation, not just waste — so `model` is
+mandatory on every Agent call, no exceptions.
 
 **Switch models only after `/clear`, never mid-conversation.** A `/model`
 switch partway through a session invalidates the whole cache (tools + system
-+ messages) at fable's 2× input rate — now symmetric: dropping from fable to
-opus mid-session pays the same cache-rewrite cost as escalating did before.
-`/clear` first, then `/model opus` (or `/model fable` to return).
++ messages) at the new model's input rate — switching up to fable mid-session
+pays a real cache-rewrite penalty on top of fable's own higher rate.
+`/clear` first, then `/model fable` (or `/model opus` to return).
 
-Operational caveats: fable's safety classifiers flag benign security-adjacent
-work. Claude Code then **re-runs the request on opus automatically** and the
-session stays on opus (`switchModelsOnFlag`, default on); watch for the notice
-in the transcript and run `/model fable` to come back once that task is done.
-Don't rephrase around a flag. It can fire on the very first request, on
-CLAUDE.md content alone — `claude --safe-mode` isolates that. A stuck
-investigation is still `/clear` and restart with the learnings baked in, not
-a model switch.
+Operational caveats: Opus 5.5 still carries safety classifiers (cyber, plus
+bio / reasoning_extraction) that can flag benign security- or
+biology-adjacent work. `switchModelsOnFlag` was measured re-running flagged
+fable requests on opus; how it resolves a flag on opus 5.5 itself is
+unmeasured, so watch the transcript rather than assume — and don't rephrase
+around it. A flag can
+fire on the first request, on CLAUDE.md content alone (`claude --safe-mode`
+isolates that); a stuck investigation is still `/clear` and restart, not a
+model switch.
 
-### Advisor: a second opinion, not an escalation
+### Advisor: an escalation again, not a second opinion
 
 `advisorModel: fable` in `claude/settings.json` is unchanged. With the main
-thread itself on fable, the advisor is the same model in a fresh context — a
-second opinion, not an escalation path. It still earns its keep: an opus
-session (after a refusal-driven drop) still gets fable judgment at decision
-points without switching the whole session.
+thread back on opus 5.5, a consult is an escalation again — Fable costs more
+per token, so `/advisor` borrows a pricier model's judgment at one decision
+point without switching the whole session.
 
 - **`/advisor` does not invalidate the prompt cache** (unlike `/model`), so
   it is safe to toggle mid-session — the advisor's own read is never cached.
 - **Subagents inherit it.** A haiku child consulting the fable advisor is
   intended; running a child *on* fable stays banned.
 
-Tokens bill at fable's rate against the subscription limit; `/advisor opus`
-/ `off` is the dial to turn before the main model if budget gets tight. Ask
-explicitly for a consult ("advisor に相談してから進めて"); there is no
-setting to cap or force calls.
+Tokens bill at fable's (higher) rate against the subscription limit;
+`/advisor off` (or `/advisor opus` to fall back to the main thread's own
+model) is the dial to turn if budget gets tight. Ask explicitly for a
+consult ("advisor に相談してから進めて"); there is no setting to cap or
+force calls.
 
 ## Default model when launching a subagent
 
 When launching a child agent with the Agent tool, **always specify both
 `model` and `subagent_type` explicitly** (omitting `model` inherits the
-parent's fable, a budget hit and a policy violation; omitting
+parent's opus 5.5, a budget hit and a policy violation; omitting
 `subagent_type` silently takes the heavyweight catch-all when `Explore`
 would have done). Decide by whether the deliverable is **retrieval** or
 **judgment**:
@@ -90,8 +88,9 @@ would have done). Decide by whether the deliverable is **retrieval** or
 - **sonnet** (`claude-sonnet-5`): work whose deliverable involves
   "judgment / change / evaluation". Routine implementation, refactoring,
   per-PR parallel review, medium reasoning that weighs multiple hypotheses.
-- **opus** (`claude-opus-5`): only when delegating genuinely hard
-  root-cause reasoning or architectural judgment to a child.
+- **opus** (the `opus` alias — same tier as the main thread): only when
+  delegating genuinely hard root-cause reasoning or architectural judgment
+  to a child that needs a fresh context.
 
 **Not "when in doubt, sonnet" but "retrieval → haiku, judgment → sonnet".**
 Don't let sonnet become the safe default that sweeps up exploration.
@@ -140,8 +139,8 @@ file stays general: retrieval → haiku, judgment → sonnet.
 Before choosing a model, first decide "should this even be held on the main
 thread, or offloaded to a child?". The goal is not to maximize the offload rate
 but to **avoid inflating the main thread's context (especially cache
-read)** — now doubly true at fable's per-token rate. If any of the following
-apply, spawn a subagent rather than doing it directly on the main thread:
+read)**. If any of the following apply, spawn a subagent rather than doing
+it directly on the main thread:
 
 - **Exploration / investigation**: likely to read 3+ files to get the
   answer/location → hand it to an Explore-type subagent (haiku) and take back
@@ -210,11 +209,12 @@ ran on haiku — the model-*selection* rules work. Prose that merely records a
 number does not: main-thread `Bash` measured 3,153, essentially unchanged from
 the 3,246 written above.
 
-**Follow-up (2026-09-11): this is what justified the fable switch.** Opus
-never fixed the collapse above; fable's edit share on the same measurement
-is 1.9% (see the table in "fable — the main-thread default"), no rule change
-in between. Re-measure mid-October 2026; revert if fable's share climbs
-back toward opus's.
+**Follow-up: this is what justified the fable switch (2026-09-11), then the
+opus 5.5 switch (2026-09-24).** Opus 5 never fixed the collapse above;
+fable's edit share on the same measurement was 1.9% (see "opus 5.5 — the
+main-thread default"). Opus 5.5 replaced fable for pricing and benchmarks,
+not delegation — that risk is still open. Re-measure ~2026-10-08; revert to
+fable if the main-thread edit share climbs back toward opus 5's.
 
 ### What the child must hand back
 

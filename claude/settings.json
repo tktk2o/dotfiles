@@ -156,6 +156,7 @@
       "Bash(chgrp:*)"
     ]
   },
+  "model": "opus",
   "fallbackModel": [
     "claude-sonnet-5"
   ],
@@ -291,6 +292,14 @@
   "language": "japanese",
   "alwaysThinkingEnabled": true,
   "effortLevel": "low",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "low"
+    }
+  },
   "advisorModel": "fable",
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
@@ -298,6 +307,5 @@
     "enabled": true,
     "mode": "hold"
   },
-  "theme": "dark-ansi",
-  "model": "fable"
+  "theme": "dark-ansi"
 }
