@@ -85,9 +85,9 @@ would have done). Decide by whether the deliverable is **retrieval** or
   **Even code investigation is haiku when the job is "where is it / how does it
   work" location** (e.g. "find the trigger for X", "confirm the path for Y",
   "locate the relevant function").
-- **sonnet** (`claude-sonnet-5`): work whose deliverable involves
-  "judgment / change / evaluation". Routine implementation, refactoring,
-  per-PR parallel review, medium reasoning that weighs multiple hypotheses.
+- **sonnet** (`claude-sonnet-5-5` — alias verified 2026-09-29, same $2/$10 as
+  Sonnet 5): "judgment / change / evaluation" deliverables. Routine implementation,
+  refactoring, per-PR parallel review, medium reasoning weighing multiple hypotheses.
 - **opus** (the `opus` alias — same tier as the main thread): only when
   delegating genuinely hard root-cause reasoning or architectural judgment
   to a child that needs a fresh context.
