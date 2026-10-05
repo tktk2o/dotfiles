@@ -5,6 +5,15 @@ reviews code. Project conventions (a repo's own CLAUDE.md, its linter config,
 the surrounding file's idiom) win over this file — this is the default to reach
 for when nothing more specific says otherwise.
 
+## When these goals conflict: state > coupling > complexity > code volume
+
+Trade in that order (from a HN comment on Sandi Metz's "The Wrong Abstraction"):
+accept more coupling to remove state, more complexity to remove coupling, and
+duplicated code to remove complexity. Deduplicate only when that adds none of the
+three — a shared helper branching on a flag per caller is how it usually does.
+Duplication alone is not a review finding. "State" means state that outlives a
+call or is shared; a local loop accumulator is not it, hence the legibility caveat below.
+
 ## Separate pure logic from side effects
 
 Prefer a **referentially transparent** core with side effects pushed to the
