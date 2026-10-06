@@ -72,7 +72,7 @@ brew bundle --file=~/.Brewfile      # Install packages
 "settings.json hook vs. global CLAUDE.md import vs. project CLAUDE.md vs.
 skill vs. on-demand `*.md`" — read it before adding a new instruction anywhere
 in `~/.claude/` or this repo's `claude/` tree. It also carries a standing audit
-of the four files `claude/CLAUDE.md` imports plus the two auto-loaded
+of the four files `claude/CLAUDE.md` imports plus the three auto-loaded
 `claude/rules/*.md` (including a recommendation on `worktree.md`) and the
 `wc -l` one-liner used to measure the always-on context cost — that one-liner
 must keep its `claude/rules/*.md` glob, which is what it was missing.
@@ -86,11 +86,9 @@ automatically in every session on the machine** — no `@` import needed, at the
 same priority as `CLAUDE.md`. Everything in that directory without `paths:`
 frontmatter is therefore always-on, `coding-style.md` and
 `config-maintenance.md` included. This was misread when the directory was
-introduced: `claude/CLAUDE.md` also carries a three-line pointer telling Claude
-to *read* `coding-style.md`, written in the belief that the file was lazily
-loaded. It is not, so that pointer is redundant — measured 2026-09-04, the file
-was `Read` zero times in the sessions that edited code, because it was already
-in context. Add `paths:` frontmatter to make a rules file genuinely lazy; see
+introduced: a "read that file first" pointer to a `rules/` file in
+`claude/CLAUDE.md` is redundant, since the file is already in context. Add
+`paths:` frontmatter to make a rules file genuinely lazy; see
 `config-maintenance.md` for the caveat about which triggers are safe to rely on.
 
 ### Posting personas (GitHub is tracked, Slack is not)

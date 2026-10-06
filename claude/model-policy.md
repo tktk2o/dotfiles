@@ -17,9 +17,9 @@ Fable at ~50% of usage; no equivalent cap on Opus 5.5 is confirmed (no
 official Anthropic statement seen). Anthropic's own agentic benchmarks favor
 it too: Terminal-Bench 4.0 66.4% vs 55.8%, OSWorld 2.0 (strict) 48.7% vs
 41.7%, AutomationBench 40.0% vs 31.4% (GDPval-AA roughly tied, 1846 vs 1853).
-Thinking stays always-on, same as Fable; effort defaults to `medium` (Opus 5
-was `high`), so the main thread pins `high` via
-`modelSettings["claude-opus-5-5"].effortLevel` in `claude/settings.json`.
+Thinking stays always-on, same as Fable; effort defaults to `medium`, so the
+main thread pins `high` via `modelSettings["claude-opus-5-5"].effortLevel` in
+`claude/settings.json`.
 
 None of that is why Fable held this slot, though: a 21-day audit (2026-09-11)
 found Fable's main-thread edit/write share at 1.9% against opus 5's 89.6%

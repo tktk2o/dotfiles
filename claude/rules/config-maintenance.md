@@ -121,7 +121,7 @@ the `~/.claude/rules/` mechanism described above:
 | File | Lines | Scope of actual relevance | Verdict |
 |------|-------|---------------------------|---------|
 | `claude/rules/coding-style.md` | 81 | Only sessions that write or review code | **Keep always-on.** `paths` was measured not to fire on new-file `Write` (above), which is precisely when a coding rule is needed — gating it would silently drop it. 81 lines is the price of it being there. |
-| `claude/rules/config-maintenance.md` | 208 | Only sessions that edit a config/instruction file | Keep always-on for now, but it is the **largest always-on entry while being the least universally relevant** — its own worst offender. Gating waits on `Read`-firing being verified; until then, trim content rather than gate. |
+| `claude/rules/config-maintenance.md` | 209 | Only sessions that edit a config/instruction file | Keep always-on for now, but it is the **largest always-on entry while being the least universally relevant** — its own worst offender. Gating waits on `Read`-firing being verified; until then, trim content rather than gate. |
 | `claude/rules/shell-commands.md` | 22 | Every session that shells out, and every subagent prompt that tells one to | Keep always-on. The decision it governs (tool vs. Bash, and the command's shape) happens before the first call, and a subagent that gets it wrong stalls on a prompt it cannot answer. |
 
 **`worktree.md` (94 lines): recommend converting to on-demand read, not a
@@ -173,7 +173,7 @@ files went a month believed to be free.
 
 Measured on this machine (2026-10-05): **718 lines** of global always-on
 context (`29 + 94 + 245 + 31 + 7 + 81 + 209 + 22`), plus this project's own
-`CLAUDE.md` (408 lines, project-scoped — only paid for in `dotfiles` sessions).
+`CLAUDE.md` (430 lines, project-scoped — only paid for in `dotfiles` sessions).
 `tests/claude_rules_test.sh` recomputes that figure from disk and fails when it
 drifts, so keep the bolded number on one line and in that exact form.
 
