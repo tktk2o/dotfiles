@@ -79,7 +79,7 @@ parent's opus 5.5, a budget hit and a policy violation; omitting
 would have done). Decide by whether the deliverable is **retrieval** or
 **judgment**:
 
-- **haiku** (`claude-haiku-4-5`) — *default*: work whose deliverable is a
+- **haiku** (`claude-haiku-5-5`) — *default*: work whose deliverable is a
   "conclusion / location / list". Searching, exploring, collecting files,
   grepping logs/diffs, surveying naming conventions, classification, summarizing.
   **Even code investigation is haiku when the job is "where is it / how does it
