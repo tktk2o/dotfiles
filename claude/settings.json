@@ -130,7 +130,8 @@
       "WebFetch(domain:developer.mozilla.org)",
       "WebFetch(domain:stackoverflow.com)",
       "WebFetch(domain:npmjs.com)",
-      "WebFetch(domain:pypi.org)"
+      "WebFetch(domain:pypi.org)",
+      "Bash(git push --force-with-lease:*)"
     ],
     "deny": [
       "Bash(rm -rf *)",
