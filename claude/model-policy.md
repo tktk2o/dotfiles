@@ -1,35 +1,22 @@
 # Model Policy (for Claude)
 
-Keep the main thread on **Opus 5.5** (`claude-opus-5-5`), since 2026-09-24,
-and fan out grunt work to subagents on cheaper models — preserving the
-subscription budget (5h / week) and avoiding token/session limits on long,
-multi-stage tasks. Fable held this role from 2026-09-11 for its measured
-delegation discipline; opus 5.5 trades that for cheaper tokens, no known
-Max-plan usage cap, and better agentic benchmarks (below). The switch is
-conditional: **revert to fable** if a re-measure (due ~2026-10-08) shows the
-delegation share relapsing toward opus 5's.
+Keep the main thread on **Opus 5.5** (`claude-opus-5-5`) and fan out grunt
+work to subagents on cheaper models — preserving the subscription budget
+(5h / week) and avoiding token/session limits on long, multi-stage tasks.
 
 ## opus 5.5 — the main-thread default (since 2026-09-24)
 
-Opus 5.5 costs $4/$20 per MTok (cache read $0.20) against Fable 5.1's
-$10/$50 (cache read $0.25) — cheaper outright, not relatively. Max plans cap
-Fable at ~50% of usage; no equivalent cap on Opus 5.5 is confirmed (no
-official Anthropic statement seen). Anthropic's own agentic benchmarks favor
-it too: Terminal-Bench 4.0 66.4% vs 55.8%, OSWorld 2.0 (strict) 48.7% vs
-41.7%, AutomationBench 40.0% vs 31.4% (GDPval-AA roughly tied, 1846 vs 1853).
-Thinking stays always-on, same as Fable; effort defaults to `medium`, so the
-main thread pins `high` via `modelSettings["claude-opus-5-5"].effortLevel` in
-`claude/settings.json`.
+Chosen over Fable on price, usage cap and benchmarks (figures in git
+history). Effort defaults to `medium`, so the main thread pins `high` via
+`modelSettings["claude-opus-5-5"].effortLevel` in `claude/settings.json`.
 
-None of that is why Fable held this slot, though: a 21-day audit (2026-09-11)
-found Fable's main-thread edit/write share at 1.9% against opus 5's 89.6%
-(full table dropped 2026-09-24 as it ages; see git history). **Whether opus
-5.5 relapses toward opus 5's share or holds Fable's is unmeasured** — that
-is the entire risk of this switch, and the reason for the revert condition
-above.
+Fable held this slot from 2026-09-11 for delegation discipline: main-thread
+edit/write share 1.9% against opus 5's 89.6%. **Opus 5.5's share is
+unmeasured** — re-measure (due ~2026-10-08) and **revert to fable** if it
+relapses toward opus 5's.
 
-**Never specify `model: fable` on a subagent.** Fable now costs *more* than
-the main thread's own opus 5.5 ($10/$50 vs $4/$20) and buys nothing. The
+**Never specify `model: fable` on a subagent** — it costs more than the main
+thread's own opus 5.5 and buys nothing. The
 child ladder is otherwise unchanged, topping out at the `opus` alias — same
 tier as the main thread, for genuinely hard root-cause reasoning needing a
 fresh context. **Omitting `model` on an Agent call inherits the main
@@ -85,8 +72,7 @@ would have done). Decide by whether the deliverable is **retrieval** or
   **Even code investigation is haiku when the job is "where is it / how does it
   work" location** (e.g. "find the trigger for X", "confirm the path for Y",
   "locate the relevant function").
-- **sonnet** (`claude-sonnet-5-5` — alias verified 2026-09-29, same $2/$10 as
-  Sonnet 5): "judgment / change / evaluation" deliverables. Routine implementation,
+- **sonnet** (`claude-sonnet-5-5` — alias verified 2026-09-29): "judgment / change / evaluation" deliverables. Routine implementation,
   refactoring, per-PR parallel review, medium reasoning weighing multiple hypotheses.
 - **opus** (the `opus` alias — same tier as the main thread): only when
   delegating genuinely hard root-cause reasoning or architectural judgment
@@ -210,11 +196,8 @@ number does not: main-thread `Bash` measured 3,153, essentially unchanged from
 the 3,246 written above.
 
 **Follow-up: this is what justified the fable switch (2026-09-11), then the
-opus 5.5 switch (2026-09-24).** Opus 5 never fixed the collapse above;
-fable's edit share on the same measurement was 1.9% (see "opus 5.5 — the
-main-thread default"). Opus 5.5 replaced fable for pricing and benchmarks,
-not delegation — that risk is still open. Re-measure ~2026-10-08; revert to
-fable if the main-thread edit share climbs back toward opus 5's.
+opus 5.5 switch (2026-09-24)** — see "opus 5.5 — the main-thread default"
+for the revert condition.
 
 ### What the child must hand back
 
