@@ -112,7 +112,7 @@ unconditionally, into **every** session on this machine:
 |------|-------|---------------------------|---------|
 | `~/.claude/RTK.md` | 29 | Every session (rtk rewrites every Bash call) | Keep. Genuinely universal — step 2 is correctly satisfied. |
 | `claude/worktree.md` | 94 | Only sessions that create or manage a git worktree | **Reconsider.** See below. |
-| `claude/model-policy.md` | 228 | Only sessions that spawn a subagent via the Agent tool | Borderline and now the largest import; see below. |
+| `claude/model-policy.md` | 229 | Only sessions that spawn a subagent via the Agent tool | Borderline and now the largest import; see below. |
 | `~/.claude/local.md` | 31 | Every session (it is itself the thin hub, not the detail) | Keep as-is — this is the pattern step 5 is modeled on. |
 
 Plus two files that are **not** in that import list but are loaded anyway, via
@@ -171,8 +171,8 @@ wc -l ~/.claude/RTK.md claude/worktree.md claude/model-policy.md \
 measurement under-reports by ~200 lines, which is exactly how the two rules
 files went a month believed to be free.
 
-Measured on this machine (2026-10-22): **701 lines** of global always-on
-context (`29 + 94 + 228 + 31 + 7 + 81 + 209 + 22`), plus this project's own
+Measured on this machine (2026-10-22): **702 lines** of global always-on
+context (`29 + 94 + 229 + 31 + 7 + 81 + 209 + 22`), plus this project's own
 `CLAUDE.md` (430 lines, project-scoped — only paid for in `dotfiles` sessions).
 `tests/claude_rules_test.sh` recomputes that figure from disk and fails when it
 drifts, so keep the bolded number on one line and in that exact form.

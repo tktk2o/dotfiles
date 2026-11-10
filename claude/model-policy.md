@@ -7,7 +7,8 @@ work to subagents on cheaper models — preserving the subscription budget
 ## opus 5.5 — the main-thread default (since 2026-09-24)
 
 Chosen over Fable on price, usage cap and benchmarks (figures in git
-history). Effort defaults to `medium`, so the main thread pins `high` via
+history). Fable 5.2 (`claude-fable-5-2`, 2026-11-10) cut Fable's price but
+still costs about twice opus 5.5, so the choice stands. Effort defaults to `medium`, so the main thread pins `low` via
 `modelSettings["claude-opus-5-5"].effortLevel` in `claude/settings.json`.
 
 Fable held this slot from 2026-09-11 for delegation discipline: main-thread
