@@ -303,5 +303,6 @@
     "enabled": true,
     "mode": "hold"
   },
-  "theme": "dark-ansi"
+  "theme": "dark-ansi",
+  "model": "fable"
 }
