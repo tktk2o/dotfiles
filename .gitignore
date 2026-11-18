@@ -13,3 +13,4 @@ karabiner/automatic_backups/
 raycast/*.rayconfig
 claude/csr/csr
 tools/cheatsheet/cheatsheet
+zsh/plugins/*.local.zsh
