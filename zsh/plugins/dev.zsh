@@ -10,8 +10,9 @@ function dev() {
   local dir="$(ghq root)/$repo"
   local name=$(basename "$repo")
 
-  local claude_cmd="claude --permission-mode acceptEdits"
-  tmux new-window -n "$name" -c "$dir" "$claude_cmd"
-  tmux split-window -h -c "$dir" "$claude_cmd"
+  # The panes run as tmux commands, where the `c` function does not exist and
+  # pane 2 would race pane 1 in --name-for; names follow the same <name>/<name>-2 rule.
+  tmux new-window -n "$name" -c "$dir" "claude -n ${(q)name}"
+  tmux split-window -h -c "$dir" "claude -n ${(q)name}-2"
   tmux select-pane -L
 }

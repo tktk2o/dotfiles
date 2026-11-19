@@ -47,7 +47,18 @@ setopt HIST_VERIFY
 # already guarantees every pane's commands reach the file).
 
 # aliases
-alias c='claude --permission-mode acceptEdits' #: Claude Code を編集許可モードで起動
+#: Claude Code を起動する（tmux 内では名前付きウィンドウ名をセッション名にする）
+function c() {
+  local name
+  if [[ -n "$TMUX_PANE" ]]; then
+    name=$("$HOME/src/github.com/tktk2o/dotfiles/tmux/scripts/tmux-claude-rename.sh" --name-for "$TMUX_PANE" 2>/dev/null) || name=
+  fi
+  if [[ -n "$name" ]]; then
+    claude -n "$name" "$@"
+  else
+    claude "$@"
+  fi
+}
 alias nv='nvim' #: nvim を起動
 alias ghd='gh dash' #: gh dash（PR ダッシュボード）を開く
 

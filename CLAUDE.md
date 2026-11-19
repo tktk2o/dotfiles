@@ -155,7 +155,7 @@ Dracula color scheme across all tools (tmux, starship, Ghostty, Neovim).
 - **Shell**: zsh + sheldon (plugin manager) + starship (prompt)
 - **Terminal**: Ghostty
 - **Multiplexer**: tmux (prefix: Ctrl+B) + TPM plugins (tmux-resurrect / tmux-continuum for session persistence across reboots — auto-save every 15 min, but auto-restore is **off** (`@continuum-restore 'off'`), so restoring is manual: `prefix + Ctrl-r` for the whole snapshot, `prefix + W` / `twr` for a single window. A restore brings back layout + cwd, and relaunches Claude Code panes with their saved command verbatim so `claude --resume <id>` panes return to their exact session; other programs are not relaunched)
-- **Claude session names follow tmux window names**: an `after-rename-window` hook runs `tmux/scripts/tmux-claude-rename.sh`, which `/rename`s every Claude pane in the window to the window name (2nd pane gets `-2`), so peer sessions can address each other by it via SendMessage. Explicit renames only.
+- **Claude session names follow tmux window names**: an `after-rename-window` hook runs `tmux/scripts/tmux-claude-rename.sh`, which `/rename`s every Claude pane in the window to the window name (2nd pane gets `-2`), so peer sessions can address each other by it via SendMessage. The hook fires on explicit renames only, so `c` (`--name-for`, skipped in auto-named windows) and `dev` pass the name at launch via `claude -n`.
 - **Editor**: Neovim with LazyVim, diffview.nvim
 - **Diff review**: hunk (review-first TUI — `hunk diff`, `git difftool`, and gh-dash `d`/`R`). delta stays the plain `git diff` pager (`core.pager`).
 - **Project navigation**: ghq + fzf (`fgh` function in .zshrc)
