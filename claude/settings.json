@@ -6,6 +6,7 @@
     "OTEL_METRICS_EXPORTER": "console"
   },
   "permissions": {
+    "defaultMode": "auto",
     "allow": [
       "Bash(git status:*)",
       "Bash(git log:*)",
