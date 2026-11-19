@@ -9,10 +9,10 @@ name=$(tmux display-message -p -t "$window" '#{window_name}')
 
 i=0
 while read -r pane cmd; do
-	[[ $cmd == claude || $cmd =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
-	i=$((i + 1))
-	target=$name
-	((i > 1)) && target="$name-$i"
-	tmux send-keys -t "$pane" -l "/rename $target"
-	tmux send-keys -t "$pane" Enter
+    [[ $cmd == claude || $cmd =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
+    i=$((i + 1))
+    target=$name
+    ((i > 1)) && target="$name-$i"
+    tmux send-keys -t "$pane" -l "/rename $target"
+    tmux send-keys -t "$pane" Enter
 done < <(tmux list-panes -t "$window" -F '#{pane_id} #{pane_current_command}')
